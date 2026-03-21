@@ -22,7 +22,7 @@
     <div class="section-header">
       <span class="section-label">Teams</span>
       <div class="section-line"></div>
-      <button class="add-btn" data-action="addTeam">+ Team</button>
+      <button class="add-btn" data-action="addEntity" data-type="teams">+ Team</button>
     </div>
     <div class="teams-grid" id="teams-grid"></div>
   </section>
@@ -32,7 +32,7 @@
     <div class="section-header">
       <span class="section-label">Initiativen &amp; Projekte</span>
       <div class="section-line"></div>
-      <button class="add-btn" data-action="addIni">+ Initiative</button>
+      <button class="add-btn" data-action="addEntity" data-type="inis">+ Initiative</button>
     </div>
     <table class="ini-table">
       <thead>
@@ -56,14 +56,14 @@
     <div class="section-header">
       <span class="section-label">Nicht vergessen</span>
       <div class="section-line"></div>
-      <button class="add-btn" data-action="addNV">+ Eintrag</button>
+      <button class="add-btn" data-action="addEntity" data-type="nvs">+ Eintrag</button>
     </div>
     <div class="nv-grid" id="nv-grid"></div>
   </section>
 
 </main>
 
-<script src="cockpit.js"></script>
+<script type="module" src="cockpit.js"></script>
 
 <footer>
   <span class="footer-left">Director's Cockpit</span>

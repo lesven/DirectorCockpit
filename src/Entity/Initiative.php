@@ -7,17 +7,17 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InitiativeRepository::class)]
 #[ORM\Table(name: 'initiative')]
-class Initiative
+class Initiative implements SyncableEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
-    private string $id;
+    private int $id;
 
     #[ORM\Column(length: 255)]
     private string $name = '';
 
     #[ORM\Column(type: 'bigint', nullable: true)]
-    private ?string $team = null;
+    private ?int $team = null;
 
     #[ORM\Column(length: 20)]
     private string $status = 'grey';
@@ -34,7 +34,7 @@ class Initiative
     #[ORM\Column(type: 'text')]
     private string $notiz = '';
 
-    public function getId(): string
+    public function getId(): int
     {
         return $this->id;
     }
@@ -42,9 +42,9 @@ class Initiative
     public function toArray(): array
     {
         return [
-            'id' => (int) $this->id,
+            'id' => $this->id,
             'name' => $this->name,
-            'team' => $this->team !== null ? (int) $this->team : null,
+            'team' => $this->team,
             'status' => $this->status,
             'projektstatus' => $this->projektstatus,
             'schritt' => $this->schritt,
@@ -56,9 +56,9 @@ class Initiative
     public static function fromArray(array $data): self
     {
         $entity = new self();
-        $entity->id = (string) $data['id'];
+        $entity->id = $data['id'];
         $entity->name = $data['name'] ?? '';
-        $entity->team = isset($data['team']) ? (string) $data['team'] : null;
+        $entity->team = $data['team'] ?? null;
         $entity->status = $data['status'] ?? 'grey';
         $entity->projektstatus = $data['projektstatus'] ?? 'ok';
         $entity->schritt = $data['schritt'] ?? '';
@@ -71,9 +71,7 @@ class Initiative
     public function updateFromArray(array $data): void
     {
         $this->name = $data['name'] ?? $this->name;
-        $this->team = array_key_exists('team', $data)
-            ? ($data['team'] !== null ? (string) $data['team'] : null)
-            : $this->team;
+        $this->team = array_key_exists('team', $data) ? $data['team'] : $this->team;
         $this->status = $data['status'] ?? $this->status;
         $this->projektstatus = $data['projektstatus'] ?? $this->projektstatus;
         $this->schritt = $data['schritt'] ?? $this->schritt;

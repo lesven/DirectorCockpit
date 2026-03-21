@@ -1,4 +1,4 @@
-.PHONY: up down build composer-install migrate seed test fresh
+.PHONY: up down build composer-install migrate seed test test-unit test-integration fresh
 
 up:
 	docker compose up -d
@@ -20,6 +20,12 @@ seed:
 
 test:
 	docker compose exec app php vendor/bin/phpunit
+
+test-unit:
+	docker compose exec app php vendor/bin/phpunit --testsuite Unit
+
+test-integration:
+	docker compose exec app php vendor/bin/phpunit --testsuite Integration
 
 fresh: down
 	docker compose up -d --build

@@ -7,11 +7,11 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TeamRepository::class)]
 #[ORM\Table(name: 'team')]
-class Team
+class Team implements SyncableEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'bigint')]
-    private string $id;
+    private int $id;
 
     #[ORM\Column(length: 255)]
     private string $name = '';
@@ -28,7 +28,7 @@ class Team
     #[ORM\Column(length: 500)]
     private string $schritt = '';
 
-    public function getId(): string
+    public function getId(): int
     {
         return $this->id;
     }
@@ -36,7 +36,7 @@ class Team
     public function toArray(): array
     {
         return [
-            'id' => (int) $this->id,
+            'id' => $this->id,
             'name' => $this->name,
             'sub' => $this->sub,
             'status' => $this->status,
@@ -48,7 +48,7 @@ class Team
     public static function fromArray(array $data): self
     {
         $entity = new self();
-        $entity->id = (string) $data['id'];
+        $entity->id = $data['id'];
         $entity->name = $data['name'] ?? '';
         $entity->sub = $data['sub'] ?? '';
         $entity->status = $data['status'] ?? 'grey';

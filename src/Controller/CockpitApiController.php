@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Service\CockpitSyncService;
+use App\Service\SyncException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,7 +32,7 @@ class CockpitApiController extends AbstractController
 
         try {
             $this->syncService->syncAll($payload);
-        } catch (\Throwable $e) {
+        } catch (SyncException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
