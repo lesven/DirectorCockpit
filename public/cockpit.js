@@ -29,21 +29,36 @@
   let sortState = { field: null, dir: 'asc' };
 
   // ── Persistence (load/save) ─────────────────────────────────
-  function load() {
+  async function load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      data = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT_DATA));
+      const res = await fetch('/api/cockpit');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      data = await res.json();
     } catch (e) {
+      console.warn('Backend nicht erreichbar, verwende Standarddaten:', e);
       data = JSON.parse(JSON.stringify(DEFAULT_DATA));
     }
   }
 
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     const ind = document.getElementById('save-ind');
-    ind.classList.add('show');
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => ind.classList.remove('show'), 1400);
+    fetch('/api/cockpit', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      ind.textContent = 'gespeichert';
+      ind.classList.add('show');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => ind.classList.remove('show'), 1400);
+    }).catch(err => {
+      console.error('Speichern fehlgeschlagen:', err);
+      ind.textContent = 'Fehler!';
+      ind.classList.add('show');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => ind.classList.remove('show'), 3000);
+    });
   }
 
   function debounce(fn, ms = 400) {
@@ -438,6 +453,5 @@
   });
 
   // ── Init ────────────────────────────────────────────────────
-  load();
-  renderAll();
+  load().then(() => renderAll());
 })();
