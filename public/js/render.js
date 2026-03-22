@@ -1,6 +1,6 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
-import { getSortedInis, sortState, filterState } from './sort.js';
+import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
 import { esc, calcWsjf } from './utils.js';
 
 function statusClass(s) {
@@ -124,6 +124,89 @@ function renderIniRow(ini, teamOptsBase) {
   return tr;
 }
 
+function renderPagination(total, page, pageSize, totalPages) {
+  const el = document.getElementById('ini-pagination');
+  if (!el) return;
+  el.innerHTML = '';
+  if (total <= pageSize) return;
+
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  const info = document.createElement('span');
+  info.className = 'pagination-info';
+  info.textContent = `${start}\u2013${end} von ${total}`;
+  el.appendChild(info);
+
+  const nav = document.createElement('div');
+  nav.className = 'pagination-nav';
+
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'pagination-btn';
+  prevBtn.textContent = '\u2039';
+  prevBtn.disabled = page === 1;
+  prevBtn.dataset.action = 'gotoPage';
+  prevBtn.dataset.page = String(page - 1);
+  nav.appendChild(prevBtn);
+
+  const delta = 2;
+  let pStart = Math.max(1, page - delta);
+  let pEnd = Math.min(totalPages, page + delta);
+  if (pEnd - pStart < 4) {
+    if (pStart === 1) pEnd = Math.min(totalPages, pStart + 4);
+    else pStart = Math.max(1, pEnd - 4);
+  }
+
+  if (pStart > 1) {
+    const first = document.createElement('button');
+    first.className = 'pagination-btn';
+    first.textContent = '1';
+    first.dataset.action = 'gotoPage';
+    first.dataset.page = '1';
+    nav.appendChild(first);
+    if (pStart > 2) {
+      const dots = document.createElement('span');
+      dots.className = 'pagination-dots';
+      dots.textContent = '\u2026';
+      nav.appendChild(dots);
+    }
+  }
+
+  for (let p = pStart; p <= pEnd; p++) {
+    const btn = document.createElement('button');
+    btn.className = 'pagination-btn' + (p === page ? ' active' : '');
+    btn.textContent = String(p);
+    btn.dataset.action = 'gotoPage';
+    btn.dataset.page = String(p);
+    nav.appendChild(btn);
+  }
+
+  if (pEnd < totalPages) {
+    if (pEnd < totalPages - 1) {
+      const dots = document.createElement('span');
+      dots.className = 'pagination-dots';
+      dots.textContent = '\u2026';
+      nav.appendChild(dots);
+    }
+    const last = document.createElement('button');
+    last.className = 'pagination-btn';
+    last.textContent = String(totalPages);
+    last.dataset.action = 'gotoPage';
+    last.dataset.page = String(totalPages);
+    nav.appendChild(last);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'pagination-btn';
+  nextBtn.textContent = '\u203a';
+  nextBtn.disabled = page === totalPages;
+  nextBtn.dataset.action = 'gotoPage';
+  nextBtn.dataset.page = String(page + 1);
+  nav.appendChild(nextBtn);
+
+  el.appendChild(nav);
+}
+
 function renderInis() {
   const tbody = document.getElementById('ini-body');
   tbody.innerHTML = '';
@@ -132,8 +215,10 @@ function renderInis() {
   const teamOptsBase =
     '<option value="">—</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
 
-  getSortedInis().forEach((ini) => tbody.appendChild(renderIniRow(ini, teamOptsBase)));
+  const { items, total, page, pageSize, totalPages } = getPaginatedInis();
+  items.forEach((ini) => tbody.appendChild(renderIniRow(ini, teamOptsBase)));
   tbody.querySelectorAll('.ini-notiz').forEach(autoGrow);
+  renderPagination(total, page, pageSize, totalPages);
 }
 
 function renderNVCard(nv) {

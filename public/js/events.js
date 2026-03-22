@@ -1,7 +1,7 @@
 import { data, save, dSave } from './store.js';
 import { addEntity, removeEntity, cycleStatus } from './crud.js';
 import { findById } from './utils.js';
-import { sortInis, sortState, filterState } from './sort.js';
+import { sortInis, sortState, filterState, resetPage, pageState } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
@@ -17,12 +17,13 @@ function parseDataset(el) {
 }
 
 function updateResetBtn() {
-  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus;
+  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || pageState.current > 1;
   document.getElementById('filter-reset').classList.toggle('active', !!active);
 }
 
 function applyFilter() {
   updateResetBtn();
+  resetPage();
   renderEntity('initiatives');
   saveViewState(filterState, sortState);
 }
@@ -54,11 +55,21 @@ function handleActionClick(e) {
       break;
     case 'sortInis':
       sortInis(target.dataset.sort);
+      resetPage();
       renderEntity('initiatives');
       break;
     case 'openDetail':
       openDetail(id);
       break;
+    case 'gotoPage': {
+      const p = +target.dataset.page;
+      if (!isNaN(p) && p >= 1) {
+        pageState.current = p;
+        renderEntity('initiatives');
+        updateResetBtn();
+      }
+      break;
+    }
     case 'exportJSON':
       exportJSON();
       break;

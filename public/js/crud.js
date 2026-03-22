@@ -2,6 +2,7 @@ import { ENTITY_DEFS, STATUSES, CONFIG } from './config.js';
 import { data, save } from './store.js';
 import { renderEntity } from './render.js';
 import { findById } from './utils.js';
+import { openDetail } from './detail.js';
 
 export function addEntity(type) {
   const def = ENTITY_DEFS[type];
@@ -9,6 +10,11 @@ export function addEntity(type) {
   data[type].push({ id, ...def.defaults });
   save();
   renderEntity(type);
+
+  if (type === 'initiatives') {
+    openDetail(id);
+    return;
+  }
 
   if (def.focusSelector) {
     setTimeout(() => {

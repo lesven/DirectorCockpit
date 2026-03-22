@@ -38,7 +38,7 @@ class CockpitSyncService
         $result = ['kw' => $meta->getKw()];
 
         foreach (self::ENTITY_REGISTRY as $key => $class) {
-            $entities = $this->em->getRepository($class)->findAll();
+            $entities = $this->em->getRepository($class)->findBy([], ['id' => 'ASC']);
             $result[$key] = array_map(fn(SyncableEntity $e) => $e->toArray(), $entities);
         }
 

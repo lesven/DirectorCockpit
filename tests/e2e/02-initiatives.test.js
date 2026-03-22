@@ -7,10 +7,16 @@ fixture('US-2: Initiativen-Management')
     await setupTest();
   });
 
-test('AC-2.1: Neue Initiative hinzufügen erzeugt Tabellenzeile', async (t) => {
+test('AC-2.1: Neue Initiative hinzufügen erzeugt Tabellenzeile und öffnet Detail-Modal', async (t) => {
   const initialCount = await selectors.iniRows.count;
 
   await t.click(selectors.addIniBtn);
+
+  // Detail-Modal muss automatisch geöffnet werden
+  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();
+
+  // Modal schließen, dann Zeilenanzahl prüfen
+  await t.click(selectors.detailClose);
 
   await t.expect(selectors.iniRows.count).eql(initialCount + 1);
 });
