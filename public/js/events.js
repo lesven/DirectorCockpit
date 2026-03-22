@@ -1,9 +1,10 @@
 import { data, save, dSave } from './store.js';
 import { addEntity, removeEntity, cycleStatus, findById } from './crud.js';
-import { sortInis, filterState } from './sort.js';
+import { sortInis, sortState, filterState } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
+import { saveViewState } from './cookie.js';
 
 /** Liest id, field, source aus data-Attributen eines Elements. */
 function parseDataset(el) {
@@ -46,6 +47,7 @@ export function bindEvents() {
     filterState.name = e.target.value;
     updateResetBtn();
     renderEntity('initiatives');
+    saveViewState(filterState, sortState);
   });
 
   ['filter-team', 'filter-status', 'filter-projektstatus'].forEach(id => {
@@ -53,6 +55,7 @@ export function bindEvents() {
       filterState[id.replace('filter-', '')] = e.target.value;
       updateResetBtn();
       renderEntity('initiatives');
+      saveViewState(filterState, sortState);
     });
   });
 
@@ -67,6 +70,7 @@ export function bindEvents() {
     document.getElementById('filter-projektstatus').value = '';
     updateResetBtn();
     renderEntity('initiatives');
+    saveViewState(filterState, sortState);
   });
 
   document.addEventListener('input', e => {
