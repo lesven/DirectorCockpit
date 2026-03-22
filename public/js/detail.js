@@ -1,49 +1,43 @@
 import { data, dSave } from './store.js';
-import { findById } from './crud.js';
+import { findById, esc } from './utils.js';
 import { renderEntity, autoGrow } from './render.js';
 import { WSJF_SCALE } from './config.js';
 
 const STATUS_OPTIONS = [
-  { value: 'fertig',    label: 'Fertig' },
-  { value: 'yellow',    label: 'In Arbeit' },
-  { value: 'grey',      label: 'Geplant' },
+  { value: 'fertig', label: 'Fertig' },
+  { value: 'yellow', label: 'In Arbeit' },
+  { value: 'grey', label: 'Geplant' },
   { value: 'ungeplant', label: 'Ungeplant' },
 ];
 
 const PROJEKTSTATUS_OPTIONS = [
-  { value: 'ok',       label: 'Alles gut' },
+  { value: 'ok', label: 'Alles gut' },
   { value: 'kritisch', label: 'Kritisch' },
 ];
 
-function esc(s) {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function wsjfSelectHtml(selected) {
   const none = `<option value=""${selected == null ? ' selected' : ''}>–</option>`;
-  const opts = WSJF_SCALE.map(v =>
-    `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`
-  ).join('');
+  const opts = WSJF_SCALE.map((v) => `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`).join('');
   return none + opts;
 }
 
 function selectHtml(options, selected) {
-  return options.map(o =>
-    `<option value="${o.value}"${o.value === selected ? ' selected' : ''}>${esc(o.label)}</option>`
-  ).join('');
+  return options
+    .map((o) => `<option value="${o.value}"${o.value === selected ? ' selected' : ''}>${esc(o.label)}</option>`)
+    .join('');
 }
 
 function teamSelectHtml(selectedId) {
   const none = `<option value=""${!selectedId ? ' selected' : ''}>— Kein Team —</option>`;
-  const opts = data.teams.map(t =>
-    `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`
-  ).join('');
+  const opts = data.teams
+    .map((t) => `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`)
+    .join('');
   return none + opts;
 }
 
 let currentId = null;
 const backdrop = () => document.getElementById('detail-backdrop');
-const body     = () => document.getElementById('detail-body');
+const body = () => document.getElementById('detail-body');
 
 export function openDetail(id) {
   const ini = findById(data.initiatives, id);
@@ -173,7 +167,7 @@ export function bindDetailEvents() {
   const bd = backdrop();
 
   // Close on backdrop click
-  bd.addEventListener('click', e => {
+  bd.addEventListener('click', (e) => {
     if (e.target === bd) closeDetail();
   });
 
@@ -181,7 +175,7 @@ export function bindDetailEvents() {
   document.getElementById('detail-close').addEventListener('click', closeDetail);
 
   // Escape key
-  document.addEventListener('keydown', e => {
+  document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !bd.hidden) closeDetail();
   });
 

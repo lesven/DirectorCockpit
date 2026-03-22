@@ -1,10 +1,7 @@
 import { ENTITY_DEFS, STATUSES, CONFIG } from './config.js';
 import { data, save } from './store.js';
 import { renderEntity } from './render.js';
-
-export function findById(arr, id) {
-  return arr.find(x => x.id === id);
-}
+import { findById } from './utils.js';
 
 export function addEntity(type) {
   const def = ENTITY_DEFS[type];
@@ -26,7 +23,7 @@ export function removeEntity(type, id) {
   const item = findById(data[type], id);
   const name = item && item[def.labelField] ? `\u201E${item[def.labelField]}\u201C` : def.fallback;
   if (!confirm(`${name} wirklich löschen?`)) return;
-  data[type] = data[type].filter(x => x.id !== id);
+  data[type] = data[type].filter((x) => x.id !== id);
   save();
   renderEntity(type);
 }

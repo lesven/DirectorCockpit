@@ -1,6 +1,6 @@
 import { STATUS_ORDER, PROJECT_STATUS_ORDER } from './config.js';
 import { data } from './store.js';
-import { findById } from './crud.js';
+import { findById, calcWsjf } from './utils.js';
 import { saveViewState } from './cookie.js';
 
 export const sortState = { field: null, dir: 'asc' };
@@ -36,7 +36,7 @@ export function sortInis(field) {
 }
 
 export function getSortedInis() {
-  const filtered = data.initiatives.filter(ini => {
+  const filtered = data.initiatives.filter((ini) => {
     if (filterState.name && !ini.name.toLowerCase().includes(filterState.name.toLowerCase())) return false;
     if (filterState.team && String(ini.team) !== filterState.team) return false;
     if (filterState.status && ini.status !== filterState.status) return false;
@@ -62,15 +62,10 @@ export function getSortedInis() {
       va = a.frist || 'zzz';
       vb = b.frist || 'zzz';
     } else if (field === 'wsjf') {
-      const calcW = i => {
-        const { businessValue, timeCriticality, riskReduction, jobSize } = i;
-        if (businessValue == null || timeCriticality == null || riskReduction == null || jobSize == null || jobSize <= 0) return null;
-        return (businessValue + timeCriticality + riskReduction) / jobSize;
-      };
-      const wa = calcW(a);
-      const wb = calcW(b);
-      va = wa != null ? wa : (dir === 'asc' ? Infinity : -Infinity);
-      vb = wb != null ? wb : (dir === 'asc' ? Infinity : -Infinity);
+      const wa = calcWsjf(a);
+      const wb = calcWsjf(b);
+      va = wa != null ? wa : dir === 'asc' ? Infinity : -Infinity;
+      vb = wb != null ? wb : dir === 'asc' ? Infinity : -Infinity;
     } else {
       va = (a[field] || '').toLowerCase();
       vb = (b[field] || '').toLowerCase();

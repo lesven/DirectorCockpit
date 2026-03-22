@@ -23,7 +23,19 @@ export const ENTITY_DEFS = {
   initiatives: {
     labelField: 'name',
     fallback: 'diese Initiative',
-    defaults: { name: '', team: null, status: 'grey', projektstatus: 'ok', schritt: '', frist: '', notiz: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null },
+    defaults: {
+      name: '',
+      team: null,
+      status: 'grey',
+      projektstatus: 'ok',
+      schritt: '',
+      frist: '',
+      notiz: '',
+      businessValue: null,
+      timeCriticality: null,
+      riskReduction: null,
+      jobSize: null,
+    },
     focusSelector: '.ini-name',
   },
   nicht_vergessen: {

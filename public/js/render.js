@@ -1,20 +1,10 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
-import { findById } from './crud.js';
 import { getSortedInis, sortState, filterState } from './sort.js';
-
-function esc(s) {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { esc, calcWsjf } from './utils.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
-}
-
-function calcWsjf(ini) {
-  const { businessValue, timeCriticality, riskReduction, jobSize } = ini;
-  if (businessValue == null || timeCriticality == null || riskReduction == null || jobSize == null || jobSize <= 0) return null;
-  return Math.round(((businessValue + timeCriticality + riskReduction) / jobSize) * 10) / 10;
 }
 
 function autoGrow(el) {
@@ -34,7 +24,7 @@ function populateTeamFilter() {
   if (!sel) return;
   const currentVal = sel.value || filterState.team;
   while (sel.options.length > 1) sel.remove(1);
-  data.teams.forEach(t => {
+  data.teams.forEach((t) => {
     const opt = document.createElement('option');
     opt.value = String(t.id);
     opt.textContent = t.name;
@@ -48,7 +38,7 @@ function renderTeams() {
   populateTeamFilter();
   const grid = document.getElementById('teams-grid');
   grid.innerHTML = '';
-  data.teams.forEach(t => {
+  data.teams.forEach((t) => {
     const card = document.createElement('div');
     card.className = 'team-card';
     card.innerHTML = `
@@ -78,14 +68,14 @@ function renderTeams() {
 
 function teamOptions(selectedId) {
   const none = `<option value=""${!selectedId ? ' selected' : ''}>—</option>`;
-  const opts = data.teams.map(t =>
-    `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`
-  ).join('');
+  const opts = data.teams
+    .map((t) => `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`)
+    .join('');
   return none + opts;
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll('.ini-table th.sortable').forEach(th => {
+  document.querySelectorAll('.ini-table th.sortable').forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
     const field = th.dataset.sort;
     if (field === sortState.field) {
@@ -101,10 +91,10 @@ function renderInis() {
 
   // teamOptions einmal vorberechnen statt O(initiatives × teams)-mal aufzurufen.
   // selected-Wert wird per select.value nach DOM-Einfügung gesetzt.
-  const teamOptsBase = '<option value="">—</option>' +
-    data.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+  const teamOptsBase =
+    '<option value="">—</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
 
-  getSortedInis().forEach(ini => {
+  getSortedInis().forEach((ini) => {
     const s = ini.status || 'grey';
     const ps = ini.projektstatus || 'ok';
     const tr = document.createElement('tr');
@@ -156,7 +146,7 @@ function renderInis() {
 function renderNVs() {
   const grid = document.getElementById('nv-grid');
   grid.innerHTML = '';
-  data.nicht_vergessen.forEach(nv => {
+  data.nicht_vergessen.forEach((nv) => {
     const card = document.createElement('div');
     card.className = 'nv-card';
     card.innerHTML = `
