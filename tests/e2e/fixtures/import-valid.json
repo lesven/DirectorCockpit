@@ -1,7 +1,7 @@
 {
   "kw": "99",
   "teams": [
-    { "id": 9001, "name": "Import Team", "sub": "Test", "status": "green", "fokus": "", "schritt": "" }
+    { "id": 9001, "name": "Import Team", "status": "green", "fokus": "", "schritt": "" }
   ],
   "initiatives": [
     {

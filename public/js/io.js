@@ -29,7 +29,6 @@ export function migrateData(parsed) {
   parsed.teams = parsed.teams.map((t) => ({
     id: t.id ?? Date.now(),
     name: t.name ?? '',
-    sub: t.sub ?? '',
     status: t.status ?? 'grey',
     fokus: t.fokus ?? '',
     schritt: t.schritt ?? '',

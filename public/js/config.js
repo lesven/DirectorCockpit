@@ -17,7 +17,7 @@ export const ENTITY_DEFS = {
   teams: {
     labelField: 'name',
     fallback: 'dieses Team',
-    defaults: { name: 'Neues Team', sub: '', status: 'grey', fokus: '', schritt: '' },
+    defaults: { name: 'Neues Team', status: 'grey', fokus: '', schritt: '' },
     focusSelector: '.team-name',
   },
   initiatives: {

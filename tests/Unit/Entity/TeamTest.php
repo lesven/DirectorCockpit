@@ -12,7 +12,6 @@ class TeamTest extends TestCase
         return [
             'id' => 10,
             'name' => 'Backend-Team',
-            'sub' => 'API-Entwicklung',
             'status' => 'yellow',
             'fokus' => 'Performance-Optimierung',
             'schritt' => 'Profiling starten',
@@ -26,7 +25,6 @@ class TeamTest extends TestCase
 
         $this->assertSame(10, $arr['id']);
         $this->assertSame('Backend-Team', $arr['name']);
-        $this->assertSame('API-Entwicklung', $arr['sub']);
         $this->assertSame('yellow', $arr['status']);
         $this->assertSame('Performance-Optimierung', $arr['fokus']);
         $this->assertSame('Profiling starten', $arr['schritt']);
@@ -38,7 +36,6 @@ class TeamTest extends TestCase
         $arr = $team->toArray();
 
         $this->assertSame('', $arr['name']);
-        $this->assertSame('', $arr['sub']);
         $this->assertSame('grey', $arr['status']);
         $this->assertSame('', $arr['fokus']);
         $this->assertSame('', $arr['schritt']);
@@ -55,7 +52,6 @@ class TeamTest extends TestCase
         $team = Team::fromArray(['id' => 1, 'name' => 'Old']);
         $team->updateFromArray([
             'name' => 'New',
-            'sub' => 'Subtitle',
             'status' => 'fertig',
             'fokus' => 'Neuer Fokus',
             'schritt' => 'Nächste Aktion',
@@ -63,7 +59,6 @@ class TeamTest extends TestCase
 
         $arr = $team->toArray();
         $this->assertSame('New', $arr['name']);
-        $this->assertSame('Subtitle', $arr['sub']);
         $this->assertSame('fertig', $arr['status']);
         $this->assertSame('Neuer Fokus', $arr['fokus']);
         $this->assertSame('Nächste Aktion', $arr['schritt']);

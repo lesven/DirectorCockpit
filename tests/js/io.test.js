@@ -58,7 +58,6 @@ describe('migrateData()', () => {
     const team = result.teams[0];
     expect(team.id).toBe(42);
     expect(team.name).toBe('');
-    expect(team.sub).toBe('');
     expect(team.status).toBe('grey');
     expect(team.fokus).toBe('');
     expect(team.schritt).toBe('');
@@ -66,11 +65,10 @@ describe('migrateData()', () => {
 
   it('preserves existing team values', () => {
     const result = migrateData({
-      teams: [{ id: 1, name: 'Dev', sub: 'Frontend', status: 'yellow', fokus: 'Sprint', schritt: 'Deploy' }],
+      teams: [{ id: 1, name: 'Dev', status: 'yellow', fokus: 'Sprint', schritt: 'Deploy' }],
     });
     const team = result.teams[0];
     expect(team.name).toBe('Dev');
-    expect(team.sub).toBe('Frontend');
     expect(team.status).toBe('yellow');
   });
 
@@ -131,7 +129,7 @@ describe('migrateData()', () => {
   it('handles a complete data object without changes', () => {
     const input = {
       kw: '12',
-      teams: [{ id: 1, name: 'T1', sub: 's', status: 'fertig', fokus: 'f', schritt: 'sch' }],
+      teams: [{ id: 1, name: 'T1', status: 'fertig', fokus: 'f', schritt: 'sch' }],
       initiatives: [
         {
           id: 2,

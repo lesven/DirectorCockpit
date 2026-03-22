@@ -27,7 +27,7 @@ class CockpitApiControllerTest extends WebTestCase
         $payload = [
             'kw' => '12',
             'teams' => [
-                ['id' => 100, 'name' => 'Test-Team', 'sub' => 'Sub', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
+                ['id' => 100, 'name' => 'Test-Team', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
             ],
             'initiatives' => [
                 ['id' => 200, 'name' => 'Test-Ini', 'team' => 100, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Step', 'frist' => '', 'notiz' => '', 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => 5],
@@ -62,7 +62,7 @@ class CockpitApiControllerTest extends WebTestCase
 
         $payload = [
             'kw' => '',
-            'teams' => [['id' => 100, 'name' => 'Original', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => '']],
+            'teams' => [['id' => 100, 'name' => 'Original', 'status' => 'grey', 'fokus' => '', 'schritt' => '']],
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
@@ -86,15 +86,15 @@ class CockpitApiControllerTest extends WebTestCase
         $payload = [
             'kw' => '',
             'teams' => [
-                ['id' => 1, 'name' => 'A', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
-                ['id' => 2, 'name' => 'B', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
+                ['id' => 1, 'name' => 'A', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
+                ['id' => 2, 'name' => 'B', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
             ],
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
-        $payload['teams'] = [['id' => 1, 'name' => 'A', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => '']];
+        $payload['teams'] = [['id' => 1, 'name' => 'A', 'status' => 'grey', 'fokus' => '', 'schritt' => '']];
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         $client->request('GET', '/api/cockpit');

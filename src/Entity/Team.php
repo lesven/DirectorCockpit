@@ -15,9 +15,6 @@ final class Team implements SyncableEntity
     #[ORM\Column(length: 255)]
     private string $name = '';
 
-    #[ORM\Column(length: 255)]
-    private string $sub = '';
-
     #[ORM\Column(length: 20, enumType: StatusEnum::class)]
     private StatusEnum $status = StatusEnum::Grey;
 
@@ -32,7 +29,6 @@ final class Team implements SyncableEntity
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'sub' => $this->sub,
             'status' => $this->status->value,
             'fokus' => $this->fokus,
             'schritt' => $this->schritt,
@@ -44,7 +40,6 @@ final class Team implements SyncableEntity
         $entity = new self();
         $entity->id = $data['id'];
         $entity->name = $data['name'] ?? '';
-        $entity->sub = $data['sub'] ?? '';
         $entity->status = StatusEnum::tryFrom($data['status'] ?? '') ?? StatusEnum::Grey;
         $entity->fokus = $data['fokus'] ?? '';
         $entity->schritt = $data['schritt'] ?? '';
@@ -55,7 +50,6 @@ final class Team implements SyncableEntity
     public function updateFromArray(array $data): void
     {
         $this->name = $data['name'] ?? $this->name;
-        $this->sub = $data['sub'] ?? $this->sub;
         $this->status = isset($data['status'])
             ? (StatusEnum::tryFrom($data['status']) ?? $this->status)
             : $this->status;

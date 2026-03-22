@@ -23,16 +23,11 @@ test('AC-1.1: Neues Team anlegen erzeugt Karte mit Fokus auf Namensfeld', async 
 
 test('AC-1.2: Inline-Bearbeitung von Team-Feldern persistiert', async (t) => {
   const nameInput = selectors.teamNameInputs.nth(0);
-  const subInput = Selector('.team-card').nth(0).find('[data-field="sub"]');
   const fokusInput = Selector('.team-card').nth(0).find('[data-field="fokus"]');
   const schrittInput = Selector('.team-card').nth(0).find('[data-field="schritt"]');
 
   // Name ändern
   await t.selectText(nameInput).typeText(nameInput, 'Umbenanntes Team');
-  await waitForSave();
-
-  // Sub (Thema) ändern
-  await t.selectText(subInput).typeText(subInput, 'Neues Thema');
   await waitForSave();
 
   // Fokus ändern
@@ -53,7 +48,6 @@ test('AC-1.2: Inline-Bearbeitung von Team-Feldern persistiert', async (t) => {
     return node.querySelector('.team-name').value === 'Umbenanntes Team';
   });
   await t.expect(renamedCard.count).eql(1, 'Umbenanntes Team sollte existieren');
-  await t.expect(renamedCard.find('[data-field="sub"]').value).eql('Neues Thema');
   await t.expect(renamedCard.find('[data-field="fokus"]').value).eql('Neuer Fokus');
   await t.expect(renamedCard.find('[data-field="schritt"]').value).eql('Neuer Schritt');
 });
