@@ -1,4 +1,4 @@
-import { data, save } from './store.js';
+import { data, save, setData } from './store.js';
 import { renderAll } from './render.js';
 
 /**
@@ -91,8 +91,7 @@ export function importJSON() {
           )
         )
           return;
-        // Overwrite data properties in-place so all modules see the change
-        Object.assign(data, migrated);
+        setData(migrated);
         save();
         renderAll();
       } catch (err) {
