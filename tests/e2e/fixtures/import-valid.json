@@ -1,0 +1,25 @@
+{
+  "kw": "99",
+  "teams": [
+    { "id": 9001, "name": "Import Team", "sub": "Test", "status": "green", "fokus": "", "schritt": "" }
+  ],
+  "initiatives": [
+    {
+      "id": 9002,
+      "name": "Import Projekt",
+      "team": 9001,
+      "status": "yellow",
+      "projektstatus": "ok",
+      "schritt": "",
+      "frist": "",
+      "notiz": "",
+      "businessValue": null,
+      "timeCriticality": null,
+      "riskReduction": null,
+      "jobSize": null
+    }
+  ],
+  "nicht_vergessen": [
+    { "id": 9003, "title": "Import NV", "body": "Importiert" }
+  ]
+}

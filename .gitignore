@@ -5,3 +5,4 @@
 /.env.*.local
 *.Zone.Identifier
 .phpunit.result.cache
+tests/e2e/screenshots/
