@@ -63,12 +63,15 @@ class CockpitSyncServiceTest extends TestCase
     {
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
+        $teamRepo->method('findBy')->willReturn($teams);
 
         $initiativeRepo = $this->createMock(EntityRepository::class);
         $initiativeRepo->method('findAll')->willReturn($initiatives);
+        $initiativeRepo->method('findBy')->willReturn($initiatives);
 
         $nichtVergessenRepo = $this->createMock(EntityRepository::class);
         $nichtVergessenRepo->method('findAll')->willReturn($nichtVergessen);
+        $nichtVergessenRepo->method('findBy')->willReturn($nichtVergessen);
 
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
