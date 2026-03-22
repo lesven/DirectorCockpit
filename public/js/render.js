@@ -46,10 +46,6 @@ function renderTeamCard(t) {
         <button class="icon-btn" data-action="removeEntity" data-type="teams" data-id="${t.id}" title="Löschen">✕</button>
       </div>
       <div class="field-row">
-        <div class="field-label">Thema</div>
-        <input class="field-input" value="${esc(t.sub)}" placeholder="Kurzbeschreibung" data-id="${t.id}" data-field="sub" data-source="teams">
-      </div>
-      <div class="field-row">
         <div class="field-label">Aktueller Fokus</div>
         <textarea class="field-input" rows="2" placeholder="Was läuft gerade?" data-id="${t.id}" data-field="fokus" data-source="teams">${esc(t.fokus)}</textarea>
       </div>

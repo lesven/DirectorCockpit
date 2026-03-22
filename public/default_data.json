@@ -1,10 +1,10 @@
 {
   "kw": "",
   "teams": [
-    { "id": 1, "name": "IT Service",           "sub": "Endgeräte & User",         "status": "green",  "fokus": "", "schritt": "" },
-    { "id": 2, "name": "IT Infrastruktur",      "sub": "RZ, Netzwerk, Betrieb",    "status": "green",  "fokus": "", "schritt": "" },
-    { "id": 3, "name": "DevOps",                "sub": "K8s, GitLab, Azure DevOps","status": "yellow", "fokus": "", "schritt": "" },
-    { "id": 4, "name": "Konzernapplikationen",  "sub": "Navision, MSSQL, CRM",     "status": "green",  "fokus": "", "schritt": "" }
+    { "id": 1, "name": "IT Service",           "status": "green",  "fokus": "", "schritt": "" },
+    { "id": 2, "name": "IT Infrastruktur",      "status": "green",  "fokus": "", "schritt": "" },
+    { "id": 3, "name": "DevOps",                "status": "yellow", "fokus": "", "schritt": "" },
+    { "id": 4, "name": "Konzernapplikationen",  "status": "green",  "fokus": "", "schritt": "" }
   ],
   "initiatives": [
     { "id": 1, "name": "Update Azure DevOps",   "team": 3, "status": "yellow", "projektstatus": "ok", "schritt": "Versionsplanung abschließen", "frist": "", "notiz": "", "businessValue": null, "timeCriticality": null, "riskReduction": null, "jobSize": null },
