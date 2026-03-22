@@ -77,6 +77,7 @@ const reloadPage = ClientFunction(() => {
  */
 export async function setupTest() {
   await seedViaAPI(JSON.stringify(SEED_PAYLOAD));
+  await t.deleteCookies('cockpit_view');
   await reloadPage();
   // Wait for page to re-render with seeded data
   await Selector('#teams-grid .team-card', { timeout: 5000 })();

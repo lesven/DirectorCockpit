@@ -5,10 +5,6 @@ fixture('US-5: Filtern & Sortieren von Initiativen')
   .page(BASE_URL)
   .beforeEach(async (t) => {
     await setupTest();
-    // Clear cookies to ensure no stale viewstate
-    await t.eval(() => {
-      document.cookie = 'cockpit_view=; max-age=0; path=/';
-    });
   });
 
 test('AC-5.1: Textsuche filtert Initiativen nach Name', async (t) => {
