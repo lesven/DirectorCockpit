@@ -24,8 +24,10 @@ beforeEach(() => {
   // Setup minimal DOM for save indicator
   document.body.innerHTML = '<span id="save-ind"></span>';
 
-  // Reset fetch mock
+  // Reset fetch mock und Console-Ausgaben unterdrücken
   vi.restoreAllMocks();
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'error').mockImplementation(() => {});
 });
 
 describe('setData()', () => {

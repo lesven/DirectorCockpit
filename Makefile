@@ -20,6 +20,7 @@ seed:
 
 test:
 	docker compose exec app php vendor/bin/phpunit
+	npm test
 
 test-unit:
 	docker compose exec app php vendor/bin/phpunit --testsuite Unit
