@@ -92,6 +92,12 @@ function renderInis() {
   const tbody = document.getElementById('ini-body');
   tbody.innerHTML = '';
   updateSortHeaders();
+
+  // teamOptions einmal vorberechnen statt O(initiatives × teams)-mal aufzurufen.
+  // selected-Wert wird per select.value nach DOM-Einfügung gesetzt.
+  const teamOptsBase = '<option value="">—</option>' +
+    data.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+
   getSortedInis().forEach(ini => {
     const s = ini.status || 'grey';
     const ps = ini.projektstatus || 'ok';
@@ -102,7 +108,7 @@ function renderInis() {
       <td>
         <div class="select-wrap">
           <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="initiatives">
-            ${teamOptions(ini.team)}
+            ${teamOptsBase}
           </select>
         </div>
       </td>
@@ -129,6 +135,8 @@ function renderInis() {
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td><button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button></td>
     `;
+    // team-Select auf den richtigen Wert stellen (vermeidet selected-Duplikate im Template)
+    tr.querySelector('[data-field="team"]').value = ini.team ?? '';
     tbody.appendChild(tr);
   });
 

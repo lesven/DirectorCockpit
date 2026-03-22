@@ -4,6 +4,15 @@ import { sortInis, filterState } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 
+/** Liest id, field, source aus data-Attributen eines Elements. */
+function parseDataset(el) {
+  return {
+    id:     +el.dataset.id,
+    field:  el.dataset.field,
+    source: el.dataset.source,
+  };
+}
+
 function updateResetBtn() {
   const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus;
   document.getElementById('filter-reset').classList.toggle('active', !!active);
@@ -63,9 +72,7 @@ export function bindEvents() {
     if (el.tagName === 'SELECT') return;
     if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
 
-    const id = +el.dataset.id;
-    const field = el.dataset.field;
-    const source = el.dataset.source;
+    const { id, field, source } = parseDataset(el);
 
     if (el.classList.contains('ini-notiz')) autoGrow(el);
 
@@ -80,9 +87,7 @@ export function bindEvents() {
     if (el.tagName !== 'SELECT') return;
     if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
 
-    const id = +el.dataset.id;
-    const field = el.dataset.field;
-    const source = el.dataset.source;
+    const { id, field, source } = parseDataset(el);
 
     const item = findById(data[source], id);
     if (!item) return;

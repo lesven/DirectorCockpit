@@ -4,7 +4,7 @@ export let data;
 
 let saveTimer;
 let saveInFlight = false;
-let saveQueued = false;
+let savePending = false;
 
 export async function load() {
   try {
@@ -17,12 +17,10 @@ export async function load() {
   }
 }
 
-export function save() {
-  if (saveInFlight) {
-    saveQueued = true;
-    return;
-  }
-
+function _doSave() {
+  // savePending VOR dem Fetch zuruecksetzen, damit waehrend des Requests
+  // eingehende Aenderungen die naechste Runde ausloesen.
+  savePending = false;
   saveInFlight = true;
   const ind = document.getElementById('save-ind');
 
@@ -44,11 +42,18 @@ export function save() {
     saveTimer = setTimeout(() => ind.classList.remove('show'), CONFIG.ERROR_INDICATOR_MS);
   }).finally(() => {
     saveInFlight = false;
-    if (saveQueued) {
-      saveQueued = false;
-      save();
+    if (savePending) {
+      _doSave();
     }
   });
+}
+
+export function save() {
+  if (saveInFlight) {
+    savePending = true;
+    return;
+  }
+  _doSave();
 }
 
 function debounce(fn, ms) {

@@ -9,6 +9,7 @@ export const CONFIG = {
 export const STATUSES = ['fertig', 'yellow', 'grey', 'ungeplant'];
 export const STATUS_LABELS = { fertig: 'Fertig', yellow: 'In Arbeit', grey: 'Geplant', ungeplant: 'Ungeplant' };
 export const STATUS_ORDER = { fertig: 0, yellow: 1, grey: 2, ungeplant: 3 };
+export const PROJECT_STATUS_ORDER = { ok: 0, kritisch: 1 };
 
 export const ENTITY_DEFS = {
   teams: {
