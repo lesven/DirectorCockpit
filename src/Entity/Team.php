@@ -45,7 +45,7 @@ class Team implements SyncableEntity
         ];
     }
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
         $entity = new self();
         $entity->id = $data['id'];
