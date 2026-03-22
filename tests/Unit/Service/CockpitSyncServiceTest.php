@@ -8,6 +8,8 @@ use App\Entity\NichtVergessen;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
 use App\Service\CockpitSyncService;
+use App\Service\EntitySyncer;
+use App\Service\PayloadValidator;
 use App\Service\SyncException;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,7 +51,12 @@ class CockpitSyncServiceTest extends TestCase
         $this->meta = new Metadata();
         $this->metaRepo->method('getOrCreate')->willReturn($this->meta);
 
-        $this->service = new CockpitSyncService($this->em, $this->metaRepo);
+        $this->service = new CockpitSyncService(
+            $this->em,
+            $this->metaRepo,
+            new PayloadValidator(),
+            new EntitySyncer($this->em),
+        );
     }
 
     private function stubRepositories(array $teams = [], array $inis = [], array $nvs = []): void
