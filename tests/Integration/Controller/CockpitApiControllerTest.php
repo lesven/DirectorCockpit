@@ -116,4 +116,53 @@ class CockpitApiControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(500);
     }
+
+    // -------------------------------------------------------------------------
+    // Phase 2: Neue Integrationstests für bisher ungetestete Pfade
+    // -------------------------------------------------------------------------
+
+    /** Payload enthält nur 'kw', keine Entity-Arrays – muss erfolgreich sein. */
+    public function testSyncWithOnlyKwSucceeds(): void
+    {
+        $client = static::createClient();
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['kw' => '10'])
+        );
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('10', $data['kw']);
+    }
+
+    /** Leerer Body ist kein valides JSON-Objekt → 400. */
+    public function testSyncWithEmptyBodyReturnsBadRequest(): void
+    {
+        $client = static::createClient();
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], '');
+
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    /** Entity-Array enthält ein nicht-Array-Element → 500 (SyncException). */
+    public function testSyncWithNonArrayEntityItemReturnsBadRequest(): void
+    {
+        $client = static::createClient();
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['teams' => ['kein-objekt']])
+        );
+
+        $this->assertResponseStatusCodeSame(500);
+    }
+
+    /** Entity-Item ohne 'id'-Feld → 500 (SyncException). */
+    public function testSyncWithMissingIdFieldReturnsError(): void
+    {
+        $client = static::createClient();
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['teams' => [['name' => 'kein-id']]])
+        );
+
+        $this->assertResponseStatusCodeSame(500);
+    }
 }

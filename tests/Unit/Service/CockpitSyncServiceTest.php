@@ -21,6 +21,7 @@ class CockpitSyncServiceTest extends TestCase
     private MetadataRepository&MockObject $metaRepo;
     private Connection&MockObject $connection;
     private CockpitSyncService $service;
+    private Metadata $meta;
 
     /** @var list<object> */
     private array $persisted = [];
@@ -45,8 +46,8 @@ class CockpitSyncServiceTest extends TestCase
             $this->removed[] = $entity;
         });
 
-        $meta = new Metadata();
-        $this->metaRepo->method('getOrCreate')->willReturn($meta);
+        $this->meta = new Metadata();
+        $this->metaRepo->method('getOrCreate')->willReturn($this->meta);
 
         $this->service = new CockpitSyncService($this->em, $this->metaRepo);
     }
@@ -180,5 +181,68 @@ class CockpitSyncServiceTest extends TestCase
         $this->assertCount(1, $result['inis']);
         $this->assertCount(1, $result['nvs']);
         $this->assertSame(1, $result['teams'][0]['id']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Phase 2: Neue Tests für bisher ungetestete Pfade
+    // -------------------------------------------------------------------------
+
+    /** Nur 'kw' im Payload – fehlende Entity-Arrays werden als leer behandelt. */
+    public function testSyncWithPartialPayloadSucceeds(): void
+    {
+        $this->stubRepositories();
+        $this->connection->expects($this->once())->method('beginTransaction');
+        $this->connection->expects($this->once())->method('commit');
+        $this->em->expects($this->once())->method('flush');
+
+        $this->service->syncAll(['kw' => '42']);
+
+        $this->assertEmpty($this->persisted);
+        $this->assertEmpty($this->removed);
+    }
+
+    /** Validierung schlägt vor beginTransaction fehl → kein rollBack nötig. */
+    public function testValidationFailsBeforeTransactionBegins(): void
+    {
+        $this->connection->expects($this->never())->method('beginTransaction');
+        $this->connection->expects($this->never())->method('rollBack');
+
+        $this->expectException(SyncException::class);
+        $this->service->syncAll(['teams' => 'ungültige-nicht-array-eingabe']);
+    }
+
+    /** kw-Wert wird tatsächlich auf dem Metadata-Objekt gesetzt. */
+    public function testSyncSetsKwOnMetadata(): void
+    {
+        $this->stubRepositories();
+        $this->service->syncAll(['kw' => '52', 'teams' => [], 'inis' => [], 'nvs' => []]);
+
+        $this->assertSame('52', $this->meta->getKw());
+    }
+
+    /**
+     * Dokumentiert das aktuelle Verhalten bei doppelten IDs im Eingangs-Payload:
+     * Da $byId nur existierende DB-Entities enthält, werden beide als neu behandelt
+     * und zweimal gepersistet – ein echter DB-Flush würde einen PK-Constraint-Fehler liefern.
+     */
+    public function testSyncWithDuplicateIdsPersistedTwice(): void
+    {
+        $this->stubRepositories();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [
+                ['id' => 1, 'name' => 'Erster'],
+                ['id' => 1, 'name' => 'Duplikat'],
+            ],
+            'inis' => [],
+            'nvs' => [],
+        ];
+
+        $this->service->syncAll($payload);
+
+        // Beide Einträge werden gepersistet, weil biId aus leerer DB-Liste gebaut wird.
+        // Dieses Verhalten ist ein bekannter Bug (PK-Verletzung beim Flush).
+        $this->assertCount(2, $this->persisted);
     }
 }
