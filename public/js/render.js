@@ -32,7 +32,7 @@ function renderKW() {
 function populateTeamFilter() {
   const sel = document.getElementById('filter-team');
   if (!sel) return;
-  const currentVal = sel.value;
+  const currentVal = sel.value || filterState.team;
   while (sel.options.length > 1) sel.remove(1);
   data.teams.forEach(t => {
     const opt = document.createElement('option');
