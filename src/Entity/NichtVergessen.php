@@ -7,22 +7,15 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NichtVergessenRepository::class)]
 #[ORM\Table(name: 'nicht_vergessen')]
-class NichtVergessen implements SyncableEntity
+final class NichtVergessen implements SyncableEntity
 {
-    #[ORM\Id]
-    #[ORM\Column(type: 'bigint')]
-    private int $id;
+    use HasIdTrait;
 
     #[ORM\Column(length: 255)]
     private string $title = '';
 
     #[ORM\Column(type: 'text')]
     private string $body = '';
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
 
     public function toArray(): array
     {

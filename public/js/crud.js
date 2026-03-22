@@ -32,11 +32,11 @@ export function removeEntity(type, id) {
 }
 
 export function cycleStatus(id, isTeam) {
-  const arr = isTeam ? data.teams : data.inis;
+  const arr = isTeam ? data.teams : data.initiatives;
   const item = findById(arr, id);
   if (!item) return;
   const idx = STATUSES.indexOf(item.status);
   item.status = STATUSES[(idx + 1) % STATUSES.length];
   save();
-  renderEntity(isTeam ? 'teams' : 'inis');
+  renderEntity(isTeam ? 'teams' : 'initiatives');
 }

@@ -8,19 +8,28 @@ use App\Entity\SyncableEntity;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
+/**
+ * Orchestriert den Lade- und Sync-Vorgang für alle Cockpit-Daten.
+ * Validierung → EntitySyncer → Metadata-Update.
+ */
 class CockpitSyncService
 {
     /** @var array<string, class-string<SyncableEntity>> */
     private const ENTITY_REGISTRY = [
-        'teams' => Team::class,
-        'inis' => Initiative::class,
-        'nvs' => NichtVergessen::class,
+        'teams'          => Team::class,
+        'initiatives'    => Initiative::class,
+        'nicht_vergessen' => NichtVergessen::class,
     ];
 
     public function __construct(
         private EntityManagerInterface $em,
         private MetadataRepository $metaRepo,
+        private PayloadValidator $validator,
+        private EntitySyncer $entitySyncer,
+        private LoggerInterface $logger = new NullLogger(),
     ) {}
 
     public function loadAll(): array
@@ -38,13 +47,13 @@ class CockpitSyncService
 
     public function syncAll(array $payload): void
     {
-        $this->validatePayload($payload);
+        $this->validator->validate($payload, array_keys(self::ENTITY_REGISTRY));
 
         $this->em->getConnection()->beginTransaction();
         try {
             foreach (self::ENTITY_REGISTRY as $key => $class) {
                 $existing = $this->em->getRepository($class)->findAll();
-                $this->syncEntities($existing, $payload[$key] ?? [], $class);
+                $this->entitySyncer->sync($existing, $payload[$key] ?? [], $class);
             }
 
             $meta = $this->metaRepo->getOrCreate();
@@ -54,55 +63,11 @@ class CockpitSyncService
             $this->em->getConnection()->commit();
         } catch (\Throwable $e) {
             $this->em->getConnection()->rollBack();
+            $this->logger->error('Sync fehlgeschlagen', [
+                'exception' => $e->getMessage(),
+                'trace'     => $e->getTraceAsString(),
+            ]);
             throw new SyncException('Sync fehlgeschlagen: ' . $e->getMessage(), 0, $e);
-        }
-    }
-
-    private function validatePayload(array $payload): void
-    {
-        foreach (self::ENTITY_REGISTRY as $key => $class) {
-            if (!isset($payload[$key])) {
-                continue;
-            }
-            if (!is_array($payload[$key])) {
-                throw new SyncException("'{$key}' muss ein Array sein");
-            }
-            foreach ($payload[$key] as $i => $item) {
-                if (!is_array($item) || !isset($item['id'])) {
-                    throw new SyncException("'{$key}[{$i}]' muss ein Objekt mit 'id' sein");
-                }
-            }
-        }
-    }
-
-    /**
-     * @param SyncableEntity[] $existing
-     * @param array<array<string, mixed>> $incoming
-     * @param class-string<SyncableEntity> $entityClass
-     */
-    private function syncEntities(array $existing, array $incoming, string $entityClass): void
-    {
-        $byId = [];
-        foreach ($existing as $entity) {
-            $byId[$entity->getId()] = $entity;
-        }
-
-        $incomingIds = [];
-        foreach ($incoming as $item) {
-            $id = $item['id'];
-            $incomingIds[$id] = true;
-
-            if (isset($byId[$id])) {
-                $byId[$id]->updateFromArray($item);
-            } else {
-                $this->em->persist($entityClass::fromArray($item));
-            }
-        }
-
-        foreach ($byId as $id => $entity) {
-            if (!isset($incomingIds[$id])) {
-                $this->em->remove($entity);
-            }
         }
     }
 }

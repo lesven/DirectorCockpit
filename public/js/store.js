@@ -1,10 +1,10 @@
-import { CONFIG, DEFAULT_DATA } from './config.js';
+import { CONFIG } from './config.js';
 
 export let data;
 
 let saveTimer;
 let saveInFlight = false;
-let saveQueued = false;
+let savePending = false;
 
 export async function load() {
   try {
@@ -12,17 +12,20 @@ export async function load() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     data = await res.json();
   } catch (e) {
-    console.warn('Backend nicht erreichbar, verwende Standarddaten:', e);
-    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    console.warn('Backend nicht erreichbar, lade Standarddaten:', e);
+    try {
+      const fallback = await fetch('/default_data.json');
+      data = await fallback.json();
+    } catch {
+      data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [] };
+    }
   }
 }
 
-export function save() {
-  if (saveInFlight) {
-    saveQueued = true;
-    return;
-  }
-
+function _doSave() {
+  // savePending VOR dem Fetch zuruecksetzen, damit waehrend des Requests
+  // eingehende Aenderungen die naechste Runde ausloesen.
+  savePending = false;
   saveInFlight = true;
   const ind = document.getElementById('save-ind');
 
@@ -44,11 +47,18 @@ export function save() {
     saveTimer = setTimeout(() => ind.classList.remove('show'), CONFIG.ERROR_INDICATOR_MS);
   }).finally(() => {
     saveInFlight = false;
-    if (saveQueued) {
-      saveQueued = false;
-      save();
+    if (savePending) {
+      _doSave();
     }
   });
+}
+
+export function save() {
+  if (saveInFlight) {
+    savePending = true;
+    return;
+  }
+  _doSave();
 }
 
 function debounce(fn, ms) {

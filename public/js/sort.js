@@ -1,4 +1,4 @@
-import { STATUS_ORDER } from './config.js';
+import { STATUS_ORDER, PROJECT_STATUS_ORDER } from './config.js';
 import { data } from './store.js';
 import { findById } from './crud.js';
 
@@ -16,7 +16,7 @@ export function sortInis(field) {
 }
 
 export function getSortedInis() {
-  const filtered = data.inis.filter(ini => {
+  const filtered = data.initiatives.filter(ini => {
     if (filterState.name && !ini.name.toLowerCase().includes(filterState.name.toLowerCase())) return false;
     if (filterState.team && String(ini.team) !== filterState.team) return false;
     if (filterState.status && ini.status !== filterState.status) return false;
@@ -33,9 +33,8 @@ export function getSortedInis() {
       va = ta ? ta.name.toLowerCase() : 'zzz';
       vb = tb ? tb.name.toLowerCase() : 'zzz';
     } else if (field === 'projektstatus') {
-      const PS_ORDER = { ok: 0, kritisch: 1 };
-      va = PS_ORDER[a.projektstatus] ?? 9;
-      vb = PS_ORDER[b.projektstatus] ?? 9;
+      va = PROJECT_STATUS_ORDER[a.projektstatus] ?? 9;
+      vb = PROJECT_STATUS_ORDER[b.projektstatus] ?? 9;
     } else if (field === 'status') {
       va = STATUS_ORDER[a.status] ?? 9;
       vb = STATUS_ORDER[b.status] ?? 9;

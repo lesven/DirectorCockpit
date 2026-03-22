@@ -92,23 +92,29 @@ function renderInis() {
   const tbody = document.getElementById('ini-body');
   tbody.innerHTML = '';
   updateSortHeaders();
+
+  // teamOptions einmal vorberechnen statt O(initiatives × teams)-mal aufzurufen.
+  // selected-Wert wird per select.value nach DOM-Einfügung gesetzt.
+  const teamOptsBase = '<option value="">—</option>' +
+    data.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+
   getSortedInis().forEach(ini => {
     const s = ini.status || 'grey';
     const ps = ini.projektstatus || 'ok';
     const tr = document.createElement('tr');
     tr.className = 'ini-row';
     tr.innerHTML = `
-      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="inis"></td>
+      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives"></td>
       <td>
         <div class="select-wrap">
-          <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="inis">
-            ${teamOptions(ini.team)}
+          <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="initiatives">
+            ${teamOptsBase}
           </select>
         </div>
       </td>
       <td>
         <div class="status-select-wrap s-${s}">
-          <select class="status-select s-${s}" data-id="${ini.id}" data-field="status" data-source="inis">
+          <select class="status-select s-${s}" data-id="${ini.id}" data-field="status" data-source="initiatives">
             <option value="fertig"${s === 'fertig' ? ' selected' : ''}>Fertig</option>
             <option value="yellow"${s === 'yellow' ? ' selected' : ''}>In Arbeit</option>
             <option value="grey"${s === 'grey' ? ' selected' : ''}>Geplant</option>
@@ -118,17 +124,19 @@ function renderInis() {
       </td>
       <td>
         <div class="status-select-wrap ps-${ps}">
-          <select class="status-select ps-select ps-${ps}" data-id="${ini.id}" data-field="projektstatus" data-source="inis">
+          <select class="status-select ps-select ps-${ps}" data-id="${ini.id}" data-field="projektstatus" data-source="initiatives">
             <option value="ok"${ps === 'ok' ? ' selected' : ''}>Alles gut</option>
             <option value="kritisch"${ps === 'kritisch' ? ' selected' : ''}>Kritisch</option>
           </select>
         </div>
       </td>
-      <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="inis"></td>
-      <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="inis"></td>
-      <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="inis" rows="1">${esc(ini.notiz)}</textarea></td>
-      <td><button class="del-row-btn" data-action="removeEntity" data-type="inis" data-id="${ini.id}" title="Löschen">✕</button></td>
+      <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives"></td>
+      <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
+      <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
+      <td><button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button></td>
     `;
+    // team-Select auf den richtigen Wert stellen (vermeidet selected-Duplikate im Template)
+    tr.querySelector('[data-field="team"]').value = ini.team ?? '';
     tbody.appendChild(tr);
   });
 
@@ -138,15 +146,15 @@ function renderInis() {
 function renderNVs() {
   const grid = document.getElementById('nv-grid');
   grid.innerHTML = '';
-  data.nvs.forEach(nv => {
+  data.nicht_vergessen.forEach(nv => {
     const card = document.createElement('div');
     card.className = 'nv-card';
     card.innerHTML = `
       <div class="card-actions">
-        <button class="icon-btn" data-action="removeEntity" data-type="nvs" data-id="${nv.id}" title="Löschen">✕</button>
+        <button class="icon-btn" data-action="removeEntity" data-type="nicht_vergessen" data-id="${nv.id}" title="L\u00f6schen">✕</button>
       </div>
-      <input class="nv-title" value="${esc(nv.title)}" placeholder="Thema" data-id="${nv.id}" data-field="title" data-source="nvs">
-      <textarea class="nv-body" rows="3" placeholder="Warum wichtig / nächste Aktion..." data-id="${nv.id}" data-field="body" data-source="nvs">${esc(nv.body)}</textarea>
+      <input class="nv-title" value="${esc(nv.title)}" placeholder="Thema" data-id="${nv.id}" data-field="title" data-source="nicht_vergessen">
+      <textarea class="nv-body" rows="3" placeholder="Warum wichtig / n\u00e4chste Aktion..." data-id="${nv.id}" data-field="body" data-source="nicht_vergessen">${esc(nv.body)}</textarea>
     `;
     grid.appendChild(card);
   });
@@ -154,8 +162,8 @@ function renderNVs() {
 
 const RENDER_MAP = {
   teams: renderTeams,
-  inis: renderInis,
-  nvs: renderNVs,
+  initiatives: renderInis,
+  nicht_vergessen: renderNVs,
 };
 
 export function renderEntity(type) {
