@@ -884,3 +884,15 @@ select.detail-input option {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/* ── Team Stats Badge ───────────────────────────────────── */
+.team-stats-badge {
+  margin-top: 10px;
+  padding: 4px 0;
+  font-size: 0.85rem;
+  color: var(--text2);
+  font-family: var(--sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

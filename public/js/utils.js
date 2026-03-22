@@ -24,3 +24,27 @@ export function debounce(fn, ms) {
     t = setTimeout(() => fn(...args), ms);
   };
 }
+
+/**
+ * Berechne Team-Statistiken: Gesamtzahl Initiativen, kritisch und in Arbeit
+ * @param {number} teamId - Team ID
+ * @param {Array} initiatives - Array von Initiative-Objekten
+ * @returns {Object} {total, critical, inProgress}
+ */
+export function calculateTeamStats(teamId, initiatives) {
+  const teamInis = initiatives.filter((ini) => ini.team === teamId);
+  const total = teamInis.length;
+  const critical = teamInis.filter((ini) => ini.projektstatus === 'kritisch').length;
+  const inProgress = teamInis.filter((ini) => ini.status === 'yellow').length;
+  return { total, critical, inProgress };
+}
+
+/**
+ * Formatiere Team-Statistiken als Badge-String
+ * @param {Object} stats - Objekt mit {total, critical, inProgress}
+ * @returns {string} Formatierte Statistics wie "📊 5 • ⚠️ 2 • 🚀 3"
+ */
+export function formatTeamStats(stats) {
+  const { total, critical, inProgress } = stats;
+  return `📊 ${total} • ⚠️ ${critical} • 🚀 ${inProgress}`;
+}

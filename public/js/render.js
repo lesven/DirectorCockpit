@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
-import { esc, calcWsjf } from './utils.js';
+import { esc, calcWsjf, calculateTeamStats, formatTeamStats } from './utils.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
@@ -37,6 +37,8 @@ function populateTeamFilter() {
 function renderTeamCard(t) {
   const card = document.createElement('div');
   card.className = 'team-card';
+  const stats = calculateTeamStats(t.id, data.initiatives);
+  const statsStr = formatTeamStats(stats);
   card.innerHTML = `
       <div class="team-card-top">
         <div class="status-dot ${statusClass(t.status)}" title="Status wechseln: ${STATUS_LABELS[t.status] || t.status}" data-action="cycleStatus" data-id="${t.id}" data-team="true"></div>
@@ -53,6 +55,7 @@ function renderTeamCard(t) {
         <div class="field-label">Mein nächster Schritt</div>
         <input class="field-input" value="${esc(t.schritt)}" placeholder="Was muss ich tun?" data-id="${t.id}" data-field="schritt" data-source="teams">
       </div>
+      <div class="team-stats-badge">${statsStr}</div>
     `;
   return card;
 }

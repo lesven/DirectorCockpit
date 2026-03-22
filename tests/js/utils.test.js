@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { esc, calcWsjf, findById, debounce } from '../../public/js/utils.js';
+import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats } from '../../public/js/utils.js';
 
 describe('esc()', () => {
   it('escapes &, <, >, "', () => {
@@ -154,5 +154,73 @@ describe('debounce()', () => {
 
     expect(fn).toHaveBeenCalledOnce();
     expect(fn).toHaveBeenCalledWith('second');
+  });
+});
+
+describe('calculateTeamStats()', () => {
+  const initiatives = [
+    { id: 1, team: 1, status: 'yellow', projektstatus: 'ok' },
+    { id: 2, team: 1, status: 'fertig', projektstatus: 'kritisch' },
+    { id: 3, team: 1, status: 'yellow', projektstatus: 'kritisch' },
+    { id: 4, team: 2, status: 'yellow', projektstatus: 'ok' },
+    { id: 5, team: 2, status: 'grey', projektstatus: 'ok' },
+  ];
+
+  it('counts total initiatives for a team', () => {
+    const stats = calculateTeamStats(1, initiatives);
+    expect(stats.total).toBe(3);
+  });
+
+  it('counts critical initiatives', () => {
+    const stats = calculateTeamStats(1, initiatives);
+    expect(stats.critical).toBe(2);
+  });
+
+  it('counts in-progress (yellow) initiatives', () => {
+    const stats = calculateTeamStats(1, initiatives);
+    expect(stats.inProgress).toBe(2);
+  });
+
+  it('returns zeros for team with no initiatives', () => {
+    const stats = calculateTeamStats(999, initiatives);
+    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0 });
+  });
+
+  it('handles different team with correct counts', () => {
+    const stats = calculateTeamStats(2, initiatives);
+    expect(stats.total).toBe(2);
+    expect(stats.critical).toBe(0);
+    expect(stats.inProgress).toBe(1);
+  });
+
+  it('returns zeros on empty initiatives array', () => {
+    const stats = calculateTeamStats(1, []);
+    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0 });
+  });
+});
+
+describe('formatTeamStats()', () => {
+  it('formats stats with icons', () => {
+    const stats = { total: 5, critical: 2, inProgress: 3 };
+    const result = formatTeamStats(stats);
+    expect(result).toBe('📊 5 • ⚠️ 2 • 🚀 3');
+  });
+
+  it('formats zeros correctly', () => {
+    const stats = { total: 0, critical: 0, inProgress: 0 };
+    const result = formatTeamStats(stats);
+    expect(result).toBe('📊 0 • ⚠️ 0 • 🚀 0');
+  });
+
+  it('formats large numbers', () => {
+    const stats = { total: 100, critical: 45, inProgress: 67 };
+    const result = formatTeamStats(stats);
+    expect(result).toBe('📊 100 • ⚠️ 45 • 🚀 67');
+  });
+
+  it('maintains icon order: total, critical, inProgress', () => {
+    const stats = { total: 1, critical: 2, inProgress: 3 };
+    const result = formatTeamStats(stats);
+    expect(result).toMatch(/📊.*⚠️.*🚀/);
   });
 });
