@@ -355,6 +355,66 @@ main {
 .ini-table th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
 .ini-table th.sort-desc::after { content: ' ↓'; color: var(--accent); }
 
+/* ── Initiatives pagination ─────────────────────────────── */
+.ini-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px 4px;
+  min-height: 36px;
+}
+
+.pagination-info {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.pagination-btn {
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text1);
+}
+
+.pagination-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: default;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-dots {
+  font-size: 13px;
+  color: var(--text3);
+  padding: 0 3px;
+  user-select: none;
+}
+
 .ini-row { transition: background 0.1s; }
 .ini-row:hover { background: var(--surface); }
 

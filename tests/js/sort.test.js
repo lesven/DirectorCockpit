@@ -6,7 +6,7 @@ const mockData = vi.hoisted(() => ({ teams: [], initiatives: [] }));
 vi.mock('../../public/js/store.js', () => ({ data: mockData }));
 vi.mock('../../public/js/cookie.js', () => ({ saveViewState: vi.fn() }));
 
-import { getSortedInis, sortState, filterState, applyViewState, sortInis } from '../../public/js/sort.js';
+import { getSortedInis, sortState, filterState, applyViewState, sortInis, getPaginatedInis, pageState, resetPage } from '../../public/js/sort.js';
 
 function resetState() {
   filterState.name = '';
@@ -15,6 +15,8 @@ function resetState() {
   filterState.projektstatus = '';
   sortState.field = null;
   sortState.dir = 'asc';
+  pageState.current = 1;
+  pageState.pageSize = 20;
 }
 
 function setInis(inis) {
@@ -236,5 +238,86 @@ describe('sortInis()', () => {
     sortInis('status'); // switch field → asc
     expect(sortState.field).toBe('status');
     expect(sortState.dir).toBe('asc');
+  });
+});
+
+// ── getPaginatedInis ──────────────────────────────────────
+
+function makeInis(count) {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    name: `Ini ${i + 1}`,
+    team: null,
+    status: 'grey',
+    projektstatus: 'ok',
+    frist: '',
+    businessValue: null,
+    timeCriticality: null,
+    riskReduction: null,
+    jobSize: null,
+  }));
+}
+
+describe('getPaginatedInis()', () => {
+  it('returns all items when count <= pageSize', () => {
+    setInis(makeInis(5));
+    const { items, total, page, totalPages } = getPaginatedInis();
+    expect(items).toHaveLength(5);
+    expect(total).toBe(5);
+    expect(page).toBe(1);
+    expect(totalPages).toBe(1);
+  });
+
+  it('returns first page of 20 when there are 25 items', () => {
+    setInis(makeInis(25));
+    const { items, total, page, totalPages } = getPaginatedInis();
+    expect(items).toHaveLength(20);
+    expect(total).toBe(25);
+    expect(page).toBe(1);
+    expect(totalPages).toBe(2);
+  });
+
+  it('returns second page with remaining items', () => {
+    setInis(makeInis(25));
+    pageState.current = 2;
+    const { items, total, page } = getPaginatedInis();
+    expect(items).toHaveLength(5);
+    expect(total).toBe(25);
+    expect(page).toBe(2);
+  });
+
+  it('clamps current page when items are deleted', () => {
+    setInis(makeInis(25));
+    pageState.current = 2; // page 2 exists
+    setInis(makeInis(10)); // now only 1 page
+    const { page, totalPages } = getPaginatedInis();
+    expect(totalPages).toBe(1);
+    expect(page).toBe(1);
+    expect(pageState.current).toBe(1);
+  });
+
+  it('respects filter when paginating', () => {
+    setInis(makeInis(25));
+    filterState.name = 'Ini 2'; // matches only "Ini 2", "Ini 20", "Ini 21"…"Ini 25" — actually just "Ini 2" and "Ini 2x"
+    // Let's use a more deterministic filter
+    filterState.name = 'Ini 1'; // matches Ini 1, Ini 10..19 = 11 items
+    const { total, totalPages } = getPaginatedInis();
+    expect(total).toBeLessThan(25);
+    expect(totalPages).toBe(1); // less than 20
+  });
+
+  it('returns exactly 20 items on page with 40 total', () => {
+    setInis(makeInis(40));
+    const { items, totalPages } = getPaginatedInis();
+    expect(items).toHaveLength(20);
+    expect(totalPages).toBe(2);
+  });
+});
+
+describe('resetPage()', () => {
+  it('resets current page to 1', () => {
+    pageState.current = 5;
+    resetPage();
+    expect(pageState.current).toBe(1);
   });
 });

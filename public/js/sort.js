@@ -7,6 +7,12 @@ export const sortState = { field: null, dir: 'asc' };
 
 export const filterState = { name: '', team: '', status: '', projektstatus: '' };
 
+export const pageState = { current: 1, pageSize: 20 };
+
+export function resetPage() {
+  pageState.current = 1;
+}
+
 const VALID_SORT_FIELDS = ['name', 'team', 'status', 'projektstatus', 'frist', 'wsjf'];
 
 export function applyViewState(saved) {
@@ -74,4 +80,17 @@ export function getSortedInis() {
     if (va > vb) return dir === 'asc' ? 1 : -1;
     return 0;
   });
+}
+
+export function getPaginatedInis() {
+  const all = getSortedInis();
+  const total = all.length;
+  const { pageSize } = pageState;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // Clamp current page in case items were deleted
+  if (pageState.current > totalPages) pageState.current = totalPages;
+  const page = pageState.current;
+  const start = (page - 1) * pageSize;
+  const items = all.slice(start, start + pageSize);
+  return { items, total, page, pageSize, totalPages };
 }
