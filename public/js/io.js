@@ -45,6 +45,10 @@ function migrateData(parsed) {
     schritt:       i.schritt        ?? '',
     frist:         i.frist          ?? '',
     notiz:         i.notiz          ?? '',
+    businessValue:  i.businessValue  ?? null,
+    timeCriticality: i.timeCriticality ?? null,
+    riskReduction:  i.riskReduction  ?? null,
+    jobSize:        i.jobSize        ?? null,
   }));
 
   parsed.nicht_vergessen = parsed.nicht_vergessen.map(n => ({

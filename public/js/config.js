@@ -11,6 +11,8 @@ export const STATUS_LABELS = { fertig: 'Fertig', yellow: 'In Arbeit', grey: 'Gep
 export const STATUS_ORDER = { fertig: 0, yellow: 1, grey: 2, ungeplant: 3 };
 export const PROJECT_STATUS_ORDER = { ok: 0, kritisch: 1 };
 
+export const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
+
 export const ENTITY_DEFS = {
   teams: {
     labelField: 'name',
@@ -21,7 +23,7 @@ export const ENTITY_DEFS = {
   initiatives: {
     labelField: 'name',
     fallback: 'diese Initiative',
-    defaults: { name: '', team: null, status: 'grey', projektstatus: 'ok', schritt: '', frist: '', notiz: '' },
+    defaults: { name: '', team: null, status: 'grey', projektstatus: 'ok', schritt: '', frist: '', notiz: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null },
     focusSelector: '.ini-name',
   },
   nicht_vergessen: {

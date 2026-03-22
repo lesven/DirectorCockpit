@@ -11,7 +11,7 @@ export function sortInis(field) {
     sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
   } else {
     sortState.field = field;
-    sortState.dir = 'asc';
+    sortState.dir = field === 'wsjf' ? 'desc' : 'asc';
   }
 }
 
@@ -41,6 +41,16 @@ export function getSortedInis() {
     } else if (field === 'frist') {
       va = a.frist || 'zzz';
       vb = b.frist || 'zzz';
+    } else if (field === 'wsjf') {
+      const calcW = i => {
+        const { businessValue, timeCriticality, riskReduction, jobSize } = i;
+        if (businessValue == null || timeCriticality == null || riskReduction == null || jobSize == null || jobSize <= 0) return null;
+        return (businessValue + timeCriticality + riskReduction) / jobSize;
+      };
+      const wa = calcW(a);
+      const wb = calcW(b);
+      va = wa != null ? wa : (dir === 'asc' ? Infinity : -Infinity);
+      vb = wb != null ? wb : (dir === 'asc' ? Infinity : -Infinity);
     } else {
       va = (a[field] || '').toLowerCase();
       vb = (b[field] || '').toLowerCase();

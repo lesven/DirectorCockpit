@@ -34,6 +34,18 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(type: 'text')]
     private string $notiz = '';
 
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $businessValue = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $timeCriticality = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $riskReduction = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $jobSize = null;
+
     public function toArray(): array
     {
         return [
@@ -45,6 +57,10 @@ final class Initiative implements SyncableEntity
             'schritt' => $this->schritt,
             'frist' => $this->frist,
             'notiz' => $this->notiz,
+            'businessValue' => $this->businessValue,
+            'timeCriticality' => $this->timeCriticality,
+            'riskReduction' => $this->riskReduction,
+            'jobSize' => $this->jobSize,
         ];
     }
 
@@ -59,6 +75,10 @@ final class Initiative implements SyncableEntity
         $entity->schritt = $data['schritt'] ?? '';
         $entity->frist = $data['frist'] ?? '';
         $entity->notiz = $data['notiz'] ?? '';
+        $entity->businessValue = $data['businessValue'] ?? null;
+        $entity->timeCriticality = $data['timeCriticality'] ?? null;
+        $entity->riskReduction = $data['riskReduction'] ?? null;
+        $entity->jobSize = $data['jobSize'] ?? null;
 
         return $entity;
     }
@@ -76,5 +96,17 @@ final class Initiative implements SyncableEntity
         $this->schritt = $data['schritt'] ?? $this->schritt;
         $this->frist = $data['frist'] ?? $this->frist;
         $this->notiz = $data['notiz'] ?? $this->notiz;
+        if (array_key_exists('businessValue', $data)) {
+            $this->businessValue = $data['businessValue'];
+        }
+        if (array_key_exists('timeCriticality', $data)) {
+            $this->timeCriticality = $data['timeCriticality'];
+        }
+        if (array_key_exists('riskReduction', $data)) {
+            $this->riskReduction = $data['riskReduction'];
+        }
+        if (array_key_exists('jobSize', $data)) {
+            $this->jobSize = $data['jobSize'];
+        }
     }
 }

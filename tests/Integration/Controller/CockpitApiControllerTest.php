@@ -30,7 +30,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 100, 'name' => 'Test-Team', 'sub' => 'Sub', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
             ],
             'initiatives' => [
-                ['id' => 200, 'name' => 'Test-Ini', 'team' => 100, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Step', 'frist' => '', 'notiz' => ''],
+                ['id' => 200, 'name' => 'Test-Ini', 'team' => 100, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Step', 'frist' => '', 'notiz' => '', 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => 5],
             ],
             'nicht_vergessen' => [
                 ['id' => 300, 'title' => 'Test-NV', 'body' => 'Body'],
@@ -48,6 +48,10 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertSame('Test-Team', $data['teams'][0]['name']);
         $this->assertCount(1, $data['initiatives']);
         $this->assertSame('Test-Ini', $data['initiatives'][0]['name']);
+        $this->assertSame(8, $data['initiatives'][0]['businessValue']);
+        $this->assertSame(5, $data['initiatives'][0]['timeCriticality']);
+        $this->assertSame(3, $data['initiatives'][0]['riskReduction']);
+        $this->assertSame(5, $data['initiatives'][0]['jobSize']);
         $this->assertCount(1, $data['nicht_vergessen']);
         $this->assertSame('Test-NV', $data['nicht_vergessen'][0]['title']);
     }
@@ -164,5 +168,31 @@ class CockpitApiControllerTest extends WebTestCase
         );
 
         $this->assertResponseStatusCodeSame(500);
+    }
+
+    /** WSJF-Felder mit null-Werten werden korrekt persistiert. */
+    public function testSyncInitiativeWithNullWsjfFields(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 500, 'name' => 'Ohne WSJF', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $ini = $data['initiatives'][0];
+
+        $this->assertNull($ini['businessValue']);
+        $this->assertNull($ini['timeCriticality']);
+        $this->assertNull($ini['riskReduction']);
+        $this->assertNull($ini['jobSize']);
     }
 }

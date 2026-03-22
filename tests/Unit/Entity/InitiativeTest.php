@@ -18,6 +18,10 @@ class InitiativeTest extends TestCase
             'schritt' => 'Review durchführen',
             'frist' => '15.04',
             'notiz' => 'Wichtig!',
+            'businessValue' => 8,
+            'timeCriticality' => 5,
+            'riskReduction' => 3,
+            'jobSize' => 5,
         ];
     }
 
@@ -34,6 +38,10 @@ class InitiativeTest extends TestCase
         $this->assertSame('Review durchführen', $arr['schritt']);
         $this->assertSame('15.04', $arr['frist']);
         $this->assertSame('Wichtig!', $arr['notiz']);
+        $this->assertSame(8, $arr['businessValue']);
+        $this->assertSame(5, $arr['timeCriticality']);
+        $this->assertSame(3, $arr['riskReduction']);
+        $this->assertSame(5, $arr['jobSize']);
     }
 
     public function testFromArrayWithDefaults(): void
@@ -49,6 +57,10 @@ class InitiativeTest extends TestCase
         $this->assertSame('', $arr['schritt']);
         $this->assertSame('', $arr['frist']);
         $this->assertSame('', $arr['notiz']);
+        $this->assertNull($arr['businessValue']);
+        $this->assertNull($arr['timeCriticality']);
+        $this->assertNull($arr['riskReduction']);
+        $this->assertNull($arr['jobSize']);
     }
 
     public function testFromArrayWithInvalidStatusFallsBackToGrey(): void
@@ -74,6 +86,10 @@ class InitiativeTest extends TestCase
             'schritt' => 'Neuer Schritt',
             'frist' => '01.05',
             'notiz' => 'Neue Notiz',
+            'businessValue' => 13,
+            'timeCriticality' => 8,
+            'riskReduction' => 5,
+            'jobSize' => 3,
         ]);
 
         $arr = $ini->toArray();
@@ -84,6 +100,10 @@ class InitiativeTest extends TestCase
         $this->assertSame('Neuer Schritt', $arr['schritt']);
         $this->assertSame('01.05', $arr['frist']);
         $this->assertSame('Neue Notiz', $arr['notiz']);
+        $this->assertSame(13, $arr['businessValue']);
+        $this->assertSame(8, $arr['timeCriticality']);
+        $this->assertSame(5, $arr['riskReduction']);
+        $this->assertSame(3, $arr['jobSize']);
     }
 
     public function testUpdateFromArrayKeepsExistingValuesWhenKeysAbsent(): void
@@ -96,6 +116,10 @@ class InitiativeTest extends TestCase
         $this->assertSame(7, $arr['team']);
         $this->assertSame('yellow', $arr['status']);
         $this->assertSame('kritisch', $arr['projektstatus']);
+        $this->assertSame(8, $arr['businessValue']);
+        $this->assertSame(5, $arr['timeCriticality']);
+        $this->assertSame(3, $arr['riskReduction']);
+        $this->assertSame(5, $arr['jobSize']);
     }
 
     public function testUpdateFromArrayWithInvalidStatusKeepsCurrent(): void
@@ -126,5 +150,33 @@ class InitiativeTest extends TestCase
     {
         $ini = Initiative::fromArray(['id' => 99]);
         $this->assertSame(99, $ini->getId());
+    }
+
+    public function testUpdateFromArrayCanSetWsjfFieldsToNull(): void
+    {
+        $ini = Initiative::fromArray($this->fullData());
+        $ini->updateFromArray([
+            'businessValue' => null,
+            'timeCriticality' => null,
+            'riskReduction' => null,
+            'jobSize' => null,
+        ]);
+
+        $arr = $ini->toArray();
+        $this->assertNull($arr['businessValue']);
+        $this->assertNull($arr['timeCriticality']);
+        $this->assertNull($arr['riskReduction']);
+        $this->assertNull($arr['jobSize']);
+    }
+
+    public function testFromArrayWithoutWsjfFieldsDefaultsToNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'name' => 'Test']);
+        $arr = $ini->toArray();
+
+        $this->assertNull($arr['businessValue']);
+        $this->assertNull($arr['timeCriticality']);
+        $this->assertNull($arr['riskReduction']);
+        $this->assertNull($arr['jobSize']);
     }
 }

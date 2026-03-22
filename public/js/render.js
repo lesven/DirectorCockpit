@@ -11,6 +11,12 @@ function statusClass(s) {
   return 'status-' + (s || 'grey');
 }
 
+function calcWsjf(ini) {
+  const { businessValue, timeCriticality, riskReduction, jobSize } = ini;
+  if (businessValue == null || timeCriticality == null || riskReduction == null || jobSize == null || jobSize <= 0) return null;
+  return Math.round(((businessValue + timeCriticality + riskReduction) / jobSize) * 10) / 10;
+}
+
 function autoGrow(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
@@ -130,6 +136,7 @@ function renderInis() {
           </select>
         </div>
       </td>
+      <td><span class="wsjf-value${calcWsjf(ini) == null ? ' wsjf-empty' : ''}">${calcWsjf(ini) != null ? calcWsjf(ini) : '\u2013'}</span></td>
       <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives"></td>
       <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>

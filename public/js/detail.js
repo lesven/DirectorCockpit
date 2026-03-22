@@ -1,6 +1,7 @@
 import { data, dSave } from './store.js';
 import { findById } from './crud.js';
 import { renderEntity, autoGrow } from './render.js';
+import { WSJF_SCALE } from './config.js';
 
 const STATUS_OPTIONS = [
   { value: 'fertig',    label: 'Fertig' },
@@ -16,6 +17,14 @@ const PROJEKTSTATUS_OPTIONS = [
 
 function esc(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function wsjfSelectHtml(selected) {
+  const none = `<option value=""${selected == null ? ' selected' : ''}>–</option>`;
+  const opts = WSJF_SCALE.map(v =>
+    `<option value="${v}"${v === selected ? ' selected' : ''}>${v}</option>`
+  ).join('');
+  return none + opts;
 }
 
 function selectHtml(options, selected) {
@@ -87,6 +96,46 @@ export function openDetail(id) {
       <label class="detail-label" for="d-notiz">Notiz</label>
       <textarea class="detail-input" id="d-notiz" data-field="notiz" rows="4" placeholder="Weitere Hinweise…">${esc(ini.notiz)}</textarea>
     </div>
+    <div class="detail-divider"></div>
+    <div class="detail-field">
+      <span class="detail-section-title">WSJF-Bewertung</span>
+    </div>
+    <div class="detail-row">
+      <div class="detail-field">
+        <label class="detail-label" for="d-businessValue">Business Value</label>
+        <div class="detail-select-wrap">
+          <select class="detail-input" id="d-businessValue" data-field="businessValue">
+            ${wsjfSelectHtml(ini.businessValue)}
+          </select>
+        </div>
+      </div>
+      <div class="detail-field">
+        <label class="detail-label" for="d-timeCriticality">Time Criticality</label>
+        <div class="detail-select-wrap">
+          <select class="detail-input" id="d-timeCriticality" data-field="timeCriticality">
+            ${wsjfSelectHtml(ini.timeCriticality)}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="detail-row">
+      <div class="detail-field">
+        <label class="detail-label" for="d-riskReduction">Risk Reduction / Opportunity</label>
+        <div class="detail-select-wrap">
+          <select class="detail-input" id="d-riskReduction" data-field="riskReduction">
+            ${wsjfSelectHtml(ini.riskReduction)}
+          </select>
+        </div>
+      </div>
+      <div class="detail-field">
+        <label class="detail-label" for="d-jobSize">Job Size</label>
+        <div class="detail-select-wrap">
+          <select class="detail-input" id="d-jobSize" data-field="jobSize">
+            ${wsjfSelectHtml(ini.jobSize)}
+          </select>
+        </div>
+      </div>
+    </div>
   `;
 
   backdrop().hidden = false;
@@ -107,9 +156,13 @@ function handleDetailInput(e) {
   const ini = findById(data.initiatives, currentId);
   if (!ini) return;
 
+  const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
+
   const field = el.dataset.field;
   if (field === 'team') {
     ini.team = el.value ? +el.value : null;
+  } else if (WSJF_FIELDS.includes(field)) {
+    ini[field] = el.value ? parseInt(el.value, 10) : null;
   } else {
     ini[field] = el.value;
   }
