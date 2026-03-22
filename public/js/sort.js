@@ -1,10 +1,29 @@
 import { STATUS_ORDER, PROJECT_STATUS_ORDER } from './config.js';
 import { data } from './store.js';
 import { findById } from './crud.js';
+import { saveViewState } from './cookie.js';
 
 export const sortState = { field: null, dir: 'asc' };
 
 export const filterState = { name: '', team: '', status: '', projektstatus: '' };
+
+const VALID_SORT_FIELDS = ['name', 'team', 'status', 'projektstatus', 'frist', 'wsjf'];
+
+export function applyViewState(saved) {
+  if (!saved || typeof saved !== 'object') return;
+  const f = saved.filter;
+  if (f && typeof f === 'object') {
+    if (typeof f.name === 'string') filterState.name = f.name;
+    if (typeof f.team === 'string') filterState.team = f.team;
+    if (typeof f.status === 'string') filterState.status = f.status;
+    if (typeof f.projektstatus === 'string') filterState.projektstatus = f.projektstatus;
+  }
+  const s = saved.sort;
+  if (s && typeof s === 'object') {
+    if (VALID_SORT_FIELDS.includes(s.field)) sortState.field = s.field;
+    if (s.dir === 'asc' || s.dir === 'desc') sortState.dir = s.dir;
+  }
+}
 
 export function sortInis(field) {
   if (sortState.field === field) {
@@ -13,6 +32,7 @@ export function sortInis(field) {
     sortState.field = field;
     sortState.dir = field === 'wsjf' ? 'desc' : 'asc';
   }
+  saveViewState(filterState, sortState);
 }
 
 export function getSortedInis() {
