@@ -229,6 +229,103 @@ main {
 .icon-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
 .icon-btn.cycle:hover { color: var(--accent); background: rgba(79,143,255,0.1); }
 
+/* ── Filter bar ──────────────────────────────────────────── */
+#ini-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+#ini-filters input {
+  width: 150px;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+#ini-filters input:focus {
+  border-color: rgba(79,143,255,0.35);
+  color: var(--text);
+}
+
+#ini-filters input::placeholder { color: var(--text3); }
+
+.filter-select-wrap {
+  position: relative;
+}
+
+.filter-select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 9px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+#ini-filters select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 24px 4px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+#ini-filters select:focus {
+  border-color: rgba(79,143,255,0.35);
+  color: var(--text);
+}
+
+#ini-filters select option { background: #1e2333; color: var(--text); }
+
+#filter-reset {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: default;
+  opacity: 0.3;
+  pointer-events: none;
+  transition: all 0.15s;
+  margin-left: 2px;
+}
+
+#filter-reset.active {
+  opacity: 1;
+  color: var(--red);
+  border-color: rgba(239,68,68,0.3);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#filter-reset.active:hover {
+  background: rgba(239,68,68,0.08);
+}
+
 /* ── Initiatives table ──────────────────────────────────── */
 .ini-table {
   width: 100%;

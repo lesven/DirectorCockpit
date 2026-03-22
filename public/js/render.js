@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { findById } from './crud.js';
-import { getSortedInis, sortState } from './sort.js';
+import { getSortedInis, sortState, filterState } from './sort.js';
 
 function esc(s) {
   return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -23,7 +23,23 @@ function renderKW() {
   el.textContent = data.kw ? 'KW ' + data.kw : 'KW \u2014';
 }
 
+function populateTeamFilter() {
+  const sel = document.getElementById('filter-team');
+  if (!sel) return;
+  const currentVal = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  data.teams.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = String(t.id);
+    opt.textContent = t.name;
+    sel.appendChild(opt);
+  });
+  sel.value = currentVal;
+  filterState.team = sel.value; // sync if previously-filtered team was deleted
+}
+
 function renderTeams() {
+  populateTeamFilter();
   const grid = document.getElementById('teams-grid');
   grid.innerHTML = '';
   data.teams.forEach(t => {

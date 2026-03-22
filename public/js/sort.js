@@ -4,6 +4,8 @@ import { findById } from './crud.js';
 
 export const sortState = { field: null, dir: 'asc' };
 
+export const filterState = { name: '', team: '', status: '', projektstatus: '' };
+
 export function sortInis(field) {
   if (sortState.field === field) {
     sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
@@ -14,9 +16,16 @@ export function sortInis(field) {
 }
 
 export function getSortedInis() {
-  if (!sortState.field) return [...data.inis];
+  const filtered = data.inis.filter(ini => {
+    if (filterState.name && !ini.name.toLowerCase().includes(filterState.name.toLowerCase())) return false;
+    if (filterState.team && String(ini.team) !== filterState.team) return false;
+    if (filterState.status && ini.status !== filterState.status) return false;
+    if (filterState.projektstatus && ini.projektstatus !== filterState.projektstatus) return false;
+    return true;
+  });
+  if (!sortState.field) return filtered;
   const { field, dir } = sortState;
-  return [...data.inis].sort((a, b) => {
+  return filtered.sort((a, b) => {
     let va, vb;
     if (field === 'team') {
       const ta = findById(data.teams, a.team);

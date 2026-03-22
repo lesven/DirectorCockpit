@@ -1,8 +1,13 @@
 import { data, save, dSave } from './store.js';
 import { addEntity, removeEntity, cycleStatus, findById } from './crud.js';
-import { sortInis } from './sort.js';
+import { sortInis, filterState } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
+
+function updateResetBtn() {
+  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus;
+  document.getElementById('filter-reset').classList.toggle('active', !!active);
+}
 
 export function bindEvents() {
   document.addEventListener('click', e => {
@@ -24,6 +29,33 @@ export function bindEvents() {
       case 'exportJSON':    exportJSON(); break;
       case 'importJSON':    importJSON(); break;
     }
+  });
+
+  document.getElementById('filter-name').addEventListener('input', e => {
+    filterState.name = e.target.value;
+    updateResetBtn();
+    renderEntity('inis');
+  });
+
+  ['filter-team', 'filter-status', 'filter-projektstatus'].forEach(id => {
+    document.getElementById(id).addEventListener('change', e => {
+      filterState[id.replace('filter-', '')] = e.target.value;
+      updateResetBtn();
+      renderEntity('inis');
+    });
+  });
+
+  document.getElementById('filter-reset').addEventListener('click', () => {
+    filterState.name = '';
+    filterState.team = '';
+    filterState.status = '';
+    filterState.projektstatus = '';
+    document.getElementById('filter-name').value = '';
+    document.getElementById('filter-team').value = '';
+    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-projektstatus').value = '';
+    updateResetBtn();
+    renderEntity('inis');
   });
 
   document.addEventListener('input', e => {

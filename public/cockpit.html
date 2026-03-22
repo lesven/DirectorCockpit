@@ -34,6 +34,31 @@
       <div class="section-line"></div>
       <button class="add-btn" data-action="addEntity" data-type="inis">+ Initiative</button>
     </div>
+    <div id="ini-filters">
+      <input id="filter-name" type="text" placeholder="Projekt suchen…">
+      <div class="filter-select-wrap">
+        <select id="filter-team">
+          <option value="">Alle Teams</option>
+        </select>
+      </div>
+      <div class="filter-select-wrap">
+        <select id="filter-status">
+          <option value="">Alle Status</option>
+          <option value="fertig">Fertig</option>
+          <option value="yellow">In Arbeit</option>
+          <option value="grey">Geplant</option>
+          <option value="ungeplant">Ungeplant</option>
+        </select>
+      </div>
+      <div class="filter-select-wrap">
+        <select id="filter-projektstatus">
+          <option value="">Projektstatus</option>
+          <option value="ok">Alles gut</option>
+          <option value="kritisch">Kritisch</option>
+        </select>
+      </div>
+      <button id="filter-reset">✕ Reset</button>
+    </div>
     <table class="ini-table">
       <thead>
         <tr>
