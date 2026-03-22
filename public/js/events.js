@@ -21,109 +21,116 @@ function updateResetBtn() {
   document.getElementById('filter-reset').classList.toggle('active', !!active);
 }
 
-export function bindEvents() {
-  document.addEventListener('click', (e) => {
-    const target = e.target.closest('[data-action]');
-    if (!target) return;
-    const action = target.dataset.action;
-    const id = target.dataset.id ? +target.dataset.id : null;
+function applyFilter() {
+  updateResetBtn();
+  renderEntity('initiatives');
+  saveViewState(filterState, sortState);
+}
 
-    switch (action) {
-      case 'editKW': {
-        const v = prompt('Kalenderwoche:', data.kw || '');
-        if (v !== null) {
-          data.kw = v.trim();
-          save();
-          renderAll();
-        }
-        break;
+function handleActionClick(e) {
+  const target = e.target.closest('[data-action]');
+  if (!target) return;
+  const action = target.dataset.action;
+  const id = target.dataset.id ? +target.dataset.id : null;
+
+  switch (action) {
+    case 'editKW': {
+      const v = prompt('Kalenderwoche:', data.kw || '');
+      if (v !== null) {
+        data.kw = v.trim();
+        save();
+        renderAll();
       }
-      case 'addEntity':
-        addEntity(target.dataset.type);
-        break;
-      case 'removeEntity':
-        removeEntity(target.dataset.type, id);
-        break;
-      case 'cycleStatus':
-        cycleStatus(id, target.dataset.team === 'true');
-        break;
-      case 'sortInis':
-        sortInis(target.dataset.sort);
-        renderEntity('initiatives');
-        break;
-      case 'openDetail':
-        openDetail(id);
-        break;
-      case 'exportJSON':
-        exportJSON();
-        break;
-      case 'importJSON':
-        importJSON();
-        break;
+      break;
     }
-  });
+    case 'addEntity':
+      addEntity(target.dataset.type);
+      break;
+    case 'removeEntity':
+      removeEntity(target.dataset.type, id);
+      break;
+    case 'cycleStatus':
+      cycleStatus(id, target.dataset.team === 'true');
+      break;
+    case 'sortInis':
+      sortInis(target.dataset.sort);
+      renderEntity('initiatives');
+      break;
+    case 'openDetail':
+      openDetail(id);
+      break;
+    case 'exportJSON':
+      exportJSON();
+      break;
+    case 'importJSON':
+      importJSON();
+      break;
+  }
+}
 
-  document.getElementById('filter-name').addEventListener('input', (e) => {
-    filterState.name = e.target.value;
-    updateResetBtn();
+function handleFilterInput(e) {
+  filterState.name = e.target.value;
+  applyFilter();
+}
+
+function handleFilterChange(e) {
+  const key = e.target.id.replace('filter-', '');
+  filterState[key] = e.target.value;
+  applyFilter();
+}
+
+function handleFilterReset() {
+  filterState.name = '';
+  filterState.team = '';
+  filterState.status = '';
+  filterState.projektstatus = '';
+  document.getElementById('filter-name').value = '';
+  document.getElementById('filter-team').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-projektstatus').value = '';
+  applyFilter();
+}
+
+function handleInlineInput(e) {
+  const el = e.target;
+  if (el.tagName === 'SELECT') return;
+  if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
+
+  const { id, field, source } = parseDataset(el);
+
+  if (el.classList.contains('ini-notiz')) autoGrow(el);
+
+  const item = findById(data[source], id);
+  if (!item) return;
+  item[field] = el.value;
+  dSave();
+}
+
+function handleInlineChange(e) {
+  const el = e.target;
+  if (el.tagName !== 'SELECT') return;
+  if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
+
+  const { id, field, source } = parseDataset(el);
+
+  const item = findById(data[source], id);
+  if (!item) return;
+  item[field] = field === 'team' ? (el.value ? +el.value : null) : el.value;
+
+  if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
     renderEntity('initiatives');
-    saveViewState(filterState, sortState);
-  });
+  }
+  dSave();
+}
 
+export function bindEvents() {
+  document.addEventListener('click', handleActionClick);
+  document.getElementById('filter-name').addEventListener('input', handleFilterInput);
   ['filter-team', 'filter-status', 'filter-projektstatus'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', (e) => {
-      filterState[id.replace('filter-', '')] = e.target.value;
-      updateResetBtn();
-      renderEntity('initiatives');
-      saveViewState(filterState, sortState);
-    });
+    document.getElementById(id).addEventListener('change', handleFilterChange);
   });
-
-  document.getElementById('filter-reset').addEventListener('click', () => {
-    filterState.name = '';
-    filterState.team = '';
-    filterState.status = '';
-    filterState.projektstatus = '';
-    document.getElementById('filter-name').value = '';
-    document.getElementById('filter-team').value = '';
-    document.getElementById('filter-status').value = '';
-    document.getElementById('filter-projektstatus').value = '';
-    updateResetBtn();
-    renderEntity('initiatives');
-    saveViewState(filterState, sortState);
-  });
-
-  document.addEventListener('input', (e) => {
-    const el = e.target;
-    if (el.tagName === 'SELECT') return;
-    if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
-
-    const { id, field, source } = parseDataset(el);
-
-    if (el.classList.contains('ini-notiz')) autoGrow(el);
-
-    const item = findById(data[source], id);
-    if (!item) return;
-    item[field] = el.value;
-    dSave();
-  });
-
+  document.getElementById('filter-reset').addEventListener('click', handleFilterReset);
+  document.addEventListener('input', handleInlineInput);
+  document.addEventListener('change', handleInlineChange);
   bindDetailEvents();
-
-  document.addEventListener('change', (e) => {
-    const el = e.target;
-    if (el.tagName !== 'SELECT') return;
-    if (!el.dataset.field || !el.dataset.id || !el.dataset.source) return;
-
-    const { id, field, source } = parseDataset(el);
-
-    const item = findById(data[source], id);
-    if (!item) return;
-    item[field] = field === 'team' ? (el.value ? +el.value : null) : el.value;
-
-    if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
-      renderEntity('initiatives');
-    }
-    dSave();
-  });
 }

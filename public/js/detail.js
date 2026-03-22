@@ -1,6 +1,6 @@
 import { data, dSave } from './store.js';
 import { findById, esc } from './utils.js';
-import { renderEntity, autoGrow } from './render.js';
+import { renderEntity } from './render.js';
 import { WSJF_SCALE } from './config.js';
 
 const STATUS_OPTIONS = [
@@ -39,13 +39,8 @@ let currentId = null;
 const backdrop = () => document.getElementById('detail-backdrop');
 const body = () => document.getElementById('detail-body');
 
-export function openDetail(id) {
-  const ini = findById(data.initiatives, id);
-  if (!ini) return;
-
-  currentId = id;
-
-  body().innerHTML = `
+function detailFormHtml(ini) {
+  return `
     <div class="detail-field">
       <label class="detail-label" for="d-name">Initiative / Projekt</label>
       <input class="detail-input" id="d-name" data-field="name" value="${esc(ini.name)}" placeholder="Projektname">
@@ -131,7 +126,14 @@ export function openDetail(id) {
       </div>
     </div>
   `;
+}
 
+export function openDetail(id) {
+  const ini = findById(data.initiatives, id);
+  if (!ini) return;
+
+  currentId = id;
+  body().innerHTML = detailFormHtml(ini);
   backdrop().hidden = false;
   document.getElementById('d-name').focus();
 }
