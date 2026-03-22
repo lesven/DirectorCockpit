@@ -16,8 +16,8 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertIsArray($data);
         $this->assertArrayHasKey('kw', $data);
         $this->assertArrayHasKey('teams', $data);
-        $this->assertArrayHasKey('inis', $data);
-        $this->assertArrayHasKey('nvs', $data);
+        $this->assertArrayHasKey('initiatives', $data);
+        $this->assertArrayHasKey('nicht_vergessen', $data);
     }
 
     public function testSyncRoundtrip(): void
@@ -29,10 +29,10 @@ class CockpitApiControllerTest extends WebTestCase
             'teams' => [
                 ['id' => 100, 'name' => 'Test-Team', 'sub' => 'Sub', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
             ],
-            'inis' => [
+            'initiatives' => [
                 ['id' => 200, 'name' => 'Test-Ini', 'team' => 100, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Step', 'frist' => '', 'notiz' => ''],
             ],
-            'nvs' => [
+            'nicht_vergessen' => [
                 ['id' => 300, 'title' => 'Test-NV', 'body' => 'Body'],
             ],
         ];
@@ -46,10 +46,10 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertSame('12', $data['kw']);
         $this->assertCount(1, $data['teams']);
         $this->assertSame('Test-Team', $data['teams'][0]['name']);
-        $this->assertCount(1, $data['inis']);
-        $this->assertSame('Test-Ini', $data['inis'][0]['name']);
-        $this->assertCount(1, $data['nvs']);
-        $this->assertSame('Test-NV', $data['nvs'][0]['title']);
+        $this->assertCount(1, $data['initiatives']);
+        $this->assertSame('Test-Ini', $data['initiatives'][0]['name']);
+        $this->assertCount(1, $data['nicht_vergessen']);
+        $this->assertSame('Test-NV', $data['nicht_vergessen'][0]['title']);
     }
 
     public function testSyncUpdatesExistingEntity(): void
@@ -59,8 +59,8 @@ class CockpitApiControllerTest extends WebTestCase
         $payload = [
             'kw' => '',
             'teams' => [['id' => 100, 'name' => 'Original', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => '']],
-            'inis' => [],
-            'nvs' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
         ];
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
@@ -85,8 +85,8 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 1, 'name' => 'A', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
                 ['id' => 2, 'name' => 'B', 'sub' => '', 'status' => 'grey', 'fokus' => '', 'schritt' => ''],
             ],
-            'inis' => [],
-            'nvs' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
         ];
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 

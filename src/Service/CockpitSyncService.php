@@ -19,9 +19,9 @@ class CockpitSyncService
 {
     /** @var array<string, class-string<SyncableEntity>> */
     private const ENTITY_REGISTRY = [
-        'teams' => Team::class,
-        'inis' => Initiative::class,
-        'nvs' => NichtVergessen::class,
+        'teams'          => Team::class,
+        'initiatives'    => Initiative::class,
+        'nicht_vergessen' => NichtVergessen::class,
     ];
 
     public function __construct(

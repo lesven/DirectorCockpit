@@ -25,7 +25,7 @@ export function bindEvents() {
       case 'addEntity':     addEntity(target.dataset.type); break;
       case 'removeEntity':  removeEntity(target.dataset.type, id); break;
       case 'cycleStatus':   cycleStatus(id, target.dataset.team === 'true'); break;
-      case 'sortInis':      sortInis(target.dataset.sort); renderEntity('inis'); break;
+      case 'sortInis':      sortInis(target.dataset.sort); renderEntity('initiatives'); break;
       case 'exportJSON':    exportJSON(); break;
       case 'importJSON':    importJSON(); break;
     }
@@ -34,14 +34,14 @@ export function bindEvents() {
   document.getElementById('filter-name').addEventListener('input', e => {
     filterState.name = e.target.value;
     updateResetBtn();
-    renderEntity('inis');
+    renderEntity('initiatives');
   });
 
   ['filter-team', 'filter-status', 'filter-projektstatus'].forEach(id => {
     document.getElementById(id).addEventListener('change', e => {
       filterState[id.replace('filter-', '')] = e.target.value;
       updateResetBtn();
-      renderEntity('inis');
+      renderEntity('initiatives');
     });
   });
 
@@ -55,7 +55,7 @@ export function bindEvents() {
     document.getElementById('filter-status').value = '';
     document.getElementById('filter-projektstatus').value = '';
     updateResetBtn();
-    renderEntity('inis');
+    renderEntity('initiatives');
   });
 
   document.addEventListener('input', e => {
@@ -88,8 +88,8 @@ export function bindEvents() {
     if (!item) return;
     item[field] = (field === 'team') ? (el.value ? +el.value : null) : el.value;
 
-    if (source === 'inis' && (field === 'status' || field === 'projektstatus')) {
-      renderEntity('inis');
+    if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
+      renderEntity('initiatives');
     }
     dSave();
   });

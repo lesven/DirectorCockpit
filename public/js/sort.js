@@ -16,7 +16,7 @@ export function sortInis(field) {
 }
 
 export function getSortedInis() {
-  const filtered = data.inis.filter(ini => {
+  const filtered = data.initiatives.filter(ini => {
     if (filterState.name && !ini.name.toLowerCase().includes(filterState.name.toLowerCase())) return false;
     if (filterState.team && String(ini.team) !== filterState.team) return false;
     if (filterState.status && ini.status !== filterState.status) return false;

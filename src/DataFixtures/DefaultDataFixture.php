@@ -22,14 +22,14 @@ class DefaultDataFixture extends Fixture
             $manager->persist(Team::fromArray($data));
         }
 
-        $inis = [
+        $initiatives = [
             ['id' => 1, 'name' => 'Update Azure DevOps', 'team' => 3, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Versionsplanung abschließen', 'frist' => '', 'notiz' => ''],
             ['id' => 2, 'name' => 'Update GitLab', 'team' => 3, 'status' => 'yellow', 'projektstatus' => 'ok', 'schritt' => 'Upgrade-Pfad definieren', 'frist' => '', 'notiz' => ''],
             ['id' => 3, 'name' => 'Onboarding SVA Fortinet', 'team' => 2, 'status' => 'green', 'projektstatus' => 'ok', 'schritt' => 'Kick-off durchführen', 'frist' => '', 'notiz' => ''],
             ['id' => 4, 'name' => 'Onboarding SVA MSSQL', 'team' => 4, 'status' => 'green', 'projektstatus' => 'ok', 'schritt' => 'Anforderungen & SLA klären', 'frist' => '', 'notiz' => ''],
         ];
 
-        foreach ($inis as $data) {
+        foreach ($initiatives as $data) {
             $manager->persist(Initiative::fromArray($data));
         }
 

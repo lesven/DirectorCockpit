@@ -59,22 +59,22 @@ class CockpitSyncServiceTest extends TestCase
         );
     }
 
-    private function stubRepositories(array $teams = [], array $inis = [], array $nvs = []): void
+    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = []): void
     {
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
 
-        $iniRepo = $this->createMock(EntityRepository::class);
-        $iniRepo->method('findAll')->willReturn($inis);
+        $initiativeRepo = $this->createMock(EntityRepository::class);
+        $initiativeRepo->method('findAll')->willReturn($initiatives);
 
-        $nvRepo = $this->createMock(EntityRepository::class);
-        $nvRepo->method('findAll')->willReturn($nvs);
+        $nichtVergessenRepo = $this->createMock(EntityRepository::class);
+        $nichtVergessenRepo->method('findAll')->willReturn($nichtVergessen);
 
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
-                Team::class => $teamRepo,
-                Initiative::class => $iniRepo,
-                NichtVergessen::class => $nvRepo,
+                Team::class           => $teamRepo,
+                Initiative::class     => $initiativeRepo,
+                NichtVergessen::class => $nichtVergessenRepo,
                 default => throw new \LogicException("Unexpected class: $class"),
             }
         );
@@ -87,8 +87,8 @@ class CockpitSyncServiceTest extends TestCase
         $payload = [
             'kw' => '10',
             'teams' => [['id' => 1, 'name' => 'Team A']],
-            'inis' => [['id' => 2, 'name' => 'Ini A']],
-            'nvs' => [['id' => 3, 'title' => 'NV A']],
+            'initiatives' => [['id' => 2, 'name' => 'Ini A']],
+            'nicht_vergessen' => [['id' => 3, 'title' => 'NV A']],
         ];
 
         $this->em->expects($this->once())->method('flush');
@@ -108,7 +108,7 @@ class CockpitSyncServiceTest extends TestCase
         $existingTeam = Team::fromArray(['id' => 1, 'name' => 'Old']);
         $this->stubRepositories(teams: [$existingTeam]);
 
-        $payload = ['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []];
+        $payload = ['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []];
         $this->service->syncAll($payload);
 
         $this->assertCount(1, $this->removed);
@@ -123,8 +123,8 @@ class CockpitSyncServiceTest extends TestCase
         $payload = [
             'kw' => '',
             'teams' => [['id' => 1, 'name' => 'New']],
-            'inis' => [],
-            'nvs' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
         ];
         $this->service->syncAll($payload);
 
@@ -137,9 +137,9 @@ class CockpitSyncServiceTest extends TestCase
     {
         $team = Team::fromArray(['id' => 1, 'name' => 'A']);
         $ini = Initiative::fromArray(['id' => 2, 'name' => 'B']);
-        $this->stubRepositories(teams: [$team], inis: [$ini]);
+        $this->stubRepositories(teams: [$team], initiatives: [$ini]);
 
-        $payload = ['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []];
+        $payload = ['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []];
         $this->service->syncAll($payload);
 
         $this->assertCount(2, $this->removed);
@@ -154,7 +154,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->expectException(SyncException::class);
         $this->expectExceptionMessageMatches('/Sync fehlgeschlagen/');
 
-        $this->service->syncAll(['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []]);
+        $this->service->syncAll(['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []]);
     }
 
     public function testInvalidPayloadStructureThrows(): void
@@ -179,14 +179,14 @@ class CockpitSyncServiceTest extends TestCase
         $ini = Initiative::fromArray(['id' => 2, 'name' => 'I']);
         $nv = NichtVergessen::fromArray(['id' => 3, 'title' => 'N']);
 
-        $this->stubRepositories(teams: [$team], inis: [$ini], nvs: [$nv]);
+        $this->stubRepositories(teams: [$team], initiatives: [$ini], nichtVergessen: [$nv]);
 
         $result = $this->service->loadAll();
 
         $this->assertArrayHasKey('kw', $result);
         $this->assertCount(1, $result['teams']);
-        $this->assertCount(1, $result['inis']);
-        $this->assertCount(1, $result['nvs']);
+        $this->assertCount(1, $result['initiatives']);
+        $this->assertCount(1, $result['nicht_vergessen']);
         $this->assertSame(1, $result['teams'][0]['id']);
     }
 
@@ -222,7 +222,7 @@ class CockpitSyncServiceTest extends TestCase
     public function testSyncSetsKwOnMetadata(): void
     {
         $this->stubRepositories();
-        $this->service->syncAll(['kw' => '52', 'teams' => [], 'inis' => [], 'nvs' => []]);
+        $this->service->syncAll(['kw' => '52', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []]);
 
         $this->assertSame('52', $this->meta->getKw());
     }
@@ -242,8 +242,8 @@ class CockpitSyncServiceTest extends TestCase
                 ['id' => 1, 'name' => 'Erster'],
                 ['id' => 1, 'name' => 'Duplikat'],
             ],
-            'inis' => [],
-            'nvs' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
         ];
 
         $this->service->syncAll($payload);
