@@ -133,7 +133,10 @@ function renderInis() {
       <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives"></td>
       <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
-      <td><button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button></td>
+      <td>
+        <button class="detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details">✎</button>
+        <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
+      </td>
     `;
     // team-Select auf den richtigen Wert stellen (vermeidet selected-Duplikate im Template)
     tr.querySelector('[data-field="team"]').value = ini.team ?? '';

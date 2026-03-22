@@ -3,6 +3,7 @@ import { addEntity, removeEntity, cycleStatus, findById } from './crud.js';
 import { sortInis, filterState } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
+import { openDetail, bindDetailEvents } from './detail.js';
 
 /** Liest id, field, source aus data-Attributen eines Elements. */
 function parseDataset(el) {
@@ -35,6 +36,7 @@ export function bindEvents() {
       case 'removeEntity':  removeEntity(target.dataset.type, id); break;
       case 'cycleStatus':   cycleStatus(id, target.dataset.team === 'true'); break;
       case 'sortInis':      sortInis(target.dataset.sort); renderEntity('initiatives'); break;
+      case 'openDetail':    openDetail(id); break;
       case 'exportJSON':    exportJSON(); break;
       case 'importJSON':    importJSON(); break;
     }
@@ -81,6 +83,8 @@ export function bindEvents() {
     item[field] = el.value;
     dSave();
   });
+
+  bindDetailEvents();
 
   document.addEventListener('change', e => {
     const el = e.target;
