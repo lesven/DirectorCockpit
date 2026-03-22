@@ -1,6 +1,8 @@
 /vendor/
 /var/
+/node_modules/
 /.env.local
 /.env.*.local
 *.Zone.Identifier
 .phpunit.result.cache
+tests/e2e/screenshots/

@@ -9,7 +9,7 @@ load().then(() => {
   if (saved) {
     // Verwaiste Team-ID verwerfen
     if (saved.filter && saved.filter.team) {
-      const teamExists = data.teams.some(t => String(t.id) === saved.filter.team);
+      const teamExists = data.teams.some((t) => String(t.id) === saved.filter.team);
       if (!teamExists) saved.filter.team = '';
     }
     applyViewState(saved);
@@ -19,8 +19,12 @@ load().then(() => {
     document.getElementById('filter-team').value = filterState.team;
     document.getElementById('filter-status').value = filterState.status;
     document.getElementById('filter-projektstatus').value = filterState.projektstatus;
-    document.getElementById('filter-reset').classList.toggle('active',
-      !!(filterState.name || filterState.team || filterState.status || filterState.projektstatus));
+    document
+      .getElementById('filter-reset')
+      .classList.toggle(
+        'active',
+        !!(filterState.name || filterState.team || filterState.status || filterState.projektstatus),
+      );
   }
   renderAll();
   bindEvents();

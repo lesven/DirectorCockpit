@@ -1,20 +1,10 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
-import { findById } from './crud.js';
 import { getSortedInis, sortState, filterState } from './sort.js';
-
-function esc(s) {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { esc, calcWsjf } from './utils.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
-}
-
-function calcWsjf(ini) {
-  const { businessValue, timeCriticality, riskReduction, jobSize } = ini;
-  if (businessValue == null || timeCriticality == null || riskReduction == null || jobSize == null || jobSize <= 0) return null;
-  return Math.round(((businessValue + timeCriticality + riskReduction) / jobSize) * 10) / 10;
 }
 
 function autoGrow(el) {
@@ -34,7 +24,7 @@ function populateTeamFilter() {
   if (!sel) return;
   const currentVal = sel.value || filterState.team;
   while (sel.options.length > 1) sel.remove(1);
-  data.teams.forEach(t => {
+  data.teams.forEach((t) => {
     const opt = document.createElement('option');
     opt.value = String(t.id);
     opt.textContent = t.name;
@@ -44,14 +34,10 @@ function populateTeamFilter() {
   filterState.team = sel.value; // sync if previously-filtered team was deleted
 }
 
-function renderTeams() {
-  populateTeamFilter();
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
-  data.teams.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'team-card';
-    card.innerHTML = `
+function renderTeamCard(t) {
+  const card = document.createElement('div');
+  card.className = 'team-card';
+  card.innerHTML = `
       <div class="team-card-top">
         <div class="status-dot ${statusClass(t.status)}" title="Status wechseln: ${STATUS_LABELS[t.status] || t.status}" data-action="cycleStatus" data-id="${t.id}" data-team="true"></div>
         <input class="team-name" value="${esc(t.name)}" placeholder="Teamname" data-id="${t.id}" data-field="name" data-source="teams">
@@ -72,20 +58,18 @@ function renderTeams() {
         <input class="field-input" value="${esc(t.schritt)}" placeholder="Was muss ich tun?" data-id="${t.id}" data-field="schritt" data-source="teams">
       </div>
     `;
-    grid.appendChild(card);
-  });
+  return card;
 }
 
-function teamOptions(selectedId) {
-  const none = `<option value=""${!selectedId ? ' selected' : ''}>—</option>`;
-  const opts = data.teams.map(t =>
-    `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`
-  ).join('');
-  return none + opts;
+function renderTeams() {
+  populateTeamFilter();
+  const grid = document.getElementById('teams-grid');
+  grid.innerHTML = '';
+  data.teams.forEach((t) => grid.appendChild(renderTeamCard(t)));
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll('.ini-table th.sortable').forEach(th => {
+  document.querySelectorAll('.ini-table th.sortable').forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
     const field = th.dataset.sort;
     if (field === sortState.field) {
@@ -94,22 +78,13 @@ function updateSortHeaders() {
   });
 }
 
-function renderInis() {
-  const tbody = document.getElementById('ini-body');
-  tbody.innerHTML = '';
-  updateSortHeaders();
-
-  // teamOptions einmal vorberechnen statt O(initiatives × teams)-mal aufzurufen.
-  // selected-Wert wird per select.value nach DOM-Einfügung gesetzt.
-  const teamOptsBase = '<option value="">—</option>' +
-    data.teams.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
-
-  getSortedInis().forEach(ini => {
-    const s = ini.status || 'grey';
-    const ps = ini.projektstatus || 'ok';
-    const tr = document.createElement('tr');
-    tr.className = 'ini-row';
-    tr.innerHTML = `
+function renderIniRow(ini, teamOptsBase) {
+  const s = ini.status || 'grey';
+  const ps = ini.projektstatus || 'ok';
+  const wsjf = calcWsjf(ini);
+  const tr = document.createElement('tr');
+  tr.className = 'ini-row';
+  tr.innerHTML = `
       <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives"></td>
       <td>
         <div class="select-wrap">
@@ -136,7 +111,7 @@ function renderInis() {
           </select>
         </div>
       </td>
-      <td><span class="wsjf-value${calcWsjf(ini) == null ? ' wsjf-empty' : ''}">${calcWsjf(ini) != null ? calcWsjf(ini) : '\u2013'}</span></td>
+      <td><span class="wsjf-value${wsjf == null ? ' wsjf-empty' : ''}">${wsjf != null ? wsjf : '\u2013'}</span></td>
       <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives"></td>
       <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
@@ -145,29 +120,39 @@ function renderInis() {
         <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
       </td>
     `;
-    // team-Select auf den richtigen Wert stellen (vermeidet selected-Duplikate im Template)
-    tr.querySelector('[data-field="team"]').value = ini.team ?? '';
-    tbody.appendChild(tr);
-  });
+  tr.querySelector('[data-field="team"]').value = ini.team ?? '';
+  return tr;
+}
 
+function renderInis() {
+  const tbody = document.getElementById('ini-body');
+  tbody.innerHTML = '';
+  updateSortHeaders();
+
+  const teamOptsBase =
+    '<option value="">—</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+
+  getSortedInis().forEach((ini) => tbody.appendChild(renderIniRow(ini, teamOptsBase)));
   tbody.querySelectorAll('.ini-notiz').forEach(autoGrow);
 }
 
-function renderNVs() {
-  const grid = document.getElementById('nv-grid');
-  grid.innerHTML = '';
-  data.nicht_vergessen.forEach(nv => {
-    const card = document.createElement('div');
-    card.className = 'nv-card';
-    card.innerHTML = `
+function renderNVCard(nv) {
+  const card = document.createElement('div');
+  card.className = 'nv-card';
+  card.innerHTML = `
       <div class="card-actions">
         <button class="icon-btn" data-action="removeEntity" data-type="nicht_vergessen" data-id="${nv.id}" title="L\u00f6schen">✕</button>
       </div>
       <input class="nv-title" value="${esc(nv.title)}" placeholder="Thema" data-id="${nv.id}" data-field="title" data-source="nicht_vergessen">
       <textarea class="nv-body" rows="3" placeholder="Warum wichtig / n\u00e4chste Aktion..." data-id="${nv.id}" data-field="body" data-source="nicht_vergessen">${esc(nv.body)}</textarea>
     `;
-    grid.appendChild(card);
-  });
+  return card;
+}
+
+function renderNVs() {
+  const grid = document.getElementById('nv-grid');
+  grid.innerHTML = '';
+  data.nicht_vergessen.forEach((nv) => grid.appendChild(renderNVCard(nv)));
 }
 
 const RENDER_MAP = {

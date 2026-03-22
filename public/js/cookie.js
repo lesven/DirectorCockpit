@@ -19,7 +19,7 @@ export function saveViewState(filterState, sortState) {
 
 export function loadViewState() {
   try {
-    const match = document.cookie.split('; ').find(c => c.startsWith(COOKIE_NAME + '='));
+    const match = document.cookie.split('; ').find((c) => c.startsWith(COOKIE_NAME + '='));
     if (!match) return null;
     const raw = decodeURIComponent(match.split('=').slice(1).join('='));
     const parsed = JSON.parse(raw);

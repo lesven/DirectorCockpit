@@ -1,4 +1,4 @@
-.PHONY: up down build composer-install migrate seed test test-unit test-integration analyse fresh
+.PHONY: up down build composer-install migrate seed test test-unit test-integration test-e2e test-e2e-visible analyse fresh
 
 up:
 	docker compose up -d
@@ -20,12 +20,19 @@ seed:
 
 test:
 	docker compose exec app php vendor/bin/phpunit
+	npm test
 
 test-unit:
 	docker compose exec app php vendor/bin/phpunit --testsuite Unit
 
 test-integration:
 	docker compose exec app php vendor/bin/phpunit --testsuite Integration
+
+test-e2e:
+	npm run test:e2e
+
+test-e2e-visible:
+	npm run test:e2e:visible
 
 analyse:
 	docker compose exec app php vendor/bin/phpstan analyse --level=5 src/
