@@ -634,3 +634,164 @@ footer {
   border-color: rgba(79,143,255,0.3);
   background: rgba(79,143,255,0.05);
 }
+
+/* ── Detail-Modal ─────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-backdrop[hidden] { display: none; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.modal-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 14px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.modal-close:hover {
+  color: var(--red);
+  border-color: rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.08);
+}
+
+.modal-body {
+  padding: 20px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.detail-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.detail-input:focus {
+  border-color: rgba(79,143,255,0.4);
+}
+
+.detail-input::placeholder { color: var(--text3); }
+
+textarea.detail-input {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+select.detail-input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 28px;
+}
+
+select.detail-input option {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.detail-select-wrap {
+  position: relative;
+}
+
+.detail-select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  font-size: 10px;
+  color: var(--text3);
+  pointer-events: none;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 700px) {
+  .modal { width: 100%; border-radius: 14px 14px 0 0; }
+  .detail-row { grid-template-columns: 1fr; }
+}
+
+/* ── Detail-Button in Tabellenzeile ───────────────────────── */
+.detail-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition: all 0.15s;
+}
+
+.ini-row:hover .detail-btn { opacity: 1; }
+
+.detail-btn:hover {
+  color: var(--accent);
+  background: rgba(79,143,255,0.1);
+}
