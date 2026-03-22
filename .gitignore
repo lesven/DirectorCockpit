@@ -3,3 +3,4 @@
 /.env.local
 /.env.*.local
 *.Zone.Identifier
+.phpunit.result.cache
