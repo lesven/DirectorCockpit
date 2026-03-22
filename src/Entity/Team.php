@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TeamRepository::class)]
 #[ORM\Table(name: 'team')]
-class Team implements SyncableEntity
+final class Team implements SyncableEntity
 {
     use HasIdTrait;
 

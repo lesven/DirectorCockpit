@@ -1,0 +1,10 @@
+parameters:
+    level: 5
+    paths:
+        - src
+
+    ignoreErrors:
+        # Entities sind final, weil sie nicht zur Vererbung bestimmt sind.
+        # Proxy-Probleme entstehen nicht, da keine lazy-geladenen Assoziationen
+        # als Doctrine-Objekte existieren (team ist ?int, kein ManyToOne).
+        - identifier: doctrine.finalEntity

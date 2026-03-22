@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InitiativeRepository::class)]
 #[ORM\Table(name: 'initiative')]
-class Initiative implements SyncableEntity
+final class Initiative implements SyncableEntity
 {
     use HasIdTrait;
 

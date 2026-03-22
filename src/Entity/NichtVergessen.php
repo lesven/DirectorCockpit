@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NichtVergessenRepository::class)]
 #[ORM\Table(name: 'nicht_vergessen')]
-class NichtVergessen implements SyncableEntity
+final class NichtVergessen implements SyncableEntity
 {
     use HasIdTrait;
 

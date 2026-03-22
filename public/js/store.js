@@ -1,4 +1,4 @@
-import { CONFIG, DEFAULT_DATA } from './config.js';
+import { CONFIG } from './config.js';
 
 export let data;
 
@@ -12,8 +12,13 @@ export async function load() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     data = await res.json();
   } catch (e) {
-    console.warn('Backend nicht erreichbar, verwende Standarddaten:', e);
-    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    console.warn('Backend nicht erreichbar, lade Standarddaten:', e);
+    try {
+      const fallback = await fetch('/default_data.json');
+      data = await fallback.json();
+    } catch {
+      data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [] };
+    }
   }
 }
 
