@@ -119,7 +119,7 @@ test('AC-P.10: Sortierung setzt Seite auf 1 zurück', async (t) => {
   await t.expect(selectors.iniRows.count).eql(5); // Seite 2
 
   // Sortiere nach Name → zurück auf Seite 1
-  const nameHeader = Selector('.ini-table th.sortable').withText('Initiative');
+  const nameHeader = Selector('.ini-table th[data-sort="name"]');
   await t.click(nameHeader);
   await t.expect(selectors.iniRows.count).eql(20);
 });

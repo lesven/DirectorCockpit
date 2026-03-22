@@ -17,7 +17,7 @@ function parseDataset(el) {
 }
 
 function updateResetBtn() {
-  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus;
+  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || pageState.current > 1;
   document.getElementById('filter-reset').classList.toggle('active', !!active);
 }
 
@@ -66,6 +66,7 @@ function handleActionClick(e) {
       if (!isNaN(p) && p >= 1) {
         pageState.current = p;
         renderEntity('initiatives');
+        updateResetBtn();
       }
       break;
     }
