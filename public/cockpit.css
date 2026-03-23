@@ -117,7 +117,7 @@ main {
   padding: 28px 32px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 40px;
 }
 
 /* ── Section headers ─────────────────────────────────────── */
@@ -130,11 +130,24 @@ main {
 
 .section-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-sm);
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: var(--text3);
+  color: var(--text2);
+}
+
+.section-count {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  color: var(--accent);
+  background: rgba(122,169,255,0.1);
+  border: 1px solid rgba(122,169,255,0.18);
+  border-radius: 10px;
+  padding: 1px 7px;
+  min-width: 22px;
+  text-align: center;
+  margin-left: -4px;
 }
 
 .section-line {
@@ -145,19 +158,20 @@ main {
 
 .add-btn {
   font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
+  font-size: var(--text-sm);
+  color: var(--text2);
   background: none;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 3px 10px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .add-btn:hover {
   color: var(--accent);
-  border-color: rgba(122,169,255,0.3);
+  border-color: rgba(122,169,255,0.4);
+  background: rgba(122,169,255,0.07);
 }
 
 /* ── Teams grid ──────────────────────────────────────────── */
@@ -1304,4 +1318,65 @@ select.detail-input option {
   .risk-page-header-bar { padding: 0 16px; }
   .risk-row { grid-template-columns: 1fr; }
   .risk-ini-details { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Loading-Banner ───────────────────────────────────────── */
+.loading-banner {
+  text-align: center;
+  padding: var(--space-xl) var(--space-xl);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--text3);
+  letter-spacing: 0.06em;
+  animation: loading-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.9; }
+}
+
+/* ── Aktive-Filter-Hervorhebung ───────────────────────────── */
+#ini-filters.has-active-filters {
+  background: rgba(122,169,255,0.04);
+  border-color: rgba(122,169,255,0.22);
+}
+
+#ini-filters input:not(:placeholder-shown) {
+  border-color: rgba(122,169,255,0.35);
+  background: rgba(122,169,255,0.07);
+  color: var(--text);
+}
+
+/* ── Tabellen-Optimierung ─────────────────────────────────── */
+.ini-row:nth-child(even) {
+  background: rgba(255,255,255,0.018);
+}
+
+.ini-row:hover,
+.ini-row:nth-child(even):hover {
+  background: var(--surface);
+}
+
+.ini-table thead tr {
+  border-bottom: 2px solid var(--border2);
+}
+
+.ini-table th {
+  padding-bottom: 8px;
+}
+
+/* ── Team-Stats Badge Verbesserung ────────────────────────── */
+.team-stats-badge {
+  margin-top: 12px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: var(--text-base);
+  color: var(--text2);
+  font-family: var(--sans);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
