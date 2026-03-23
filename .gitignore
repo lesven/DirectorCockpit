@@ -6,3 +6,4 @@
 *.Zone.Identifier
 .phpunit.result.cache
 tests/e2e/screenshots/
+/backups/

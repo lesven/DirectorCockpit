@@ -10,6 +10,7 @@ Single-Page-App zur Steuerung von Teams, Initiativen und Merkliste ("Nicht verge
 # PHP-Backend (Symfony)
 composer install
 make up              # Docker Compose
+make backup          # PostgreSQL-Dump nach backups/backup-yy-mm-dd.sql schreiben
 
 # JavaScript-Tooling (Entwicklung)
 npm install
