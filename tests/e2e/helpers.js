@@ -57,6 +57,28 @@ const SEED_PAYLOAD = {
     { id: 3001, title: 'Budget Review', body: 'Q2 Zahlen prüfen' },
     { id: 3002, title: 'Stakeholder Update', body: 'Montag versenden' },
   ],
+  risks: [
+    {
+      id: 4001,
+      initiative: 2001,
+      bezeichnung: 'Lieferantenausfall',
+      beschreibung: 'Hauptlieferant könnte ausfallen',
+      eintrittswahrscheinlichkeit: 3,
+      schadensausmass: 4,
+      roamStatus: 'mitigated',
+      roamNotiz: 'Fallback-Lieferant vertraglich gesichert',
+    },
+    {
+      id: 4002,
+      initiative: 2001,
+      bezeichnung: 'Budgetüberschreitung',
+      beschreibung: 'Scope könnte wachsen',
+      eintrittswahrscheinlichkeit: 2,
+      schadensausmass: 3,
+      roamStatus: null,
+      roamNotiz: '',
+    },
+  ],
 };
 
 const seedViaAPI = ClientFunction((json) => {
@@ -146,4 +168,20 @@ export const selectors = {
   // Footer
   importBtn: Selector('[data-action="importJSON"]'),
   exportBtn: Selector('[data-action="exportJSON"]'),
+
+  // Risk-Seite
+  riskBtns: Selector('[data-action="openRisks"]'),
+  riskPage: Selector('#risk-page'),
+  riskBack: Selector('#risk-back'),
+  riskAddBtn: Selector('#risk-add'),
+  riskCards: Selector('.risk-card'),
+  riskRoamSelects: Selector('[data-risk-field="roamStatus"]'),
+  riskRoamNotiz: Selector('[data-risk-field="roamNotiz"]'),
+  roamBadges: Selector('.roam-badge'),
+  riskBezeichnungInputs: Selector('[data-risk-field="bezeichnung"]'),
+  riskBeschreibungTextareas: Selector('[data-risk-field="beschreibung"]'),
+  riskWahrscheinlichkeitSelects: Selector('[data-risk-field="eintrittswahrscheinlichkeit"]'),
+  riskSchadensausmasSelects: Selector('[data-risk-field="schadensausmass"]'),
+  riskDeleteBtns: Selector('[data-action="removeRisk"]'),
+  riskScoreBadges: Selector('.risk-badge'),
 };

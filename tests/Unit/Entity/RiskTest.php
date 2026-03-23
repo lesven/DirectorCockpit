@@ -85,4 +85,79 @@ class RiskTest extends TestCase
         $risk = Risk::fromArray(['id' => 99, 'initiative' => 1]);
         $this->assertSame(99, $risk->getId());
     }
+
+    // ── ROAM ─────────────────────────────────────────────────────────────────
+
+    public function testFromArrayIncludesRoamFieldsInRoundtrip(): void
+    {
+        $risk = Risk::fromArray([
+            'id' => 1,
+            'initiative' => 5,
+            'roamStatus' => 'mitigated',
+            'roamNotiz' => 'Fallback-Lieferant vertraglich gesichert',
+        ]);
+        $arr = $risk->toArray();
+
+        $this->assertSame('mitigated', $arr['roamStatus']);
+        $this->assertSame('Fallback-Lieferant vertraglich gesichert', $arr['roamNotiz']);
+    }
+
+    public function testFromArrayDefaultsRoamFieldsToNullAndEmpty(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5]);
+        $arr = $risk->toArray();
+
+        $this->assertNull($arr['roamStatus']);
+        $this->assertSame('', $arr['roamNotiz']);
+    }
+
+    public function testUpdateFromArraySetsRoamStatus(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5]);
+        $risk->updateFromArray(['roamStatus' => 'resolved']);
+
+        $this->assertSame('resolved', $risk->toArray()['roamStatus']);
+    }
+
+    public function testUpdateFromArrayResetsRoamStatusToNullOnEmptyString(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5, 'roamStatus' => 'owned']);
+        $risk->updateFromArray(['roamStatus' => '']);
+
+        $this->assertNull($risk->toArray()['roamStatus']);
+    }
+
+    public function testUpdateFromArrayKeepsRoamStatusWhenKeyAbsent(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5, 'roamStatus' => 'accepted']);
+        $risk->updateFromArray([]);
+
+        $this->assertSame('accepted', $risk->toArray()['roamStatus']);
+    }
+
+    public function testUpdateFromArraySetsRoamNotiz(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5]);
+        $risk->updateFromArray(['roamNotiz' => 'Neuer Kommentar']);
+
+        $this->assertSame('Neuer Kommentar', $risk->toArray()['roamNotiz']);
+    }
+
+    public function testUpdateFromArrayKeepsRoamNotizWhenKeyAbsent(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5, 'roamNotiz' => 'Bestehender Text']);
+        $risk->updateFromArray([]);
+
+        $this->assertSame('Bestehender Text', $risk->toArray()['roamNotiz']);
+    }
+
+    /** toArray() muss roamStatus und roamNotiz immer enthalten. */
+    public function testToArrayAlwaysContainsRoamKeys(): void
+    {
+        $risk = Risk::fromArray(['id' => 1, 'initiative' => 5]);
+        $arr = $risk->toArray();
+
+        $this->assertArrayHasKey('roamStatus', $arr);
+        $this->assertArrayHasKey('roamNotiz', $arr);
+    }
 }

@@ -5,6 +5,7 @@ namespace App\Tests\Unit\Service;
 use App\Entity\Initiative;
 use App\Entity\Metadata;
 use App\Entity\NichtVergessen;
+use App\Entity\Risk;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
 use App\Service\CockpitSyncService;
@@ -59,7 +60,7 @@ class CockpitSyncServiceTest extends TestCase
         );
     }
 
-    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = []): void
+    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = []): void
     {
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
@@ -73,11 +74,16 @@ class CockpitSyncServiceTest extends TestCase
         $nichtVergessenRepo->method('findAll')->willReturn($nichtVergessen);
         $nichtVergessenRepo->method('findBy')->willReturn($nichtVergessen);
 
+        $riskRepo = $this->createMock(EntityRepository::class);
+        $riskRepo->method('findAll')->willReturn($risks);
+        $riskRepo->method('findBy')->willReturn($risks);
+
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
                 Team::class           => $teamRepo,
                 Initiative::class     => $initiativeRepo,
                 NichtVergessen::class => $nichtVergessenRepo,
+                Risk::class           => $riskRepo,
                 default => throw new \LogicException("Unexpected class: $class"),
             }
         );

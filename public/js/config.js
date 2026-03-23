@@ -29,6 +29,20 @@ export const RISK_IMPACT_LABELS = {
   5: 'Kritisch',
 };
 
+export const ROAM_STATUS_LABELS = {
+  resolved: 'Resolved',
+  owned: 'Owned',
+  accepted: 'Accepted',
+  mitigated: 'Mitigated',
+};
+
+export const ROAM_STATUS_CSS = {
+  resolved: 'roam-resolved',
+  owned: 'roam-owned',
+  accepted: 'roam-accepted',
+  mitigated: 'roam-mitigated',
+};
+
 export const RISK_LEVEL = [
   { max: 4, label: 'Gering', css: 'risk-low' },
   { max: 9, label: 'Mittel', css: 'risk-medium' },
