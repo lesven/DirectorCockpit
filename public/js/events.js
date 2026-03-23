@@ -5,7 +5,7 @@ import { sortInis, sortState, filterState, resetPage, pageState } from './sort.j
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
-import { openRiskModal, bindRiskEvents } from './risk.js';
+import { openRiskPage, bindRiskEvents } from './risk.js';
 import { saveViewState } from './cookie.js';
 
 /** Liest id, field, source aus data-Attributen eines Elements. */
@@ -63,7 +63,7 @@ function handleActionClick(e) {
       openDetail(id);
       break;
     case 'openRisks':
-      openRiskModal(id);
+      openRiskPage(id);
       break;
     case 'gotoPage': {
       const p = +target.dataset.page;

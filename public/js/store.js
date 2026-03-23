@@ -33,11 +33,15 @@ export async function load() {
 }
 
 function showIndicator(text, duration) {
-  const ind = document.getElementById('save-ind');
-  ind.textContent = text;
-  ind.classList.add('show');
+  document.querySelectorAll('.save-indicator').forEach((ind) => {
+    ind.textContent = text;
+    ind.classList.add('show');
+  });
   clearTimeout(indicatorTimer);
-  indicatorTimer = setTimeout(() => ind.classList.remove('show'), duration);
+  indicatorTimer = setTimeout(
+    () => document.querySelectorAll('.save-indicator').forEach((ind) => ind.classList.remove('show')),
+    duration,
+  );
 }
 
 async function _doSave() {
