@@ -115,7 +115,7 @@ function handleInlineInput(e) {
 
   const { id, field, source } = parseDataset(el);
 
-  if (el.classList.contains('ini-notiz')) autoGrow(el);
+  if (el.classList.contains('ini-notiz') || el.classList.contains('ini-schritt')) autoGrow(el);
 
   const item = findById(data[source], id);
   if (!item) return;

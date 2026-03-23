@@ -25,7 +25,7 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(length: 20, enumType: ProjectStatusEnum::class)]
     private ProjectStatusEnum $projektstatus = ProjectStatusEnum::Ok;
 
-    #[ORM\Column(length: 500)]
+    #[ORM\Column(length: 550)]
     private string $schritt = '';
 
     #[ORM\Column(length: 20)]
