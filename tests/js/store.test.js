@@ -15,7 +15,15 @@ vi.mock('../../public/js/utils.js', () => ({
   debounce: (fn) => fn,
 }));
 
+// Mock dom.js — save-indicators werden im beforeEach gesetzt
+vi.mock('../../public/js/dom.js', () => ({
+  dom: {
+    saveIndicators: [],
+  },
+}));
+
 import { data, load, save, setData } from '../../public/js/store.js';
+import { dom } from '../../public/js/dom.js';
 
 beforeEach(() => {
   // Reset data to defaults
@@ -23,6 +31,7 @@ beforeEach(() => {
 
   // Setup minimal DOM for save indicator
   document.body.innerHTML = '<span id="save-ind" class="save-indicator"></span>';
+  dom.saveIndicators = [...document.querySelectorAll('.save-indicator')];
 
   // Reset fetch mock und Console-Ausgaben unterdrücken
   vi.restoreAllMocks();

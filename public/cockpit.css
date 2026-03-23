@@ -636,6 +636,13 @@ main {
   min-height: 36px;
 }
 
+.ini-schritt {
+  resize: none;
+  overflow: hidden;
+  line-height: 1.45;
+  min-height: 36px;
+}
+
 .del-row-btn {
   background: none;
   border: none;

@@ -76,3 +76,14 @@ export function maxRiskScore(risks, initiativeId) {
   if (!iniRisks.length) return null;
   return Math.max(...iniRisks.map(calcRiskScore));
 }
+
+let idCounter = 0;
+
+/**
+ * Erzeugt eine kollisionssichere numerische ID.
+ * Kombination aus Timestamp und Counter verhindert Duplikate
+ * bei schnellen Aufrufen im selben Millisekunden-Tick.
+ */
+export function generateId() {
+  return Date.now() * 1000 + (idCounter++ % 1000);
+}

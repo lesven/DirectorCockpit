@@ -2,6 +2,7 @@ import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
 import { esc, calcWsjf, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
+import { dom } from './dom.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
@@ -15,12 +16,11 @@ function autoGrow(el) {
 export { autoGrow };
 
 function renderKW() {
-  const el = document.getElementById('kw-badge');
-  el.textContent = data.kw ? 'KW ' + data.kw : 'KW \u2014';
+  dom.kwBadge.textContent = data.kw ? 'KW ' + data.kw : 'KW \u2014';
 }
 
 function populateTeamFilter() {
-  const sel = document.getElementById('filter-team');
+  const sel = dom.filterTeam;
   if (!sel) return;
   const currentVal = sel.value || filterState.team;
   while (sel.options.length > 1) sel.remove(1);
@@ -62,15 +62,13 @@ function renderTeamCard(t) {
 
 function renderTeams() {
   populateTeamFilter();
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
-  data.teams.forEach((t) => grid.appendChild(renderTeamCard(t)));
-  const badge = document.getElementById('teams-count');
-  if (badge) badge.textContent = data.teams.length || '';
+  dom.teamsGrid.innerHTML = '';
+  data.teams.forEach((t) => dom.teamsGrid.appendChild(renderTeamCard(t)));
+  if (dom.teamsCount) dom.teamsCount.textContent = data.teams.length || '';
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll('.ini-table th.sortable').forEach((th) => {
+  dom.sortableHeaders.forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
     const field = th.dataset.sort;
     if (field === sortState.field) {
@@ -119,7 +117,7 @@ function renderIniRow(ini, teamOptsBase) {
         </div>
       </td>
       <td><span class="wsjf-value${wsjf == null ? ' wsjf-empty' : ''}">${wsjf != null ? wsjf : '\u2013'}</span></td>
-      <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives"></td>
+      <td><textarea class="ini-cell ini-schritt" rows="1" maxlength="550" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives">${esc(ini.schritt)}</textarea></td>
       <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
@@ -133,7 +131,7 @@ function renderIniRow(ini, teamOptsBase) {
 }
 
 function renderPagination(total, page, pageSize, totalPages) {
-  const el = document.getElementById('ini-pagination');
+  const el = dom.iniPagination;
   if (!el) return;
   el.innerHTML = '';
   if (total <= pageSize) return;
@@ -216,19 +214,17 @@ function renderPagination(total, page, pageSize, totalPages) {
 }
 
 function renderInis() {
-  const tbody = document.getElementById('ini-body');
-  tbody.innerHTML = '';
+  dom.iniBody.innerHTML = '';
   updateSortHeaders();
 
   const teamOptsBase =
-    '<option value="">—</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+    '<option value="">\u2014</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
 
   const { items, total, page, pageSize, totalPages } = getPaginatedInis();
-  items.forEach((ini) => tbody.appendChild(renderIniRow(ini, teamOptsBase)));
-  tbody.querySelectorAll('.ini-notiz').forEach(autoGrow);
+  items.forEach((ini) => dom.iniBody.appendChild(renderIniRow(ini, teamOptsBase)));
+  dom.iniBody.querySelectorAll('.ini-notiz, .ini-schritt').forEach(autoGrow);
   renderPagination(total, page, pageSize, totalPages);
-  const badge = document.getElementById('inis-count');
-  if (badge) badge.textContent = total || '';
+  if (dom.inisCount) dom.inisCount.textContent = total || '';
 }
 
 function renderNVCard(nv) {
@@ -245,11 +241,9 @@ function renderNVCard(nv) {
 }
 
 function renderNVs() {
-  const grid = document.getElementById('nv-grid');
-  grid.innerHTML = '';
-  data.nicht_vergessen.forEach((nv) => grid.appendChild(renderNVCard(nv)));
-  const badge = document.getElementById('nv-count');
-  if (badge) badge.textContent = data.nicht_vergessen.length || '';
+  dom.nvGrid.innerHTML = '';
+  data.nicht_vergessen.forEach((nv) => dom.nvGrid.appendChild(renderNVCard(nv)));
+  if (dom.nvCount) dom.nvCount.textContent = data.nicht_vergessen.length || '';
 }
 
 const RENDER_MAP = {

@@ -1,12 +1,12 @@
 import { ENTITY_DEFS, STATUSES, CONFIG } from './config.js';
 import { data, save } from './store.js';
 import { renderEntity } from './render.js';
-import { findById } from './utils.js';
+import { findById, generateId } from './utils.js';
 import { openDetail } from './detail.js';
 
 export function addEntity(type) {
   const def = ENTITY_DEFS[type];
-  const id = Date.now();
+  const id = generateId();
   data[type].push({ id, ...def.defaults });
   save();
   renderEntity(type);

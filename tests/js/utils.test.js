@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore } from '../../public/js/utils.js';
+import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore, generateId } from '../../public/js/utils.js';
 
 describe('esc()', () => {
   it('escapes &, <, >, "', () => {
@@ -290,5 +290,23 @@ describe('maxRiskScore()', () => {
 
   it('returns null for empty risks array', () => {
     expect(maxRiskScore([], 10)).toBeNull();
+  });
+});
+
+describe('generateId()', () => {
+  it('erzeugt numerische IDs', () => {
+    const id = generateId();
+    expect(typeof id).toBe('number');
+    expect(Number.isFinite(id)).toBe(true);
+  });
+
+  it('erzeugt 1000 eindeutige IDs ohne Kollision', () => {
+    const ids = new Set();
+    for (let i = 0; i < 1000; i++) ids.add(generateId());
+    expect(ids.size).toBe(1000);
+  });
+
+  it('erzeugt IDs die größer als 0 sind', () => {
+    expect(generateId()).toBeGreaterThan(0);
   });
 });

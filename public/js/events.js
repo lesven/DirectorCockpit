@@ -7,6 +7,7 @@ import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
 import { openRiskPage, bindRiskEvents } from './risk.js';
 import { saveViewState } from './cookie.js';
+import { dom } from './dom.js';
 
 /** Liest id, field, source aus data-Attributen eines Elements. */
 function parseDataset(el) {
@@ -19,8 +20,8 @@ function parseDataset(el) {
 
 function updateResetBtn() {
   const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || pageState.current > 1;
-  document.getElementById('filter-reset').classList.toggle('active', !!active);
-  document.getElementById('ini-filters').classList.toggle('has-active-filters', !!active);
+  dom.filterReset.classList.toggle('active', !!active);
+  dom.iniFilters.classList.toggle('has-active-filters', !!active);
 }
 
 function applyFilter() {
@@ -100,10 +101,10 @@ function handleFilterReset() {
   filterState.team = '';
   filterState.status = '';
   filterState.projektstatus = '';
-  document.getElementById('filter-name').value = '';
-  document.getElementById('filter-team').value = '';
-  document.getElementById('filter-status').value = '';
-  document.getElementById('filter-projektstatus').value = '';
+  dom.filterName.value = '';
+  dom.filterTeam.value = '';
+  dom.filterStatus.value = '';
+  dom.filterProjektstatus.value = '';
   applyFilter();
 }
 
@@ -114,7 +115,7 @@ function handleInlineInput(e) {
 
   const { id, field, source } = parseDataset(el);
 
-  if (el.classList.contains('ini-notiz')) autoGrow(el);
+  if (el.classList.contains('ini-notiz') || el.classList.contains('ini-schritt')) autoGrow(el);
 
   const item = findById(data[source], id);
   if (!item) return;
@@ -141,11 +142,11 @@ function handleInlineChange(e) {
 
 export function bindEvents() {
   document.addEventListener('click', handleActionClick);
-  document.getElementById('filter-name').addEventListener('input', handleFilterInput);
-  ['filter-team', 'filter-status', 'filter-projektstatus'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', handleFilterChange);
+  dom.filterName.addEventListener('input', handleFilterInput);
+  [dom.filterTeam, dom.filterStatus, dom.filterProjektstatus].forEach((el) => {
+    el.addEventListener('change', handleFilterChange);
   });
-  document.getElementById('filter-reset').addEventListener('click', handleFilterReset);
+  dom.filterReset.addEventListener('click', handleFilterReset);
   document.addEventListener('input', handleInlineInput);
   document.addEventListener('change', handleInlineChange);
   bindDetailEvents();
