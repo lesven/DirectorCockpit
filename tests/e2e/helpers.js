@@ -178,4 +178,10 @@ export const selectors = {
   riskRoamSelects: Selector('[data-risk-field="roamStatus"]'),
   riskRoamNotiz: Selector('[data-risk-field="roamNotiz"]'),
   roamBadges: Selector('.roam-badge'),
+  riskBezeichnungInputs: Selector('[data-risk-field="bezeichnung"]'),
+  riskBeschreibungTextareas: Selector('[data-risk-field="beschreibung"]'),
+  riskWahrscheinlichkeitSelects: Selector('[data-risk-field="eintrittswahrscheinlichkeit"]'),
+  riskSchadensausmasSelects: Selector('[data-risk-field="schadensausmass"]'),
+  riskDeleteBtns: Selector('[data-action="removeRisk"]'),
+  riskScoreBadges: Selector('.risk-badge'),
 };
