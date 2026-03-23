@@ -20,6 +20,7 @@ function parseDataset(el) {
 function updateResetBtn() {
   const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || pageState.current > 1;
   document.getElementById('filter-reset').classList.toggle('active', !!active);
+  document.getElementById('ini-filters').classList.toggle('has-active-filters', !!active);
 }
 
 function applyFilter() {

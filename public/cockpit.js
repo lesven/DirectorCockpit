@@ -28,4 +28,7 @@ load().then(() => {
   }
   renderAll();
   bindEvents();
+  // Loading-Banner ausblenden nach erfolgreichem Laden
+  const loadingBanner = document.getElementById('loading-banner');
+  if (loadingBanner) loadingBanner.hidden = true;
 });

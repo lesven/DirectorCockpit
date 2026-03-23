@@ -65,6 +65,8 @@ function renderTeams() {
   const grid = document.getElementById('teams-grid');
   grid.innerHTML = '';
   data.teams.forEach((t) => grid.appendChild(renderTeamCard(t)));
+  const badge = document.getElementById('teams-count');
+  if (badge) badge.textContent = data.teams.length || '';
 }
 
 function updateSortHeaders() {
@@ -225,6 +227,8 @@ function renderInis() {
   items.forEach((ini) => tbody.appendChild(renderIniRow(ini, teamOptsBase)));
   tbody.querySelectorAll('.ini-notiz').forEach(autoGrow);
   renderPagination(total, page, pageSize, totalPages);
+  const badge = document.getElementById('inis-count');
+  if (badge) badge.textContent = total || '';
 }
 
 function renderNVCard(nv) {
@@ -244,6 +248,8 @@ function renderNVs() {
   const grid = document.getElementById('nv-grid');
   grid.innerHTML = '';
   data.nicht_vergessen.forEach((nv) => grid.appendChild(renderNVCard(nv)));
+  const badge = document.getElementById('nv-count');
+  if (badge) badge.textContent = data.nicht_vergessen.length || '';
 }
 
 const RENDER_MAP = {

@@ -72,7 +72,7 @@ function riskCardHtml(risk) {
   const score = calcRiskScore(risk);
   const level = getRiskLevel(score);
   return `
-    <div class="risk-card" data-risk-id="${risk.id}">
+    <div class="risk-card" data-risk-id="${risk.id}" data-level="${level.css}">
       <div class="risk-card-header">
         <input class="risk-bezeichnung" value="${esc(risk.bezeichnung)}" placeholder="Risikobezeichnung"
                data-risk-id="${risk.id}" data-risk-field="bezeichnung">
