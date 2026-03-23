@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats } from '../../public/js/utils.js';
+import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore } from '../../public/js/utils.js';
 
 describe('esc()', () => {
   it('escapes &, <, >, "', () => {
@@ -222,5 +222,73 @@ describe('formatTeamStats()', () => {
     const stats = { total: 1, critical: 2, inProgress: 3 };
     const result = formatTeamStats(stats);
     expect(result).toMatch(/📊.*⚠️.*🚀/);
+  });
+});
+
+describe('calcRiskScore()', () => {
+  it('multiplies probability × impact', () => {
+    expect(calcRiskScore({ eintrittswahrscheinlichkeit: 3, schadensausmass: 4 })).toBe(12);
+  });
+
+  it('returns 1 for minimum values', () => {
+    expect(calcRiskScore({ eintrittswahrscheinlichkeit: 1, schadensausmass: 1 })).toBe(1);
+  });
+
+  it('returns 25 for maximum values', () => {
+    expect(calcRiskScore({ eintrittswahrscheinlichkeit: 5, schadensausmass: 5 })).toBe(25);
+  });
+
+  it('defaults to 1 for missing values', () => {
+    expect(calcRiskScore({})).toBe(1);
+  });
+});
+
+describe('getRiskLevel()', () => {
+  it('returns Gering for score 1-4', () => {
+    expect(getRiskLevel(1).label).toBe('Gering');
+    expect(getRiskLevel(4).label).toBe('Gering');
+    expect(getRiskLevel(4).css).toBe('risk-low');
+  });
+
+  it('returns Mittel for score 5-9', () => {
+    expect(getRiskLevel(5).label).toBe('Mittel');
+    expect(getRiskLevel(9).label).toBe('Mittel');
+    expect(getRiskLevel(9).css).toBe('risk-medium');
+  });
+
+  it('returns Hoch for score 10-15', () => {
+    expect(getRiskLevel(10).label).toBe('Hoch');
+    expect(getRiskLevel(15).label).toBe('Hoch');
+    expect(getRiskLevel(15).css).toBe('risk-high');
+  });
+
+  it('returns Kritisch for score 16-25', () => {
+    expect(getRiskLevel(16).label).toBe('Kritisch');
+    expect(getRiskLevel(25).label).toBe('Kritisch');
+    expect(getRiskLevel(25).css).toBe('risk-critical');
+  });
+});
+
+describe('maxRiskScore()', () => {
+  const risks = [
+    { id: 1, initiative: 10, eintrittswahrscheinlichkeit: 2, schadensausmass: 3 }, // 6
+    { id: 2, initiative: 10, eintrittswahrscheinlichkeit: 4, schadensausmass: 5 }, // 20
+    { id: 3, initiative: 20, eintrittswahrscheinlichkeit: 1, schadensausmass: 1 }, // 1
+  ];
+
+  it('returns highest score for initiative', () => {
+    expect(maxRiskScore(risks, 10)).toBe(20);
+  });
+
+  it('returns score for single risk', () => {
+    expect(maxRiskScore(risks, 20)).toBe(1);
+  });
+
+  it('returns null for initiative without risks', () => {
+    expect(maxRiskScore(risks, 999)).toBeNull();
+  });
+
+  it('returns null for empty risks array', () => {
+    expect(maxRiskScore([], 10)).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Initiative;
 use App\Entity\NichtVergessen;
+use App\Entity\Risk;
 use App\Entity\SyncableEntity;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
@@ -19,9 +20,10 @@ class CockpitSyncService
 {
     /** @var array<string, class-string<SyncableEntity>> */
     private const ENTITY_REGISTRY = [
-        'teams'          => Team::class,
-        'initiatives'    => Initiative::class,
+        'teams'           => Team::class,
+        'initiatives'     => Initiative::class,
         'nicht_vergessen' => NichtVergessen::class,
+        'risks'           => Risk::class,
     ];
 
     public function __construct(

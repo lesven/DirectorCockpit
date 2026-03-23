@@ -896,3 +896,179 @@ select.detail-input option {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Risiko-Management ────────────────────────────────────── */
+.risk-modal {
+  width: 640px;
+}
+
+.modal-footer {
+  padding: 0 24px 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.risk-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.risk-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.risk-bezeichnung {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+}
+
+.risk-bezeichnung:focus { color: var(--accent); }
+.risk-bezeichnung::placeholder { color: var(--text3); }
+
+.risk-beschreibung {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 13px;
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+}
+
+.risk-beschreibung:focus { color: var(--text); }
+.risk-beschreibung::placeholder { color: var(--text3); }
+
+.risk-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.risk-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.risk-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+
+.risk-low {
+  background: rgba(62, 207, 142, 0.15);
+  color: var(--green);
+}
+
+.risk-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--yellow);
+}
+
+.risk-high {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+
+.risk-critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+}
+
+.risk-delete {
+  color: var(--text3);
+  opacity: 0.4;
+  transition: all 0.15s;
+}
+
+.risk-card:hover .risk-delete { opacity: 1; }
+
+.risk-delete:hover {
+  color: var(--red) !important;
+}
+
+.risk-empty {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text3);
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* Risk button in initiative table */
+.risk-btn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.ini-row:hover .risk-btn { opacity: 1; }
+
+.risk-btn:hover {
+  color: var(--accent);
+  background: rgba(79,143,255,0.1);
+}
+
+.risk-badge-mini {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 2px;
+  vertical-align: top;
+  background: var(--border);
+  color: var(--text2);
+}
+
+.risk-badge-mini.risk-low {
+  background: rgba(62, 207, 142, 0.2);
+  color: var(--green);
+}
+
+.risk-badge-mini.risk-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--yellow);
+}
+
+.risk-badge-mini.risk-high {
+  background: rgba(251, 146, 60, 0.2);
+  color: #fb923c;
+}
+
+.risk-badge-mini.risk-critical {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--red);
+}
+
+@media (max-width: 700px) {
+  .risk-modal { width: 100%; }
+  .risk-row { grid-template-columns: 1fr; }
+}

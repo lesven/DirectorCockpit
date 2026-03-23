@@ -26,6 +26,9 @@ export function migrateData(parsed) {
   delete parsed.inis;
   delete parsed.nvs;
 
+  // Risks-Array sicherstellen
+  if (!Array.isArray(parsed.risks)) parsed.risks = [];
+
   parsed.teams = parsed.teams.map((t) => ({
     id: t.id ?? Date.now(),
     name: t.name ?? '',
@@ -56,6 +59,15 @@ export function migrateData(parsed) {
     body: n.body ?? '',
   }));
 
+  parsed.risks = parsed.risks.map((r) => ({
+    id: r.id ?? Date.now(),
+    initiative: r.initiative,
+    bezeichnung: r.bezeichnung ?? '',
+    beschreibung: r.beschreibung ?? '',
+    eintrittswahrscheinlichkeit: r.eintrittswahrscheinlichkeit ?? 1,
+    schadensausmass: r.schadensausmass ?? 1,
+  }));
+
   return parsed;
 }
 
@@ -83,7 +95,7 @@ export function importJSON() {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
         const migrated = migrateData(parsed);
-        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge`;
+        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken`;
         if (
           !confirm(
             `Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`,
