@@ -1380,3 +1380,42 @@ select.detail-input option {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── WSJF-Preview im Detail-Modal ────────────────────────── */
+.wsjf-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(122,169,255,0.06);
+  border: 1px solid rgba(122,169,255,0.15);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 4px;
+}
+
+.wsjf-formula-text {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--text3);
+  letter-spacing: 0.03em;
+}
+
+.wsjf-equals {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--text3);
+}
+
+.wsjf-calc {
+  font-family: var(--mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--accent);
+  margin-left: auto;
+}
+
+/* ── Risk-Card Level-Indikator (linker Rand) ──────────────── */
+.risk-card[data-level="risk-low"]      { border-left: 3px solid var(--green); }
+.risk-card[data-level="risk-medium"]   { border-left: 3px solid var(--yellow); }
+.risk-card[data-level="risk-high"]     { border-left: 3px solid var(--orange); }
+.risk-card[data-level="risk-critical"] { border-left: 4px solid var(--red); }

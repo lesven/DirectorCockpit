@@ -1,5 +1,5 @@
 import { data, dSave } from './store.js';
-import { findById, esc } from './utils.js';
+import { findById, esc, calcWsjf } from './utils.js';
 import { renderEntity } from './render.js';
 import { WSJF_SCALE } from './config.js';
 
@@ -89,6 +89,11 @@ function detailFormHtml(ini) {
     <div class="detail-field">
       <span class="detail-section-title">WSJF-Bewertung</span>
     </div>
+    <div class="wsjf-preview">
+      <span class="wsjf-formula-text">(BV + TC + RR) ÷ JS</span>
+      <span class="wsjf-equals">=</span>
+      <span class="wsjf-calc" id="wsjf-calc">${calcWsjf(ini) != null ? calcWsjf(ini) : '–'}</span>
+    </div>
     <div class="detail-row">
       <div class="detail-field">
         <label class="detail-label" for="d-businessValue">Business Value</label>
@@ -159,6 +164,12 @@ function handleDetailInput(e) {
     ini.team = el.value ? +el.value : null;
   } else if (WSJF_FIELDS.includes(field)) {
     ini[field] = el.value ? parseInt(el.value, 10) : null;
+    // WSJF-Preview aktualisieren
+    const calcEl = document.getElementById('wsjf-calc');
+    if (calcEl) {
+      const v = calcWsjf(ini);
+      calcEl.textContent = v != null ? v : '\u2013';
+    }
   } else {
     ini[field] = el.value;
   }
