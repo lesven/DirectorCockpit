@@ -1,6 +1,6 @@
 import { data, dSave, save } from './store.js';
 import { findById, esc, calcRiskScore, getRiskLevel, calcWsjf } from './utils.js';
-import { renderEntity } from './render.js';
+import { renderEntity, autoGrow } from './render.js';
 import { RISK_PROBABILITY_LABELS, RISK_IMPACT_LABELS, STATUS_LABELS, ROAM_STATUS_LABELS, ROAM_STATUS_CSS } from './config.js';
 
 let currentIniId = null;
@@ -109,7 +109,7 @@ function riskCardHtml(risk) {
             </select>
           </div>
         </div>
-        <textarea class="risk-roam-notiz" rows="2" placeholder="Begründung / Maßnahmen…"
+        <textarea class="risk-roam-notiz" placeholder="Begründung / Maßnahmen…"
                   data-risk-id="${risk.id}" data-risk-field="roamNotiz">${esc(risk.roamNotiz || '')}</textarea>
       </div>
     </div>
@@ -123,6 +123,7 @@ function renderRiskList() {
     return;
   }
   riskList().innerHTML = risks.map(riskCardHtml).join('');
+  requestAnimationFrame(() => riskList().querySelectorAll('.risk-roam-notiz').forEach(autoGrow));
 }
 
 export function openRiskPage(initiativeId) {
@@ -197,6 +198,7 @@ function handleRiskInput(e) {
     renderRiskList();
   } else {
     risk[field] = el.value;
+    if (field === 'roamNotiz') autoGrow(el);
   }
   dSave();
 }

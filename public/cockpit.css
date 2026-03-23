@@ -1150,6 +1150,8 @@ select.detail-input option {
   font-size: 13px;
   outline: none;
   resize: none;
+  overflow: hidden;
+  min-height: 2.4em;
   line-height: 1.5;
 }
 
