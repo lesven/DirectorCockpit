@@ -22,7 +22,7 @@ beforeEach(() => {
   setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [] });
 
   // Setup minimal DOM for save indicator
-  document.body.innerHTML = '<span id="save-ind"></span>';
+  document.body.innerHTML = '<span id="save-ind" class="save-indicator"></span>';
 
   // Reset fetch mock und Console-Ausgaben unterdrücken
   vi.restoreAllMocks();

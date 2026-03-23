@@ -13,6 +13,29 @@ export const PROJECT_STATUS_ORDER = { ok: 0, kritisch: 1 };
 
 export const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
 
+export const RISK_PROBABILITY_LABELS = {
+  1: 'Sehr gering',
+  2: 'Gering',
+  3: 'Möglich',
+  4: 'Wahrscheinlich',
+  5: 'Sehr wahrscheinlich',
+};
+
+export const RISK_IMPACT_LABELS = {
+  1: 'Vernachlässigbar',
+  2: 'Gering',
+  3: 'Merklich',
+  4: 'Erheblich',
+  5: 'Kritisch',
+};
+
+export const RISK_LEVEL = [
+  { max: 4, label: 'Gering', css: 'risk-low' },
+  { max: 9, label: 'Mittel', css: 'risk-medium' },
+  { max: 15, label: 'Hoch', css: 'risk-high' },
+  { max: 25, label: 'Kritisch', css: 'risk-critical' },
+];
+
 export const ENTITY_DEFS = {
   teams: {
     labelField: 'name',

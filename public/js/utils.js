@@ -1,3 +1,5 @@
+import { RISK_LEVEL } from './config.js';
+
 /**
  * Gemeinsame Hilfsfunktionen — aus render.js, detail.js, crud.js und store.js extrahiert.
  */
@@ -47,4 +49,30 @@ export function calculateTeamStats(teamId, initiatives) {
 export function formatTeamStats(stats) {
   const { total, critical, inProgress } = stats;
   return `📊 ${total} • ⚠️ ${critical} • 🚀 ${inProgress}`;
+}
+
+/**
+ * Berechne Risikoscore aus Eintrittswahrscheinlichkeit × Schadensausmaß
+ */
+export function calcRiskScore(risk) {
+  return (risk.eintrittswahrscheinlichkeit || 1) * (risk.schadensausmass || 1);
+}
+
+/**
+ * Ermittle Risikostufe (Label + CSS-Klasse) anhand des Scores
+ */
+export function getRiskLevel(score) {
+  for (const level of RISK_LEVEL) {
+    if (score <= level.max) return level;
+  }
+  return RISK_LEVEL[RISK_LEVEL.length - 1];
+}
+
+/**
+ * Höchster Risikoscore aller Risiken einer Initiative
+ */
+export function maxRiskScore(risks, initiativeId) {
+  const iniRisks = risks.filter((r) => r.initiative === initiativeId);
+  if (!iniRisks.length) return null;
+  return Math.max(...iniRisks.map(calcRiskScore));
 }

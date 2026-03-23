@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
-import { esc, calcWsjf, calculateTeamStats, formatTeamStats } from './utils.js';
+import { esc, calcWsjf, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
@@ -81,6 +81,12 @@ function renderIniRow(ini, teamOptsBase) {
   const s = ini.status || 'grey';
   const ps = ini.projektstatus || 'ok';
   const wsjf = calcWsjf(ini);
+  const riskCount = data.risks ? data.risks.filter((r) => r.initiative === ini.id).length : 0;
+  const topScore = maxRiskScore(data.risks || [], ini.id);
+  const riskLevel = topScore ? getRiskLevel(topScore) : null;
+  const riskBadgeHtml = riskLevel
+    ? `<span class="risk-badge-mini ${riskLevel.css}">${riskCount}</span>`
+    : (riskCount ? `<span class="risk-badge-mini">${riskCount}</span>` : '');
   const tr = document.createElement('tr');
   tr.className = 'ini-row';
   tr.innerHTML = `
@@ -115,6 +121,7 @@ function renderIniRow(ini, teamOptsBase) {
       <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
+        <button class="risk-btn" data-action="openRisks" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
         <button class="detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details">✎</button>
         <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
       </td>

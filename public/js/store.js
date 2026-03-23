@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { debounce } from './utils.js';
 
-export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [] };
+export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] };
 
 let indicatorTimer;
 let savePromise = null;
@@ -27,17 +27,21 @@ export async function load() {
       const fallback = await fetch('/default_data.json');
       setData(await fallback.json());
     } catch {
-      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [] });
+      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] });
     }
   }
 }
 
 function showIndicator(text, duration) {
-  const ind = document.getElementById('save-ind');
-  ind.textContent = text;
-  ind.classList.add('show');
+  document.querySelectorAll('.save-indicator').forEach((ind) => {
+    ind.textContent = text;
+    ind.classList.add('show');
+  });
   clearTimeout(indicatorTimer);
-  indicatorTimer = setTimeout(() => ind.classList.remove('show'), duration);
+  indicatorTimer = setTimeout(
+    () => document.querySelectorAll('.save-indicator').forEach((ind) => ind.classList.remove('show')),
+    duration,
+  );
 }
 
 async function _doSave() {

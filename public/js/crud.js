@@ -30,6 +30,9 @@ export function removeEntity(type, id) {
   const name = item && item[def.labelField] ? `\u201E${item[def.labelField]}\u201C` : def.fallback;
   if (!confirm(`${name} wirklich löschen?`)) return;
   data[type] = data[type].filter((x) => x.id !== id);
+  if (type === 'initiatives') {
+    data.risks = data.risks.filter((r) => r.initiative !== id);
+  }
   save();
   renderEntity(type);
 }

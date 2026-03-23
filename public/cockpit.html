@@ -101,6 +101,32 @@
   </div>
 </div>
 
+<!-- RISIKO-DETAILSEITE (ersetzt Cockpit-Ansicht) -->
+<div id="risk-page" class="risk-page" hidden>
+  <div class="risk-page-header-bar">
+    <button class="risk-back-btn" id="risk-back">← Cockpit</button>
+    <nav class="risk-breadcrumb">
+      <span class="risk-breadcrumb-sep">›</span>
+      <span class="risk-breadcrumb-ini" id="risk-page-ini-name"></span>
+      <span class="risk-breadcrumb-sep">›</span>
+      <span class="risk-breadcrumb-cur">Risiken</span>
+    </nav>
+    <span class="save-indicator" id="risk-save-ind">gespeichert</span>
+  </div>
+
+  <div class="risk-content">
+    <div class="risk-ini-summary" id="risk-ini-summary"></div>
+
+    <div class="risk-section-header">
+      <span class="section-label">Risiken</span>
+      <div class="section-line"></div>
+      <button class="add-btn" id="risk-add">+ Risiko</button>
+    </div>
+
+    <div id="risk-list"></div>
+  </div>
+</div>
+
 <script type="module" src="cockpit.js"></script>
 
 <footer>
