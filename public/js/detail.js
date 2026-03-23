@@ -2,6 +2,7 @@ import { data, dSave } from './store.js';
 import { findById, esc, calcWsjf } from './utils.js';
 import { renderEntity } from './render.js';
 import { WSJF_SCALE } from './config.js';
+import { dom } from './dom.js';
 
 const STATUS_OPTIONS = [
   { value: 'fertig', label: 'Fertig' },
@@ -36,8 +37,6 @@ function teamSelectHtml(selectedId) {
 }
 
 let currentId = null;
-const backdrop = () => document.getElementById('detail-backdrop');
-const body = () => document.getElementById('detail-body');
 
 function detailFormHtml(ini) {
   return `
@@ -138,14 +137,14 @@ export function openDetail(id) {
   if (!ini) return;
 
   currentId = id;
-  body().innerHTML = detailFormHtml(ini);
-  backdrop().hidden = false;
+  dom.detailBody.innerHTML = detailFormHtml(ini);
+  dom.detailBackdrop.hidden = false;
   document.getElementById('d-name').focus();
 }
 
 export function closeDetail() {
   if (currentId === null) return;
-  backdrop().hidden = true;
+  dom.detailBackdrop.hidden = true;
   renderEntity('initiatives');
   currentId = null;
 }
@@ -177,7 +176,7 @@ function handleDetailInput(e) {
 }
 
 export function bindDetailEvents() {
-  const bd = backdrop();
+  const bd = dom.detailBackdrop;
 
   // Close on backdrop click
   bd.addEventListener('click', (e) => {
@@ -185,7 +184,7 @@ export function bindDetailEvents() {
   });
 
   // Close button
-  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  dom.detailClose.addEventListener('click', closeDetail);
 
   // Escape key
   document.addEventListener('keydown', (e) => {

@@ -1,12 +1,10 @@
 import { data, dSave, save } from './store.js';
-import { findById, esc, calcRiskScore, getRiskLevel, calcWsjf } from './utils.js';
+import { findById, esc, calcRiskScore, getRiskLevel, calcWsjf, generateId } from './utils.js';
 import { renderEntity, autoGrow } from './render.js';
 import { RISK_PROBABILITY_LABELS, RISK_IMPACT_LABELS, STATUS_LABELS, ROAM_STATUS_LABELS, ROAM_STATUS_CSS } from './config.js';
+import { dom } from './dom.js';
 
 let currentIniId = null;
-
-const riskPage = () => document.getElementById('risk-page');
-const riskList = () => document.getElementById('risk-list');
 
 function optionsHtml(labels, selected) {
   return Object.entries(labels)
@@ -119,11 +117,11 @@ function riskCardHtml(risk) {
 function renderRiskList() {
   const risks = data.risks.filter((r) => r.initiative === currentIniId);
   if (!risks.length) {
-    riskList().innerHTML = '<p class="risk-empty">Keine Risiken erfasst.</p>';
+    dom.riskList.innerHTML = '<p class="risk-empty">Keine Risiken erfasst.</p>';
     return;
   }
-  riskList().innerHTML = risks.map(riskCardHtml).join('');
-  requestAnimationFrame(() => riskList().querySelectorAll('.risk-roam-notiz').forEach(autoGrow));
+  dom.riskList.innerHTML = risks.map(riskCardHtml).join('');
+  requestAnimationFrame(() => dom.riskList.querySelectorAll('.risk-roam-notiz').forEach(autoGrow));
 }
 
 export function openRiskPage(initiativeId) {
@@ -131,28 +129,26 @@ export function openRiskPage(initiativeId) {
   const ini = findById(data.initiatives, currentIniId);
   if (!ini) return;
 
-  document.getElementById('risk-ini-summary').innerHTML = renderIniSummary(ini);
-  const iniNameEl = document.getElementById('risk-page-ini-name');
-  if (iniNameEl) iniNameEl.textContent = ini.name || 'Initiative';
+  dom.riskIniSummary.innerHTML = renderIniSummary(ini);
+  if (dom.riskPageIniName) dom.riskPageIniName.textContent = ini.name || 'Initiative';
   renderRiskList();
 
-  document.querySelector('header').hidden = true;
-  document.querySelector('main').hidden = true;
-  document.querySelector('footer').hidden = true;
+  dom.header.hidden = true;
+  dom.main.hidden = true;
+  dom.footer.hidden = true;
   // Detail-Modal schließen falls gerade offen
-  const detailBd = document.getElementById('detail-backdrop');
-  if (detailBd && !detailBd.hidden) detailBd.hidden = true;
+  if (dom.detailBackdrop && !dom.detailBackdrop.hidden) dom.detailBackdrop.hidden = true;
 
-  riskPage().hidden = false;
+  dom.riskPage.hidden = false;
   window.scrollTo(0, 0);
 }
 
 export function closeRiskPage() {
   if (currentIniId === null) return;
-  riskPage().hidden = true;
-  document.querySelector('header').hidden = false;
-  document.querySelector('main').hidden = false;
-  document.querySelector('footer').hidden = false;
+  dom.riskPage.hidden = true;
+  dom.header.hidden = false;
+  dom.main.hidden = false;
+  dom.footer.hidden = false;
   renderEntity('initiatives');
   currentIniId = null;
 }
@@ -160,7 +156,7 @@ export function closeRiskPage() {
 function addRisk() {
   if (currentIniId === null) return;
   const risk = {
-    id: Date.now(),
+    id: generateId(),
     initiative: currentIniId,
     bezeichnung: '',
     beschreibung: '',
@@ -172,7 +168,7 @@ function addRisk() {
   data.risks.push(risk);
   save();
   renderRiskList();
-  const inputs = riskList().querySelectorAll('.risk-bezeichnung');
+  const inputs = dom.riskList.querySelectorAll('.risk-bezeichnung');
   if (inputs.length) inputs[inputs.length - 1].focus();
 }
 
@@ -209,12 +205,10 @@ function handleRiskClick(e) {
 }
 
 export function bindRiskEvents() {
-  const page = riskPage();
+  dom.riskBack.addEventListener('click', closeRiskPage);
+  dom.riskAdd.addEventListener('click', addRisk);
 
-  document.getElementById('risk-back').addEventListener('click', closeRiskPage);
-  document.getElementById('risk-add').addEventListener('click', addRisk);
-
-  page.addEventListener('input', handleRiskInput);
-  page.addEventListener('change', handleRiskInput);
-  page.addEventListener('click', handleRiskClick);
+  dom.riskPage.addEventListener('input', handleRiskInput);
+  dom.riskPage.addEventListener('change', handleRiskInput);
+  dom.riskPage.addEventListener('click', handleRiskClick);
 }

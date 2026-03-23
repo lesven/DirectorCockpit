@@ -1,5 +1,6 @@
 import { data, save, setData } from './store.js';
 import { renderAll } from './render.js';
+import { generateId } from './utils.js';
 
 /**
  * Normalisiert importierte JSON-Daten auf das aktuelle Format.
@@ -30,7 +31,7 @@ export function migrateData(parsed) {
   if (!Array.isArray(parsed.risks)) parsed.risks = [];
 
   parsed.teams = parsed.teams.map((t) => ({
-    id: t.id ?? Date.now(),
+    id: t.id ?? generateId(),
     name: t.name ?? '',
     status: t.status ?? 'grey',
     fokus: t.fokus ?? '',
@@ -39,7 +40,7 @@ export function migrateData(parsed) {
 
   const validStatus = ['fertig', 'yellow', 'grey', 'ungeplant'];
   parsed.initiatives = parsed.initiatives.map((i) => ({
-    id: i.id ?? Date.now(),
+    id: i.id ?? generateId(),
     name: i.name ?? '',
     team: i.team ?? null,
     status: validStatus.includes(i.status) ? i.status : 'grey',
@@ -54,13 +55,13 @@ export function migrateData(parsed) {
   }));
 
   parsed.nicht_vergessen = parsed.nicht_vergessen.map((n) => ({
-    id: n.id ?? Date.now(),
+    id: n.id ?? generateId(),
     title: n.title ?? '',
     body: n.body ?? '',
   }));
 
   parsed.risks = parsed.risks.map((r) => ({
-    id: r.id ?? Date.now(),
+    id: r.id ?? generateId(),
     initiative: r.initiative,
     bezeichnung: r.bezeichnung ?? '',
     beschreibung: r.beschreibung ?? '',

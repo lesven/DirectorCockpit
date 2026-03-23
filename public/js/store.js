@@ -1,5 +1,6 @@
 import { CONFIG } from './config.js';
 import { debounce } from './utils.js';
+import { dom } from './dom.js';
 
 export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] };
 
@@ -33,13 +34,13 @@ export async function load() {
 }
 
 function showIndicator(text, duration) {
-  document.querySelectorAll('.save-indicator').forEach((ind) => {
+  dom.saveIndicators.forEach((ind) => {
     ind.textContent = text;
     ind.classList.add('show');
   });
   clearTimeout(indicatorTimer);
   indicatorTimer = setTimeout(
-    () => document.querySelectorAll('.save-indicator').forEach((ind) => ind.classList.remove('show')),
+    () => dom.saveIndicators.forEach((ind) => ind.classList.remove('show')),
     duration,
   );
 }

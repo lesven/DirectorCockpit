@@ -3,6 +3,7 @@ import { renderAll } from './js/render.js';
 import { bindEvents } from './js/events.js';
 import { loadViewState } from './js/cookie.js';
 import { applyViewState, filterState } from './js/sort.js';
+import { dom } from './js/dom.js';
 
 load().then(() => {
   const saved = loadViewState();
@@ -15,20 +16,17 @@ load().then(() => {
     applyViewState(saved);
     // Filter-UI VOR renderAll befüllen, damit populateTeamFilter()
     // den richtigen currentVal liest und filterState.team nicht überschreibt.
-    document.getElementById('filter-name').value = filterState.name;
-    document.getElementById('filter-team').value = filterState.team;
-    document.getElementById('filter-status').value = filterState.status;
-    document.getElementById('filter-projektstatus').value = filterState.projektstatus;
-    document
-      .getElementById('filter-reset')
-      .classList.toggle(
-        'active',
-        !!(filterState.name || filterState.team || filterState.status || filterState.projektstatus),
-      );
+    dom.filterName.value = filterState.name;
+    dom.filterTeam.value = filterState.team;
+    dom.filterStatus.value = filterState.status;
+    dom.filterProjektstatus.value = filterState.projektstatus;
+    dom.filterReset.classList.toggle(
+      'active',
+      !!(filterState.name || filterState.team || filterState.status || filterState.projektstatus),
+    );
   }
   renderAll();
   bindEvents();
   // Loading-Banner ausblenden nach erfolgreichem Laden
-  const loadingBanner = document.getElementById('loading-banner');
-  if (loadingBanner) loadingBanner.hidden = true;
+  if (dom.loadingBanner) dom.loadingBanner.hidden = true;
 });

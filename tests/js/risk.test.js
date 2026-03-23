@@ -30,11 +30,18 @@ vi.mock('../../public/js/utils.js', () => ({
     return              { label: 'Kritisch', css: 'risk-critical' };
   },
   calcWsjf: () => null,
+  generateId: () => Date.now(),
 }));
 
 vi.mock('../../public/js/render.js', () => ({
   renderEntity: vi.fn(),
   autoGrow: vi.fn(),
+}));
+
+// dom.js mock — Elemente werden in buildDom() gesetzt
+const mockDom = vi.hoisted(() => ({}));
+vi.mock('../../public/js/dom.js', () => ({
+  dom: mockDom,
 }));
 
 // Echte config.js verwenden, damit ROAM-Konstanten getestet werden
@@ -62,6 +69,17 @@ function buildDom() {
       <div id="risk-list"></div>
     </div>
   `;
+  // Populate mockDom with DOM references
+  mockDom.riskPage = document.getElementById('risk-page');
+  mockDom.riskList = document.getElementById('risk-list');
+  mockDom.riskIniSummary = document.getElementById('risk-ini-summary');
+  mockDom.riskPageIniName = document.getElementById('risk-page-ini-name');
+  mockDom.riskBack = document.getElementById('risk-back');
+  mockDom.riskAdd = document.getElementById('risk-add');
+  mockDom.detailBackdrop = null;
+  mockDom.header = document.querySelector('header');
+  mockDom.main = document.querySelector('main');
+  mockDom.footer = document.querySelector('footer');
 }
 
 function baseRisk(overrides = {}) {
