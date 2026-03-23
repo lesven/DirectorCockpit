@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe';
+import { Selector, ClientFunction } from 'testcafe';
 import { BASE_URL, setupTest, waitForSave } from './helpers.js';
 
 fixture('Team-Stats: Statistik-Badge in Team-Karte')
@@ -21,13 +21,13 @@ test('AC-1: Badge zeigt Gesamtzahl, kritisch und in-Arbeit Initiativen', async (
 });
 
 test('AC-2: Badge-Platzierung ist am unteren Ende der Karte', async (t) => {
-  const teamCard = Selector('.team-card').nth(0);
-  const badge = teamCard.find('.team-stats-badge');
-  const schrittInput = teamCard.find('[data-field="schritt"]');
+  const getCardHTML = ClientFunction(() =>
+    document.querySelector('.team-card').innerHTML
+  );
 
-  // Textinhalt der Badge sollte nach dem schritt Input kommen (DOM-Reihenfolge)
-  const cardHTML = await teamCard.innerHTML;
-  const schrittIndex = cardHTML.indexOf('Mein nächster Schritt');
+  const cardHTML = await getCardHTML();
+
+  const schrittIndex = cardHTML.indexOf('data-field="schritt"');
   const badgeIndex = cardHTML.indexOf('team-stats-badge');
 
   await t.expect(badgeIndex > schrittIndex).ok('Badge sollte nach dem schritt-Input DOM-Elemente platziert sein');
@@ -66,9 +66,6 @@ test('AC-4: Badge ist Read-Only (nicht klickbar, keine Interaktion)', async (t) 
 
 test('AC-5: Badge ist responsive und bricht nicht um', async (t) => {
   const badge = Selector('.team-stats-badge').nth(0);
-
-  // CSS sollte white-space: nowrap gesetzt haben
-  const badgeStyle = await badge.element.innerText;
 
   // Badge sollte maximal 60 Zeichen sein
   const badgeText = await badge.textContent;
