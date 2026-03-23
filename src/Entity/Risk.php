@@ -26,6 +26,12 @@ final class Risk implements SyncableEntity
     #[ORM\Column(type: 'integer')]
     private int $schadensausmass = 1;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $roamStatus = null;
+
+    #[ORM\Column(type: 'text')]
+    private string $roamNotiz = '';
+
     public function toArray(): array
     {
         return [
@@ -35,6 +41,8 @@ final class Risk implements SyncableEntity
             'beschreibung' => $this->beschreibung,
             'eintrittswahrscheinlichkeit' => $this->eintrittswahrscheinlichkeit,
             'schadensausmass' => $this->schadensausmass,
+            'roamStatus' => $this->roamStatus,
+            'roamNotiz' => $this->roamNotiz,
         ];
     }
 
@@ -47,6 +55,8 @@ final class Risk implements SyncableEntity
         $entity->beschreibung = $data['beschreibung'] ?? '';
         $entity->eintrittswahrscheinlichkeit = $data['eintrittswahrscheinlichkeit'] ?? 1;
         $entity->schadensausmass = $data['schadensausmass'] ?? 1;
+        $entity->roamStatus = $data['roamStatus'] ?? null;
+        $entity->roamNotiz = $data['roamNotiz'] ?? '';
 
         return $entity;
     }
@@ -63,6 +73,12 @@ final class Risk implements SyncableEntity
         }
         if (array_key_exists('schadensausmass', $data)) {
             $this->schadensausmass = $data['schadensausmass'];
+        }
+        if (array_key_exists('roamStatus', $data)) {
+            $this->roamStatus = $data['roamStatus'] ?: null;
+        }
+        if (array_key_exists('roamNotiz', $data)) {
+            $this->roamNotiz = $data['roamNotiz'];
         }
     }
 }

@@ -1,7 +1,7 @@
 import { data, dSave, save } from './store.js';
 import { findById, esc, calcRiskScore, getRiskLevel, calcWsjf } from './utils.js';
 import { renderEntity } from './render.js';
-import { RISK_PROBABILITY_LABELS, RISK_IMPACT_LABELS, STATUS_LABELS } from './config.js';
+import { RISK_PROBABILITY_LABELS, RISK_IMPACT_LABELS, STATUS_LABELS, ROAM_STATUS_LABELS, ROAM_STATUS_CSS } from './config.js';
 
 let currentIniId = null;
 
@@ -54,6 +54,20 @@ function renderIniSummary(ini) {
   `;
 }
 
+function roamBadgeHtml(roamStatus) {
+  if (!roamStatus) return '';
+  const label = ROAM_STATUS_LABELS[roamStatus] || roamStatus;
+  const css = ROAM_STATUS_CSS[roamStatus] || '';
+  return `<span class="roam-badge ${css}">${label}</span>`;
+}
+
+function roamOptionsHtml(selected) {
+  const options = [['', '– kein Status –'], ...Object.entries(ROAM_STATUS_LABELS)];
+  return options
+    .map(([v, l]) => `<option value="${v}"${v === (selected || '') ? ' selected' : ''}>${l}</option>`)
+    .join('');
+}
+
 function riskCardHtml(risk) {
   const score = calcRiskScore(risk);
   const level = getRiskLevel(score);
@@ -63,6 +77,7 @@ function riskCardHtml(risk) {
         <input class="risk-bezeichnung" value="${esc(risk.bezeichnung)}" placeholder="Risikobezeichnung"
                data-risk-id="${risk.id}" data-risk-field="bezeichnung">
         <span class="risk-badge ${level.css}">${level.label} (${score})</span>
+        ${roamBadgeHtml(risk.roamStatus)}
         <button class="icon-btn risk-delete" data-action="removeRisk" data-risk-id="${risk.id}" title="Risiko löschen">✕</button>
       </div>
       <textarea class="risk-beschreibung" rows="2" placeholder="Beschreibung…"
@@ -84,6 +99,18 @@ function riskCardHtml(risk) {
             </select>
           </div>
         </div>
+      </div>
+      <div class="roam-section">
+        <div class="risk-field">
+          <label class="detail-label">ROAM-Status</label>
+          <div class="detail-select-wrap">
+            <select class="detail-input" data-risk-id="${risk.id}" data-risk-field="roamStatus">
+              ${roamOptionsHtml(risk.roamStatus)}
+            </select>
+          </div>
+        </div>
+        <textarea class="risk-roam-notiz" rows="2" placeholder="Begründung / Maßnahmen…"
+                  data-risk-id="${risk.id}" data-risk-field="roamNotiz">${esc(risk.roamNotiz || '')}</textarea>
       </div>
     </div>
   `;
@@ -138,6 +165,8 @@ function addRisk() {
     beschreibung: '',
     eintrittswahrscheinlichkeit: 1,
     schadensausmass: 1,
+    roamStatus: null,
+    roamNotiz: '',
   };
   data.risks.push(risk);
   save();
