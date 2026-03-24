@@ -96,6 +96,30 @@ test('AC-5.6: WSJF-Sortierung default DESC', async (t) => {
   await t.expect(wsjfHeader.hasClass('sort-desc')).ok();
 });
 
+test('AC-5.6b: WSJF-Sortierung DESC zeigt höchsten Wert zuerst', async (t) => {
+  // Seed: Gamma=3.2, Epsilon=(3+2+1)/2=3.0, Delta=null
+  const wsjfHeader = selectors.sortHeaders.withText('WSJF');
+  await t.click(wsjfHeader); // erster Klick → DESC
+
+  // Gamma (3.2) vor Epsilon (3.0) vor Delta (null)
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Epsilon');
+  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+});
+
+test('AC-5.6c: WSJF-Sortierung ASC zeigt niedrigsten Wert zuerst, null zuletzt', async (t) => {
+  const wsjfHeader = selectors.sortHeaders.withText('WSJF');
+  await t.click(wsjfHeader); // DESC
+  await t.click(wsjfHeader); // ASC
+
+  await t.expect(wsjfHeader.hasClass('sort-asc')).ok();
+
+  // Epsilon (3.0) vor Gamma (3.2) vor Delta (null)
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Epsilon');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma');
+  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+});
+
 test('AC-5.7: Filter und Sortierung überleben Page-Reload', async (t) => {
   // Setze Filter
   await t.typeText(selectors.filterName, 'Gamma');

@@ -15,6 +15,25 @@ async function openRiskPage(t) {
   await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
 }
 
+test('AC-R-WSJF-1: WSJF-Score der Initiative wird im Risk-Modal korrekt angezeigt', async (t) => {
+  // Projekt Gamma: BV=8, TC=5, RR=3, JS=5 → WSJF = 3.2
+  await openRiskPage(t);
+
+  const wsjfValue = Selector('.risk-ini-details .risk-ini-value').withText('3.2');
+  await t.expect(wsjfValue.exists).ok('WSJF-Score 3.2 sollte im Risk-Modal sichtbar sein');
+});
+
+test('AC-R-WSJF-2: Risk-Modal zeigt "–" wenn keine WSJF-Werte gesetzt sind', async (t) => {
+  // Projekt Delta (Index 1) hat keine WSJF-Werte
+  const riskBtn = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
+  await t.hover(selectors.iniRows.nth(1));
+  await t.click(riskBtn);
+  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+
+  const wsjfValue = Selector('.risk-ini-details').find('.risk-ini-value').withText('\u2013');
+  await t.expect(wsjfValue.exists).ok('Kein WSJF-Score → "–" soll im Risk-Modal erscheinen');
+});
+
 // ── Navigation ────────────────────────────────────────────────────────────────
 
 test('AC-R-1: Risk-Button in Initiativentabelle öffnet Risiko-Seite', async (t) => {
