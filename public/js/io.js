@@ -52,6 +52,7 @@ export function migrateData(parsed) {
     timeCriticality: i.timeCriticality ?? null,
     riskReduction: i.riskReduction ?? null,
     jobSize: i.jobSize ?? null,
+    wsjf: i.wsjf ?? null,
   }));
 
   parsed.nicht_vergessen = parsed.nicht_vergessen.map((n) => ({

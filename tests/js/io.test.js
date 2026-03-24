@@ -114,6 +114,20 @@ describe('migrateData()', () => {
     expect(ini.jobSize).toBe(5);
   });
 
+  it('preserves wsjf from backend response', () => {
+    const result = migrateData({
+      initiatives: [{ id: 1, businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 }],
+    });
+    expect(result.initiatives[0].wsjf).toBe(3.2);
+  });
+
+  it('sets wsjf to null when not present in data', () => {
+    const result = migrateData({
+      initiatives: [{ id: 1, businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5 }],
+    });
+    expect(result.initiatives[0].wsjf).toBeNull();
+  });
+
   // ── Nicht-vergessen-Normalisierung ───────────────────────
 
   it('normalizes nicht_vergessen fields with defaults', () => {

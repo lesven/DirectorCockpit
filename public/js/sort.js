@@ -1,6 +1,6 @@
 import { STATUS_ORDER, PROJECT_STATUS_ORDER } from './config.js';
 import { data } from './store.js';
-import { findById, calcWsjf } from './utils.js';
+import { findById } from './utils.js';
 import { saveViewState } from './cookie.js';
 
 export const sortState = { field: null, dir: 'asc' };
@@ -68,8 +68,8 @@ export function getSortedInis() {
       va = a.frist || 'zzz';
       vb = b.frist || 'zzz';
     } else if (field === 'wsjf') {
-      const wa = calcWsjf(a);
-      const wb = calcWsjf(b);
+      const wa = a.wsjf;
+      const wb = b.wsjf;
       va = wa != null ? wa : dir === 'asc' ? Infinity : -Infinity;
       vb = wb != null ? wb : dir === 'asc' ? Infinity : -Infinity;
     } else {

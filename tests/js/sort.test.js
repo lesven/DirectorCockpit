@@ -26,9 +26,9 @@ function setTeams(teams) {
   mockData.teams = teams;
 }
 
-const INI_A = { id: 1, name: 'Alpha', team: 10, status: 'yellow', projektstatus: 'ok', frist: '01.04', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5 };
-const INI_B = { id: 2, name: 'Beta', team: 20, status: 'fertig', projektstatus: 'kritisch', frist: '15.03', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21 };
-const INI_C = { id: 3, name: 'Charlie', team: null, status: 'grey', projektstatus: 'ok', frist: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null };
+const INI_A = { id: 1, name: 'Alpha', team: 10, status: 'yellow', projektstatus: 'ok', frist: '01.04', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 };
+const INI_B = { id: 2, name: 'Beta', team: 20, status: 'fertig', projektstatus: 'kritisch', frist: '15.03', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21, wsjf: 0.1 };
+const INI_C = { id: 3, name: 'Charlie', team: null, status: 'grey', projektstatus: 'ok', frist: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null, wsjf: null };
 
 const TEAM_A = { id: 10, name: 'Frontend' };
 const TEAM_B = { id: 20, name: 'Backend' };

@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
-import { esc, calcWsjf, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
+import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
 import { dom } from './dom.js';
 
 function statusClass(s) {
@@ -80,7 +80,7 @@ function updateSortHeaders() {
 function renderIniRow(ini, teamOptsBase) {
   const s = ini.status || 'grey';
   const ps = ini.projektstatus || 'ok';
-  const wsjf = calcWsjf(ini);
+  const wsjf = ini.wsjf;
   const riskCount = data.risks ? data.risks.filter((r) => r.initiative === ini.id).length : 0;
   const topScore = maxRiskScore(data.risks || [], ini.id);
   const riskLevel = topScore ? getRiskLevel(topScore) : null;

@@ -101,4 +101,99 @@ class PayloadValidatorTest extends TestCase
 
         $this->addToAssertionCount(1);
     }
+
+    // --- WSJF-Feldvalidierung ---
+
+    public function testValidWsjfFibonacciValuesPass(): void
+    {
+        foreach ([1, 2, 3, 5, 8, 13, 21] as $value) {
+            $this->validator->validate(
+                ['initiatives' => [['id' => 1, 'businessValue' => $value, 'timeCriticality' => $value, 'riskReduction' => $value, 'jobSize' => $value]]],
+                ['initiatives']
+            );
+        }
+        $this->addToAssertionCount(1);
+    }
+
+    public function testNullWsjfFieldsAreAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'businessValue' => null, 'timeCriticality' => null, 'riskReduction' => null, 'jobSize' => null]]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMissingWsjfFieldsAreAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'name' => 'Test']]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testInvalidBusinessValueThrows(): void
+    {
+        $this->expectException(SyncException::class);
+        $this->expectExceptionMessageMatches('/businessValue.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'businessValue' => 4]]],
+            ['initiatives']
+        );
+    }
+
+    public function testInvalidTimeCriticalityThrows(): void
+    {
+        $this->expectException(SyncException::class);
+        $this->expectExceptionMessageMatches('/timeCriticality.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'timeCriticality' => 6]]],
+            ['initiatives']
+        );
+    }
+
+    public function testInvalidRiskReductionThrows(): void
+    {
+        $this->expectException(SyncException::class);
+        $this->expectExceptionMessageMatches('/riskReduction.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'riskReduction' => 0]]],
+            ['initiatives']
+        );
+    }
+
+    public function testInvalidJobSizeThrows(): void
+    {
+        $this->expectException(SyncException::class);
+        $this->expectExceptionMessageMatches('/jobSize.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'jobSize' => 99]]],
+            ['initiatives']
+        );
+    }
+
+    public function testNegativeWsjfValueThrows(): void
+    {
+        $this->expectException(SyncException::class);
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'businessValue' => -1]]],
+            ['initiatives']
+        );
+    }
+
+    public function testWsjfValidationDoesNotApplyToOtherEntities(): void
+    {
+        // businessValue bei teams soll nicht validiert werden
+        $this->validator->validate(
+            ['teams' => [['id' => 1, 'businessValue' => 4]]],
+            ['teams']
+        );
+        $this->addToAssertionCount(1);
+    }
 }

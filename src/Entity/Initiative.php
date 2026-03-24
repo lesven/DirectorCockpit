@@ -46,6 +46,20 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $jobSize = null;
 
+    public function getWsjf(): ?float
+    {
+        if ($this->businessValue === null
+            || $this->timeCriticality === null
+            || $this->riskReduction === null
+            || $this->jobSize === null
+            || $this->jobSize <= 0
+        ) {
+            return null;
+        }
+
+        return round(($this->businessValue + $this->timeCriticality + $this->riskReduction) / $this->jobSize, 1);
+    }
+
     public function toArray(): array
     {
         return [
@@ -61,6 +75,7 @@ final class Initiative implements SyncableEntity
             'timeCriticality' => $this->timeCriticality,
             'riskReduction' => $this->riskReduction,
             'jobSize' => $this->jobSize,
+            'wsjf' => $this->getWsjf(),
         ];
     }
 
