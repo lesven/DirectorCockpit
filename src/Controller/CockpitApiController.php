@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\CockpitSyncService;
 use App\Service\SyncException;
+use App\Service\ValidationException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,6 +33,8 @@ class CockpitApiController extends AbstractController
 
         try {
             $this->syncService->syncAll($payload);
+        } catch (ValidationException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (SyncException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

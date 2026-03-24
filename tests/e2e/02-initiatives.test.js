@@ -1,4 +1,4 @@
-import { Selector } from 'testcafe';
+import { Selector, ClientFunction } from 'testcafe';
 import { BASE_URL, setupTest, waitForSave, selectors } from './helpers.js';
 
 fixture('US-2: Initiativen-Management')
@@ -116,4 +116,34 @@ test('AC-2.5: WSJF-Wert wird korrekt angezeigt', async (t) => {
   // Projekt Delta: keine WSJF-Werte → "–"
   const wsjfEmpty = selectors.iniRows.nth(1).find('.wsjf-value');
   await t.expect(wsjfEmpty.textContent).eql('–');
+});
+
+test('AC-2.6: wsjf-empty CSS-Klasse gesetzt wenn kein WSJF vorhanden', async (t) => {
+  // Projekt Gamma hat WSJF 3.2 → keine wsjf-empty Klasse
+  const gammaWsjf = selectors.iniRows.nth(0).find('.wsjf-value');
+  await t.expect(gammaWsjf.hasClass('wsjf-empty')).notOk();
+
+  // Projekt Delta hat kein WSJF → wsjf-empty Klasse vorhanden
+  const deltaWsjf = selectors.iniRows.nth(1).find('.wsjf-value');
+  await t.expect(deltaWsjf.hasClass('wsjf-empty')).ok();
+});
+
+const putInvalidWsjf = ClientFunction(() =>
+  fetch('/api/cockpit', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      kw: '12',
+      teams: [],
+      initiatives: [{ id: 1, businessValue: 4, timeCriticality: null, riskReduction: null, jobSize: null }],
+      nicht_vergessen: [],
+      risks: [],
+    }),
+  }).then((r) => r.status)
+);
+
+test('AC-2.7: Backend lehnt ungültigen WSJF-Fibonacci-Wert mit HTTP 400 ab', async (t) => {
+  // businessValue: 4 ist kein gültiger Fibonacci-Wert (gültig: 1,2,3,5,8,13,21)
+  const status = await putInvalidWsjf();
+  await t.expect(status).eql(400);
 });

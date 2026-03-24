@@ -26,11 +26,11 @@ class PayloadValidator
                 continue;
             }
             if (!is_array($payload[$key])) {
-                throw new SyncException("'{$key}' muss ein Array sein");
+                throw new ValidationException("'{$key}' muss ein Array sein");
             }
             foreach ($payload[$key] as $i => $item) {
                 if (!is_array($item) || !isset($item['id'])) {
-                    throw new SyncException("'{$key}[{$i}]' muss ein Objekt mit 'id' sein");
+                    throw new ValidationException("'{$key}[{$i}]' muss ein Objekt mit 'id' sein");
                 }
                 if ($key === 'initiatives') {
                     $this->validateWsjfFields($item, $i);
@@ -51,7 +51,7 @@ class PayloadValidator
                 continue;
             }
             if (!in_array($item[$field], self::WSJF_SCALE, true)) {
-                throw new SyncException(
+                throw new ValidationException(
                     "initiatives[{$index}].{$field} muss ein WSJF-Fibonacci-Wert sein (1,2,3,5,8,13,21), '{$item[$field]}' ist ungültig"
                 );
             }

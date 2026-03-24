@@ -127,6 +127,26 @@ test('AC-3.2d: WSJF-Wert bleibt nach Page-Reload korrekt', async (t) => {
   await t.expect(selectors.iniRows.nth(0).find('.wsjf-value').textContent).eql('3.2');
 });
 
+test('AC-3.2e: Partielles WSJF-Update – nur ein Feld gesetzt lässt WSJF auf null', async (t) => {
+  // Projekt Delta: initial kein WSJF – nur BV setzen, Rest null lassen
+  await t.click(selectors.detailBtns.nth(1));
+
+  const bvSelect = Selector('#d-businessValue');
+  await t.click(bvSelect).click(bvSelect.find('option[value="8"]'));
+  await waitForSave();
+
+  // Live-Preview: TC, RR, JS fehlen noch → "–"
+  const calcEl = Selector('#wsjf-calc');
+  await t.expect(calcEl.textContent).eql('–');
+
+  await t.click(selectors.detailClose);
+
+  // Tabelle: WSJF weiterhin "–" und CSS-Klasse wsjf-empty noch gesetzt
+  const wsjfCell = selectors.iniRows.nth(1).find('.wsjf-value');
+  await t.expect(wsjfCell.textContent).eql('–');
+  await t.expect(wsjfCell.hasClass('wsjf-empty')).ok();
+});
+
 test('AC-3.3: Modal schließen per ESC', async (t) => {
   await t.click(selectors.detailBtns.nth(0));
   await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();

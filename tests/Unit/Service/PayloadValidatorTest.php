@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Service\PayloadValidator;
 use App\Service\SyncException;
+use App\Service\ValidationException;
 use PHPUnit\Framework\TestCase;
 
 class PayloadValidatorTest extends TestCase
@@ -47,7 +48,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testNonArrayEntityValueThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Array sein/");
 
         $this->validator->validate(
@@ -58,7 +59,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testNonArrayItemThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Objekt mit 'id' sein/");
 
         $this->validator->validate(
@@ -69,7 +70,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testItemWithoutIdThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Objekt mit 'id' sein/");
 
         $this->validator->validate(
@@ -80,7 +81,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testMultipleEntityKeysValidatedIndependently(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/'initiatives\\[0\\]'/");
 
         $this->validator->validate(
@@ -135,7 +136,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testInvalidBusinessValueThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches('/businessValue.*ungültig/u');
 
         $this->validator->validate(
@@ -146,7 +147,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testInvalidTimeCriticalityThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches('/timeCriticality.*ungültig/u');
 
         $this->validator->validate(
@@ -157,7 +158,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testInvalidRiskReductionThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches('/riskReduction.*ungültig/u');
 
         $this->validator->validate(
@@ -168,7 +169,7 @@ class PayloadValidatorTest extends TestCase
 
     public function testInvalidJobSizeThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches('/jobSize.*ungültig/u');
 
         $this->validator->validate(
@@ -179,10 +180,21 @@ class PayloadValidatorTest extends TestCase
 
     public function testNegativeWsjfValueThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
 
         $this->validator->validate(
             ['initiatives' => [['id' => 1, 'businessValue' => -1]]],
+            ['initiatives']
+        );
+    }
+
+    public function testValidationExceptionIsSubtypeOfSyncException(): void
+    {
+        // Stellt sicher dass Controller SyncException als Catch-All für DB-Fehler nutzen kann
+        $this->expectException(SyncException::class);
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'businessValue' => 4]]],
             ['initiatives']
         );
     }
