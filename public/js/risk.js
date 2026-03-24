@@ -1,5 +1,5 @@
 import { data, dSave, save } from './store.js';
-import { findById, esc, calcRiskScore, getRiskLevel, calcWsjf, generateId } from './utils.js';
+import { findById, esc, calcRiskScore, getRiskLevel, generateId } from './utils.js';
 import { renderEntity, autoGrow } from './render.js';
 import { RISK_PROBABILITY_LABELS, RISK_IMPACT_LABELS, STATUS_LABELS, ROAM_STATUS_LABELS, ROAM_STATUS_CSS } from './config.js';
 import { dom } from './dom.js';
@@ -17,7 +17,7 @@ function renderIniSummary(ini) {
   const teamName = team ? esc(team.name) : '— Kein Team —';
   const statusLabel = STATUS_LABELS[ini.status] || ini.status || '—';
   const psLabel = ini.projektstatus === 'kritisch' ? 'Kritisch' : 'Alles gut';
-  const wsjf = calcWsjf(ini);
+  const wsjf = ini.wsjf;
   const wsjfStr = wsjf != null ? wsjf : '–';
 
   return `

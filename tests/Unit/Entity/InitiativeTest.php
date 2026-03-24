@@ -179,4 +179,75 @@ class InitiativeTest extends TestCase
         $this->assertNull($arr['riskReduction']);
         $this->assertNull($arr['jobSize']);
     }
+
+    // --- getWsjf() ---
+
+    public function testGetWsjfCalculatesCorrectly(): void
+    {
+        // (8 + 5 + 3) / 5 = 3.2
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => 5]);
+        $this->assertSame(3.2, $ini->getWsjf());
+    }
+
+    public function testGetWsjfRoundsToOneDecimal(): void
+    {
+        // (1 + 1 + 1) / 3 = 1.0
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 1, 'timeCriticality' => 1, 'riskReduction' => 1, 'jobSize' => 3]);
+        $this->assertSame(1.0, $ini->getWsjf());
+    }
+
+    public function testGetWsjfWithLargeFibonacciValues(): void
+    {
+        // (21 + 21 + 21) / 1 = 63.0
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 21, 'timeCriticality' => 21, 'riskReduction' => 21, 'jobSize' => 1]);
+        $this->assertSame(63.0, $ini->getWsjf());
+    }
+
+    public function testGetWsjfReturnsNullWhenBusinessValueIsNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => null, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => 5]);
+        $this->assertNull($ini->getWsjf());
+    }
+
+    public function testGetWsjfReturnsNullWhenTimeCriticalityIsNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 8, 'timeCriticality' => null, 'riskReduction' => 3, 'jobSize' => 5]);
+        $this->assertNull($ini->getWsjf());
+    }
+
+    public function testGetWsjfReturnsNullWhenRiskReductionIsNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => null, 'jobSize' => 5]);
+        $this->assertNull($ini->getWsjf());
+    }
+
+    public function testGetWsjfReturnsNullWhenJobSizeIsNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => null]);
+        $this->assertNull($ini->getWsjf());
+    }
+
+    public function testGetWsjfReturnsNullWhenNoWsjfFieldsSet(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1]);
+        $this->assertNull($ini->getWsjf());
+    }
+
+    public function testToArrayIncludesCalculatedWsjf(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'businessValue' => 8, 'timeCriticality' => 5, 'riskReduction' => 3, 'jobSize' => 5]);
+        $arr = $ini->toArray();
+
+        $this->assertArrayHasKey('wsjf', $arr);
+        $this->assertSame(3.2, $arr['wsjf']);
+    }
+
+    public function testToArrayIncludesNullWsjfWhenFieldsMissing(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1]);
+        $arr = $ini->toArray();
+
+        $this->assertArrayHasKey('wsjf', $arr);
+        $this->assertNull($arr['wsjf']);
+    }
 }

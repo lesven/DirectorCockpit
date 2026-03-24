@@ -163,11 +163,12 @@ function handleDetailInput(e) {
     ini.team = el.value ? +el.value : null;
   } else if (WSJF_FIELDS.includes(field)) {
     ini[field] = el.value ? parseInt(el.value, 10) : null;
+    // lokales wsjf synchron halten, damit render.js den neuen Wert sofort sieht
+    ini.wsjf = calcWsjf(ini);
     // WSJF-Preview aktualisieren
     const calcEl = document.getElementById('wsjf-calc');
     if (calcEl) {
-      const v = calcWsjf(ini);
-      calcEl.textContent = v != null ? v : '\u2013';
+      calcEl.textContent = ini.wsjf != null ? ini.wsjf : '\u2013';
     }
   } else {
     ini[field] = el.value;

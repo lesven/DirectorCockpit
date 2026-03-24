@@ -118,7 +118,7 @@ class CockpitApiControllerTest extends WebTestCase
             'teams' => 'not-an-array',
         ]));
 
-        $this->assertResponseStatusCodeSame(500);
+        $this->assertResponseStatusCodeSame(400);
     }
 
     // -------------------------------------------------------------------------
@@ -148,7 +148,7 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertResponseStatusCodeSame(400);
     }
 
-    /** Entity-Array enthält ein nicht-Array-Element → 500 (SyncException). */
+    /** Entity-Array enthält ein nicht-Array-Element → 400 (ValidationException). */
     public function testSyncWithNonArrayEntityItemReturnsBadRequest(): void
     {
         $client = static::createClient();
@@ -156,10 +156,10 @@ class CockpitApiControllerTest extends WebTestCase
             json_encode(['teams' => ['kein-objekt']])
         );
 
-        $this->assertResponseStatusCodeSame(500);
+        $this->assertResponseStatusCodeSame(400);
     }
 
-    /** Entity-Item ohne 'id'-Feld → 500 (SyncException). */
+    /** Entity-Item ohne 'id'-Feld → 400 (ValidationException). */
     public function testSyncWithMissingIdFieldReturnsError(): void
     {
         $client = static::createClient();
@@ -167,7 +167,7 @@ class CockpitApiControllerTest extends WebTestCase
             json_encode(['teams' => [['name' => 'kein-id']]])
         );
 
-        $this->assertResponseStatusCodeSame(500);
+        $this->assertResponseStatusCodeSame(400);
     }
 
     /** WSJF-Felder mit null-Werten werden korrekt persistiert. */

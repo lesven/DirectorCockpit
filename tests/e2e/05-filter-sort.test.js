@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe';
-import { BASE_URL, setupTest, selectors } from './helpers.js';
+import { BASE_URL, setupTest, waitForSave, selectors } from './helpers.js';
 
 fixture('US-5: Filtern & Sortieren von Initiativen')
   .page(BASE_URL)
@@ -96,6 +96,30 @@ test('AC-5.6: WSJF-Sortierung default DESC', async (t) => {
   await t.expect(wsjfHeader.hasClass('sort-desc')).ok();
 });
 
+test('AC-5.6b: WSJF-Sortierung DESC zeigt höchsten Wert zuerst', async (t) => {
+  // Seed: Gamma=3.2, Epsilon=(3+2+1)/2=3.0, Delta=null
+  const wsjfHeader = selectors.sortHeaders.withText('WSJF');
+  await t.click(wsjfHeader); // erster Klick → DESC
+
+  // Gamma (3.2) vor Epsilon (3.0) vor Delta (null)
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Epsilon');
+  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+});
+
+test('AC-5.6c: WSJF-Sortierung ASC zeigt niedrigsten Wert zuerst, null zuletzt', async (t) => {
+  const wsjfHeader = selectors.sortHeaders.withText('WSJF');
+  await t.click(wsjfHeader); // DESC
+  await t.click(wsjfHeader); // ASC
+
+  await t.expect(wsjfHeader.hasClass('sort-asc')).ok();
+
+  // Epsilon (3.0) vor Gamma (3.2) vor Delta (null)
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Epsilon');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma');
+  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+});
+
 test('AC-5.7: Filter und Sortierung überleben Page-Reload', async (t) => {
   // Setze Filter
   await t.typeText(selectors.filterName, 'Gamma');
@@ -108,4 +132,33 @@ test('AC-5.7: Filter und Sortierung überleben Page-Reload', async (t) => {
   // Filter sollte erhalten sein
   await t.expect(selectors.filterName.value).eql('Gamma');
   await t.expect(selectors.iniRows.count).eql(1);
+});
+
+test('AC-5.6d: WSJF-Sortierung passt sich nach Bearbeitung einer Initiative an', async (t) => {
+  // Projekt Delta bekommt WSJF = (21+21+21)/3 = 21.0 → wird zum höchsten Wert
+  await t.click(selectors.detailBtns.nth(1)); // Projekt Delta
+
+  const bvSelect = Selector('#d-businessValue');
+  const tcSelect = Selector('#d-timeCriticality');
+  const rrSelect = Selector('#d-riskReduction');
+  const jsSelect = Selector('#d-jobSize');
+
+  await t.click(bvSelect).click(bvSelect.find('option[value="21"]'));
+  await t.click(tcSelect).click(tcSelect.find('option[value="21"]'));
+  await t.click(rrSelect).click(rrSelect.find('option[value="21"]'));
+  await t.click(jsSelect).click(jsSelect.find('option[value="3"]'));
+  await waitForSave();
+  await t.click(selectors.detailClose);
+
+  // WSJF-Tabellenzelle von Delta zeigt 21 (= 63/3)
+  await t.expect(selectors.iniRows.nth(1).find('.wsjf-value').textContent).eql('21');
+
+  // WSJF DESC sortieren → Delta (21) soll als erste Zeile erscheinen
+  const wsjfHeader = selectors.sortHeaders.withText('WSJF');
+  await t.click(wsjfHeader);
+  await t.expect(wsjfHeader.hasClass('sort-desc')).ok();
+
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Delta');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma'); // 3.2
+  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Epsilon'); // 3.0
 });
