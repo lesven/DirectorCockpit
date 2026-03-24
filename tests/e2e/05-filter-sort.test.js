@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe';
-import { BASE_URL, setupTest, selectors } from './helpers.js';
+import { BASE_URL, setupTest, waitForSave, selectors } from './helpers.js';
 
 fixture('US-5: Filtern & Sortieren von Initiativen')
   .page(BASE_URL)
