@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Domain\Shared;
 
 use App\Domain\Exception\InvalidWsjfValueException;
 use App\Domain\Model\Shared\WsjfScore;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class WsjfScoreTest extends TestCase
@@ -44,7 +45,7 @@ class WsjfScoreTest extends TestCase
         self::assertSame(2.0, $score->calculate()); // (21+13+8)/21 = 42/21 = 2.0
     }
 
-    /** @dataProvider validScaleProvider */
+    #[DataProvider('validScaleProvider')]
     public function testAcceptsAllValidFibonacciValues(int $value): void
     {
         $score = new WsjfScore($value, $value, $value, $value);
@@ -65,7 +66,7 @@ class WsjfScoreTest extends TestCase
         ];
     }
 
-    /** @dataProvider invalidScaleProvider */
+    #[DataProvider('invalidScaleProvider')]
     public function testRejectsInvalidScaleValues(int $value): void
     {
         $this->expectException(InvalidWsjfValueException::class);

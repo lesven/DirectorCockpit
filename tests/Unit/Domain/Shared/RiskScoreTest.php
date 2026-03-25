@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Domain\Shared;
 
 use App\Domain\Exception\InvalidRiskScoreException;
 use App\Domain\Model\Shared\RiskScore;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 class RiskScoreTest extends TestCase
@@ -15,7 +16,7 @@ class RiskScoreTest extends TestCase
         self::assertSame(12, $score->calculate()); // 3*4 = 12
     }
 
-    /** @dataProvider levelProvider */
+    #[DataProvider('levelProvider')]
     public function testGetLevelReturnsCorrectLabel(int $p, int $s, string $expectedLevel): void
     {
         $score = new RiskScore($p, $s);
@@ -38,7 +39,7 @@ class RiskScoreTest extends TestCase
         ];
     }
 
-    /** @dataProvider validRangeProvider */
+    #[DataProvider('validRangeProvider')]
     public function testAcceptsValidRange(int $p, int $s): void
     {
         $score = new RiskScore($p, $s);
