@@ -139,6 +139,34 @@ describe('migrateData()', () => {
     expect(nv.body).toBe('');
   });
 
+  // ── Risk-Normalisierung ──────────────────────────────────
+
+  it('normalizes risk fields with defaults', () => {
+    const result = migrateData({ risks: [{ id: 10, initiative: 2 }] });
+    const r = result.risks[0];
+    expect(r.id).toBe(10);
+    expect(r.initiative).toBe(2);
+    expect(r.bezeichnung).toBe('');
+    expect(r.beschreibung).toBe('');
+    expect(r.eintrittswahrscheinlichkeit).toBe(1);
+    expect(r.schadensausmass).toBe(1);
+    expect(r.roamStatus).toBeNull();
+    expect(r.roamNotiz).toBe('');
+  });
+
+  it('preserves existing risk values including roamStatus and roamNotiz', () => {
+    const result = migrateData({
+      risks: [{ id: 1, initiative: 3, bezeichnung: 'Kosten', beschreibung: 'Details', eintrittswahrscheinlichkeit: 3, schadensausmass: 4, roamStatus: 'mitigate', roamNotiz: 'Plan vorhanden' }],
+    });
+    const r = result.risks[0];
+    expect(r.bezeichnung).toBe('Kosten');
+    expect(r.beschreibung).toBe('Details');
+    expect(r.eintrittswahrscheinlichkeit).toBe(3);
+    expect(r.schadensausmass).toBe(4);
+    expect(r.roamStatus).toBe('mitigate');
+    expect(r.roamNotiz).toBe('Plan vorhanden');
+  });
+
   // ── Vollständiger Roundtrip ──────────────────────────────
 
   it('handles a complete data object without changes', () => {
@@ -182,17 +210,19 @@ describe('migrateData()', () => {
     expect(ms.owner).toBe('');
     expect(ms.status).toBe('offen');
     expect(ms.frist).toBe('');
+    expect(ms.bemerkung).toBe('');
   });
 
   it('preserves existing milestone values', () => {
     const result = migrateData({
-      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01' }],
+      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01', bemerkung: 'Wichtig' }],
     });
     const ms = result.milestones[0];
     expect(ms.aufgabe).toBe('Design');
     expect(ms.owner).toBe('Max');
     expect(ms.status).toBe('erledigt');
     expect(ms.frist).toBe('2026-04-01');
+    expect(ms.bemerkung).toBe('Wichtig');
   });
 
   it('validates milestone status and falls back to "offen" for invalid values', () => {
