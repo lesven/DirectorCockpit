@@ -9,9 +9,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @group regression
- */
+#[\PHPUnit\Framework\Attributes\Group('regression')]
 class MetadataRepositoryTest extends TestCase
 {
     private function buildRepo(EntityManagerInterface $em): MetadataRepository

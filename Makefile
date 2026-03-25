@@ -44,7 +44,11 @@ test-e2e-visible:
 	npm run test:e2e:visible
 
 analyse:
-	docker compose exec app php vendor/bin/phpstan analyse --level=5 src/
+	docker compose exec app php vendor/bin/phpstan analyse --level=6 src/
+
+coverage:
+	docker compose exec app php vendor/bin/phpunit --coverage-text --no-progress
+	npx vitest run --coverage
 
 fresh: down
 	docker compose up -d --build
