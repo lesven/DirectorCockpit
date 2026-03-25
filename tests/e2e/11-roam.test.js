@@ -9,7 +9,7 @@ fixture('US-11: ROAMing für Risiken')
 
 /** Öffnet die Detail-Seite der ersten Initiative (Projekt Gamma, id 2001). */
 async function openRiskPage(t) {
-  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openRisks"]');
+  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(0));
   await t.click(riskBtn);
   await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk('Detail-Seite sollte sichtbar sein');

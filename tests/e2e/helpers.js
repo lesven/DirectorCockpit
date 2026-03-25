@@ -193,7 +193,7 @@ export const selectors = {
   dpBack: Selector('#dp-back'),
 
   // Risk-Seite (jetzt Teil der Detail-Seite)
-  riskBtns: Selector('[data-action="openRisks"]'),
+  riskBtns: Selector('[data-action="openDetail"]'),
   riskPage: Selector('#detail-page'),
   riskBack: Selector('#dp-back'),
   riskAddBtn: Selector('#dp-risk-add'),
