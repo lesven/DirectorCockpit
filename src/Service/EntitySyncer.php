@@ -34,9 +34,9 @@ class EntitySyncer
 
             if (isset($byId[$id])) {
                 $byId[$id]->updateFromArray($item);
-            } else {
-                $this->em->persist($entityClass::fromArray($item));
+                continue;
             }
+            $this->em->persist($entityClass::fromArray($item));
         }
 
         foreach ($byId as $id => $entity) {
