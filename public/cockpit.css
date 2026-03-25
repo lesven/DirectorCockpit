@@ -1754,51 +1754,30 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-risk-bezeichnung:focus { color: var(--accent); }
 .dp-risk-bezeichnung::placeholder { color: var(--text3); }
 
-.dp-risk-body {
+.dp-risk-dropdowns {
   display: grid;
-  grid-template-columns: 1fr 195px;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  align-items: start;
 }
 
-.dp-risk-body-left {
+.dp-risk-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dp-risk-notes-left,
+.dp-risk-notes-right {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.dp-risk-body-right {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
 
-.dp-risk-beschreibung {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text2);
-  font-family: var(--sans);
-  font-size: 13px;
-  outline: none;
-  resize: none;
-  line-height: 1.4;
-  flex: 1;
-  min-height: 34px;
-}
 
-.dp-risk-beschreibung:focus { color: var(--text); }
-.dp-risk-beschreibung::placeholder { color: var(--text3); }
 
-.dp-risk-roam {
-  display: grid;
-  grid-template-columns: 175px 1fr;
-  gap: 8px;
-  align-items: start;
-  border-top: 1px solid var(--border);
-  padding-top: 5px;
-}
 
+.dp-risk-beschreibung,
 .dp-risk-roam-notiz {
   width: 100%;
   background: transparent;
@@ -1809,9 +1788,14 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   outline: none;
   resize: none;
   overflow: hidden;
-  min-height: 1.6em;
   line-height: 1.4;
+  min-height: 2em;
 }
+
+.dp-risk-beschreibung:focus,
+.dp-risk-roam-notiz:focus { color: var(--text); }
+.dp-risk-beschreibung::placeholder,
+.dp-risk-roam-notiz::placeholder { color: var(--text3); }
 
 .dp-risk-card .detail-input {
   padding: 4px 8px;
@@ -2036,8 +2020,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 }
 
 @media (max-width: 960px) {
-  .dp-risk-body { grid-template-columns: 1fr; }
-  .dp-risk-roam { grid-template-columns: 1fr; }
+  .dp-risk-dropdowns { grid-template-columns: 1fr; }
+  .dp-risk-notes { grid-template-columns: 1fr; }
   .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; font-size: 12px; }
   .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; }
 }

@@ -270,35 +270,25 @@ function riskCardHtml(risk) {
                 data-action="removeRisk" data-risk-id="${risk.id}"
                 title="Risiko löschen">✕</button>
       </div>
-      <div class="dp-risk-body">
-        <div class="dp-risk-body-left">
-          <label class="detail-label">Beschreibung</label>
-          <textarea class="dp-risk-beschreibung" rows="3"
-                    placeholder="Was könnte schiefgehen?"
-                    data-risk-id="${risk.id}" data-risk-field="beschreibung">${esc(risk.beschreibung)}</textarea>
-        </div>
-        <div class="dp-risk-body-right">
-          <div class="detail-field">
-            <label class="detail-label">Eintrittswahrscheinlichkeit</label>
-            <div class="detail-select-wrap">
-              <select class="detail-input"
-                      data-risk-id="${risk.id}" data-risk-field="eintrittswahrscheinlichkeit">
-                ${riskOptionsHtml(RISK_PROBABILITY_LABELS, risk.eintrittswahrscheinlichkeit)}
-              </select>
-            </div>
-          </div>
-          <div class="detail-field">
-            <label class="detail-label">Schadensausmaß</label>
-            <div class="detail-select-wrap">
-              <select class="detail-input"
-                      data-risk-id="${risk.id}" data-risk-field="schadensausmass">
-                ${riskOptionsHtml(RISK_IMPACT_LABELS, risk.schadensausmass)}
-              </select>
-            </div>
+      <div class="dp-risk-dropdowns">
+        <div class="detail-field">
+          <label class="detail-label">Eintrittswahrscheinlichkeit</label>
+          <div class="detail-select-wrap">
+            <select class="detail-input"
+                    data-risk-id="${risk.id}" data-risk-field="eintrittswahrscheinlichkeit">
+              ${riskOptionsHtml(RISK_PROBABILITY_LABELS, risk.eintrittswahrscheinlichkeit)}
+            </select>
           </div>
         </div>
-      </div>
-      <div class="dp-risk-roam">
+        <div class="detail-field">
+          <label class="detail-label">Schadensausmaß</label>
+          <div class="detail-select-wrap">
+            <select class="detail-input"
+                    data-risk-id="${risk.id}" data-risk-field="schadensausmass">
+              ${riskOptionsHtml(RISK_IMPACT_LABELS, risk.schadensausmass)}
+            </select>
+          </div>
+        </div>
         <div class="detail-field">
           <label class="detail-label">ROAM-Status</label>
           <div class="detail-select-wrap">
@@ -308,7 +298,15 @@ function riskCardHtml(risk) {
             </select>
           </div>
         </div>
-        <div class="detail-field">
+      </div>
+      <div class="dp-risk-notes">
+        <div class="dp-risk-notes-left">
+          <label class="detail-label">Beschreibung</label>
+          <textarea class="dp-risk-beschreibung"
+                    placeholder="Was könnte schiefgehen?"
+                    data-risk-id="${risk.id}" data-risk-field="beschreibung">${esc(risk.beschreibung)}</textarea>
+        </div>
+        <div class="dp-risk-notes-right">
           <label class="detail-label">Begründung / Maßnahmen</label>
           <textarea class="dp-risk-roam-notiz"
                     placeholder="Begründung oder Maßnahmen…"
