@@ -72,12 +72,11 @@ body {
 }
 
 header {
-  padding: 24px 32px 0;
+  padding: 24px 32px 16px;
   display: flex;
   align-items: baseline;
   gap: 16px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
 }
 
 header h1 {
@@ -156,24 +155,7 @@ main {
   background: var(--border);
 }
 
-.add-btn {
-  font-family: var(--mono);
-  font-size: var(--text-sm);
-  color: var(--text2);
-  background: none;
-  border: 1px solid var(--border2);
-  border-radius: var(--radius-sm);
-  padding: 4px 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.add-btn:hover {
-  color: var(--accent);
-  border-color: rgba(122,169,255,0.4);
-  background: rgba(122,169,255,0.07);
-}
-
+.add-btn,
 .copy-btn {
   font-family: var(--mono);
   font-size: var(--text-sm);
@@ -186,6 +168,7 @@ main {
   transition: all 0.15s;
 }
 
+.add-btn:hover,
 .copy-btn:hover {
   color: var(--accent);
   border-color: rgba(122,169,255,0.4);
@@ -426,7 +409,7 @@ main {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 400;
-  padding: 6px 12px;
+  padding: 6px 12px 8px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   user-select: none;
@@ -663,13 +646,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   max-width: 100%;
 }
 
-.ini-notiz {
-  resize: none;
-  overflow: hidden;
-  line-height: 1.45;
-  min-height: 36px;
-}
-
+.ini-notiz,
 .ini-schritt {
   resize: none;
   overflow: hidden;
@@ -995,18 +972,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   color: var(--text2);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-/* ── Team Stats Badge ───────────────────────────────────── */
-.team-stats-badge {
-  margin-top: 10px;
-  padding: 4px 0;
-  font-size: 0.85rem;
-  color: var(--text2);
-  font-family: var(--sans);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ── Risiko-Detailseite ───────────────────────────────────── */
@@ -1412,10 +1377,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border-bottom: 2px solid var(--border2);
 }
 
-.ini-table th {
-  padding-bottom: 8px;
-}
-
 /* ── Team-Stats Badge Verbesserung ────────────────────────── */
 .team-stats-badge {
   margin-top: 12px;
@@ -1819,9 +1780,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-risk-card .detail-field {
   gap: 2px;
 }
-
-.dp-risk-roam-notiz:focus { color: var(--text); }
-.dp-risk-roam-notiz::placeholder { color: var(--text3); }
 
 .dp-risk-delete {
   opacity: 0.35;
