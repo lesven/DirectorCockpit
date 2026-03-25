@@ -24,6 +24,13 @@ class PayloadValidator
      */
     public function validate(array $payload, array $entityKeys): void
     {
+        /** @var array<string, callable(array<string, mixed>, int): void> */
+        $itemValidators = [
+            'initiatives' => fn(array $item, int $i) => $this->validateWsjfFields($item, $i),
+            'milestones'  => fn(array $item, int $i) => $this->validateMilestoneStatus($item, $i),
+            'risks'       => fn(array $item, int $i) => $this->validateRoamStatus($item, $i),
+        ];
+
         foreach ($entityKeys as $key) {
             if (!isset($payload[$key])) {
                 continue;
@@ -38,14 +45,9 @@ class PayloadValidator
                 if (!is_int($item['id']) || $item['id'] < 1) {
                     throw new ValidationException("'{$key}[{$i}].id' muss eine positive ganze Zahl sein, '{$item['id']}' ist ungültig");
                 }
-                if ($key === 'initiatives') {
-                    $this->validateWsjfFields($item, $i);
-                }
-                if ($key === 'milestones') {
-                    $this->validateMilestoneStatus($item, $i);
-                }
-                if ($key === 'risks') {
-                    $this->validateRoamStatus($item, $i);
+                $validator = $itemValidators[$key] ?? null;
+                if ($validator !== null) {
+                    $validator($item, $i);
                 }
             }
         }

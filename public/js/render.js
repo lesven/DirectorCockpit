@@ -64,7 +64,7 @@ function renderTeams() {
   populateTeamFilter();
   dom.teamsGrid.innerHTML = '';
   data.teams.forEach((t) => dom.teamsGrid.appendChild(renderTeamCard(t)));
-  if (dom.teamsCount) dom.teamsCount.textContent = data.teams.length || '';
+  dom.teamsCount.textContent = data.teams.length || '';
 }
 
 function updateSortHeaders() {
@@ -132,7 +132,6 @@ function renderIniRow(ini, teamOptsBase) {
 
 function renderPagination(total, page, pageSize, totalPages) {
   const el = dom.iniPagination;
-  if (!el) return;
   el.innerHTML = '';
   if (total <= pageSize) return;
 
@@ -224,7 +223,7 @@ function renderInis() {
   items.forEach((ini) => dom.iniBody.appendChild(renderIniRow(ini, teamOptsBase)));
   dom.iniBody.querySelectorAll('.ini-notiz, .ini-schritt').forEach(autoGrow);
   renderPagination(total, page, pageSize, totalPages);
-  if (dom.inisCount) dom.inisCount.textContent = total || '';
+  dom.inisCount.textContent = total || '';
 }
 
 function renderNVCard(nv) {
@@ -243,7 +242,7 @@ function renderNVCard(nv) {
 function renderNVs() {
   dom.nvGrid.innerHTML = '';
   data.nicht_vergessen.forEach((nv) => dom.nvGrid.appendChild(renderNVCard(nv)));
-  if (dom.nvCount) dom.nvCount.textContent = data.nicht_vergessen.length || '';
+  dom.nvCount.textContent = data.nicht_vergessen.length || '';
 }
 
 const RENDER_MAP = {
