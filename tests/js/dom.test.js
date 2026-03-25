@@ -41,6 +41,8 @@ describe('dom – gecachte statische Elemente', () => {
     ['dpRiskSummaryBar', 'dp-risk-summary-bar'],
     ['dpRiskList',       'dp-risk-list'],
     ['dpRiskAdd',        'dp-risk-add'],
+    ['toast',            'toast'],
+    ['dpCopyLink',       'dp-copy-link'],
   ];
 
   it.each(staticIds)('dom.%s referenziert #%s', (prop, id) => {

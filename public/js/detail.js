@@ -17,6 +17,7 @@ import {
   ROAM_STATUS_CSS,
 } from './config.js';
 import { dom } from './dom.js';
+import { setHash, clearHash, buildDeepLink } from './routing.js';
 
 const STATUS_OPTIONS = [
   { value: 'fertig',    label: 'Fertig' },
@@ -484,7 +485,7 @@ function removeMilestone(msId) {
 
 // ─── Open / Close ────────────────────────────────────────────
 
-export function openDetail(id) {
+export function openDetail(id, { pushState = true } = {}) {
   const ini = findById(data.initiatives, id);
   if (!ini) return;
   currentId = id;
@@ -501,9 +502,11 @@ export function openDetail(id) {
   dom.footer.hidden = true;
   dom.detailPage.hidden = false;
   window.scrollTo(0, 0);
+
+  if (pushState) setHash('initiative', id);
 }
 
-export function closeDetail() {
+export function closeDetail({ pushState = true } = {}) {
   if (currentId === null) return;
   dom.detailPage.hidden = true;
   dom.header.hidden = false;
@@ -511,6 +514,8 @@ export function closeDetail() {
   dom.footer.hidden = false;
   renderEntity('initiatives');
   currentId = null;
+
+  if (pushState) clearHash();
 }
 
 // ─── Input Handling ──────────────────────────────────────────
@@ -629,13 +634,33 @@ async function handleMilestoneCopy() {
   }
 }
 
+// ─── Deep-Link Copy Handler ──────────────────────────────────
+
+async function handleCopyLink() {
+  if (currentId === null) return;
+  const btn = dom.dpCopyLink;
+  try {
+    await navigator.clipboard.writeText(buildDeepLink(currentId));
+    const original = btn.textContent;
+    btn.textContent = '✓';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 1500);
+  } catch (_err) {
+    console.warn('Deep-Link kopieren fehlgeschlagen', _err);
+  }
+}
+
 // ─── Event Binding ───────────────────────────────────────────
 
 export function bindDetailEvents() {
-  dom.dpBack.addEventListener('click', closeDetail);
+  dom.dpBack.addEventListener('click', () => closeDetail());
   dom.dpRiskAdd.addEventListener('click', addRisk);
   dom.dpMilestoneAdd.addEventListener('click', addMilestone);
   dom.dpMilestoneCopy.addEventListener('click', handleMilestoneCopy);
+  dom.dpCopyLink.addEventListener('click', handleCopyLink);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !dom.detailPage.hidden) closeDetail();

@@ -49,6 +49,12 @@ export const dom = {
   // Save-Indicators (NodeList → Array)
   saveIndicators: [...document.querySelectorAll('.save-indicator')],
 
+  // Toast
+  toast: document.getElementById('toast'),
+
+  // Deep-Link copy button
+  dpCopyLink: document.getElementById('dp-copy-link'),
+
   // Sortable Headers
   sortableHeaders: [...document.querySelectorAll('.ini-table th.sortable')],
 

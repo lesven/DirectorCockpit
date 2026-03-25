@@ -45,6 +45,12 @@ vi.mock('../../public/js/dom.js', () => ({
   dom: mockDom,
 }));
 
+vi.mock('../../public/js/routing.js', () => ({
+  setHash: vi.fn(),
+  clearHash: vi.fn(),
+  buildDeepLink: vi.fn((id) => `http://localhost/cockpit.html#initiative/${id}`),
+}));
+
 // Echte config.js verwenden, damit ROAM-Konstanten getestet werden
 import {
   ROAM_STATUS_LABELS,
@@ -65,6 +71,7 @@ function buildDom() {
         <button id="dp-back"></button>
         <input id="dp-name">
         <div id="dp-header-badges"></div>
+        <button id="dp-copy-link"></button>
         <span id="dp-save-ind"></span>
       </div>
       <div class="dp-content">
@@ -85,6 +92,7 @@ function buildDom() {
         </div>
       </div>
     </section>
+    <div id="toast" hidden></div>
   `;
   mockDom.detailPage          = document.getElementById('detail-page');
   mockDom.dpBack              = document.getElementById('dp-back');
@@ -99,6 +107,8 @@ function buildDom() {
   mockDom.dpMilestoneCount    = document.getElementById('dp-milestone-count');
   mockDom.dpMilestoneList     = document.getElementById('dp-milestone-list');
   mockDom.dpMilestoneAdd      = document.getElementById('dp-milestone-add');
+  mockDom.dpCopyLink           = document.getElementById('dp-copy-link');
+  mockDom.toast                = document.getElementById('toast');
   mockDom.header              = document.querySelector('header');
   mockDom.main                = document.querySelector('main');
   mockDom.footer              = document.querySelector('footer');
