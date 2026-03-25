@@ -4,6 +4,20 @@ import { generateId } from './utils.js';
 import { MILESTONE_STATUSES } from './config.js';
 
 /**
+ * Konvertiert ein frist-Wert aus einem importierten JSON auf YYYY-MM-DD.
+ * Akzeptiert: null, '', YYYY-MM-DD → unveränderter Rückgabe (null → null, '' → null).
+ * DD.MM.YYYY → wird auf YYYY-MM-DD umgestellt.
+ * Sonstige Formate → null (ungültig, API würde 400 zurückgeben).
+ */
+function convertFrist(val) {
+  if (!val) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  const m = val.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return null;
+}
+
+/**
  * Normalisiert importierte JSON-Daten auf das aktuelle Format.
  * Akzeptiert BEIDE Schlüssel-Versionen:
  *   - Alt (vor Refactoring): inis, nvs
@@ -53,7 +67,7 @@ export function migrateData(parsed) {
     status: validStatus.includes(i.status) ? i.status : (legacyStatusMap[i.status] ?? 'grey'),
     projektstatus: i.projektstatus ?? 'ok',
     schritt: i.schritt ?? '',
-    frist: i.frist ?? '',
+    frist: convertFrist(i.frist),
     notiz: i.notiz ?? '',
     businessValue: i.businessValue ?? null,
     timeCriticality: i.timeCriticality ?? null,
@@ -86,7 +100,7 @@ export function migrateData(parsed) {
     beschreibung: m.beschreibung ?? '',
     owner: m.owner ?? '',
     status: MILESTONE_STATUSES.includes(m.status) ? m.status : 'offen',
-    frist: m.frist ?? '',
+    frist: convertFrist(m.frist),
     bemerkung: m.bemerkung ?? '',
   }));
 

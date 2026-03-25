@@ -82,6 +82,7 @@ class PayloadValidator
                 );
             }
         }
+        $this->validateFrist($item, $index, 'initiatives');
     }
 
     /**
@@ -92,12 +93,41 @@ class PayloadValidator
     private function validateMilestoneStatus(array $item, int $index): void
     {
         if (!array_key_exists('status', $item) || $item['status'] === null) {
+            $this->validateFrist($item, $index, 'milestones');
             return;
         }
         $valid = array_column(MilestoneStatusEnum::cases(), 'value');
         if (!in_array($item['status'], $valid, true)) {
             throw new ValidationException(
                 "milestones[{$index}].status muss einer der Werte " . implode(', ', $valid) . " sein, '{$item['status']}' ist ungültig"
+            );
+        }
+        $this->validateFrist($item, $index, 'milestones');
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @throws ValidationException
+     */
+    private function validateFrist(array $item, int $index, string $entityKey): void
+    {
+        if (!array_key_exists('frist', $item)) {
+            return;
+        }
+        $value = $item['frist'];
+        if ($value === null || $value === '') {
+            return;
+        }
+        if (!is_string($value)) {
+            throw new ValidationException(
+                "{$entityKey}[{$index}].frist muss ein Datum im Format YYYY-MM-DD sein, ungültiger Typ angegeben"
+            );
+        }
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        if ($date === false || $date->format('Y-m-d') !== $value) {
+            throw new ValidationException(
+                "{$entityKey}[{$index}].frist muss ein Datum im Format YYYY-MM-DD sein, '{$value}' ist ungültig"
             );
         }
     }

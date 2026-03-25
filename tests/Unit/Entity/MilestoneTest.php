@@ -43,7 +43,31 @@ class MilestoneTest extends TestCase
         $this->assertSame('', $arr['beschreibung']);
         $this->assertSame('', $arr['owner']);
         $this->assertSame('offen', $arr['status']);
-        $this->assertSame('', $arr['frist']);
+        $this->assertNull($arr['frist']);
+    }
+
+    public function testFristEmptyStringBecomesNull(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => '']);
+        $this->assertNull($ms->toArray()['frist']);
+    }
+
+    public function testFristNullStaysNull(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => null]);
+        $this->assertNull($ms->toArray()['frist']);
+    }
+
+    public function testFristLegacyDdMmYyyyConverted(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => '15.04.2026']);
+        $this->assertSame('2026-04-15', $ms->toArray()['frist']);
+    }
+
+    public function testFristUnknownFormatBecomesNull(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => 'kein-datum']);
+        $this->assertNull($ms->toArray()['frist']);
     }
 
     public function testFromArrayWithInvalidStatusFallsBackToOffen(): void
@@ -101,6 +125,20 @@ class MilestoneTest extends TestCase
         $this->assertSame('blockiert', $arr['status']);
         $this->assertSame('2026-04-01', $arr['frist']);
         $this->assertSame(5, $arr['initiative']);
+    }
+
+    public function testUpdateFromArrayFristCanBeSetToNull(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => '2026-04-01']);
+        $ms->updateFromArray(['frist' => null]);
+        $this->assertNull($ms->toArray()['frist']);
+    }
+
+    public function testUpdateFromArrayFristCanBeSetToEmptyString(): void
+    {
+        $ms = Milestone::fromArray(['id' => 1, 'initiative' => 5, 'frist' => '2026-04-01']);
+        $ms->updateFromArray(['frist' => '']);
+        $this->assertNull($ms->toArray()['frist']);
     }
 
     public function testUpdateFromArrayWithInvalidStatusKeepsCurrent(): void

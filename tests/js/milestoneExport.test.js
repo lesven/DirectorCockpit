@@ -118,6 +118,18 @@ describe('buildMilestoneTableHtml()', () => {
     expect(html.indexOf('MitFrist')).toBeLessThan(html.indexOf('OhneFrist'));
   });
 
+  it('zeigt — wenn frist null ist', () => {
+    const html = buildMilestoneTableHtml([makeMilestone({ frist: null })]);
+    expect(html).toContain('—');
+  });
+
+  it('verschiebt Meilensteine mit frist=null ans Ende', () => {
+    const ms1 = makeMilestone({ id: 1, aufgabe: 'MitFrist',  frist: '2026-01-01' });
+    const ms2 = makeMilestone({ id: 2, aufgabe: 'OhneFrist', frist: null });
+    const html = buildMilestoneTableHtml([ms2, ms1]);
+    expect(html.indexOf('MitFrist')).toBeLessThan(html.indexOf('OhneFrist'));
+  });
+
   it('gibt leere-Tabelle mit Hinweistext zurück bei keinen Meilensteinen', () => {
     const html = buildMilestoneTableHtml([]);
     expect(html).toContain('<table');

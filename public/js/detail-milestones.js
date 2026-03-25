@@ -25,7 +25,7 @@ function milestoneCardHtml(ms) {
              placeholder="Owner…"
              data-milestone-id="${ms.id}" data-milestone-field="owner">
       <input type="date" class="dp-ms-frist"
-             value="${esc(ms.frist)}"
+             value="${esc(ms.frist ?? '')}"
              data-milestone-id="${ms.id}" data-milestone-field="frist">
       <div class="dp-ms-status-wrap">
         <select class="dp-ms-status ${statusCss}"
@@ -95,7 +95,7 @@ export function addMilestone(currentId) {
     beschreibung: '',
     owner: '',
     status: 'offen',
-    frist: '',
+    frist: null,
     bemerkung: '',
   };
   data.milestones.push(ms);
@@ -124,7 +124,7 @@ export function handleMilestoneField(el, currentId) {
   const ms = findById(data.milestones, msId);
   if (!ms) return;
 
-  ms[field] = el.value;
+  ms[field] = (field === 'frist') ? (el.value || null) : el.value;
 
   if (field === 'status') {
     refreshMilestones(currentId);

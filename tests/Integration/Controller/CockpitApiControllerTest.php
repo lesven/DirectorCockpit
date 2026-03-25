@@ -261,6 +261,111 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertSame('', $ms['beschreibung']);
         $this->assertSame('', $ms['owner']);
         $this->assertSame('offen', $ms['status']);
-        $this->assertSame('', $ms['frist']);
+        $this->assertNull($ms['frist']);
+    }
+
+    /** frist = YYYY-MM-DD wird korrekt persistiert und zurückgegeben. */
+    public function testMilestoneFristRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 200, 'name' => 'Ini', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 510, 'initiative' => 200, 'aufgabe' => 'Test', 'frist' => '2026-09-15', 'status' => 'offen'],
+            ],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('2026-09-15', $data['milestones'][0]['frist']);
+    }
+
+    /** frist = '' wird als NULL gespeichert. */
+    public function testMilestoneFristEmptyStringBecomesNull(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 200, 'name' => 'Ini', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 511, 'initiative' => 200, 'frist' => ''],
+            ],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertNull($data['milestones'][0]['frist']);
+    }
+
+    /** frist im Format DD.MM.YYYY (kein YYYY-MM-DD) → 400. */
+    public function testMilestoneFristInvalidFormatReturnsBadRequest(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 512, 'initiative' => 200, 'frist' => '15.04.2026'],
+            ],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    /** frist für Initiative: YYYY-MM-DD Roundtrip. */
+    public function testInitiativeFristRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 600, 'name' => 'Ini-Frist', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '2027-03-01', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $ini = array_values(array_filter($data['initiatives'], fn($i) => $i['id'] === 600))[0];
+        $this->assertSame('2027-03-01', $ini['frist']);
+    }
+
+    /** frist für Initiative: ungültiges Format → 400. */
+    public function testInitiativeFristInvalidFormatReturnsBadRequest(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 601, 'name' => 'Ini', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => 'Q4 2026', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseStatusCodeSame(400);
     }
 }
