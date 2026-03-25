@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore, generateId } from '../../public/js/utils.js';
+import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore, generateId, getOverdueMilestones } from '../../public/js/utils.js';
 
 describe('esc()', () => {
   it('escapes &, <, >, "', () => {
@@ -308,5 +308,95 @@ describe('generateId()', () => {
 
   it('erzeugt IDs die größer als 0 sind', () => {
     expect(generateId()).toBeGreaterThan(0);
+  });
+});
+
+describe('getOverdueMilestones()', () => {
+  const TODAY = new Date(2026, 2, 25); // 25. März 2026
+
+  const activeIni = { id: 1, name: 'Projekt Alpha', status: 'yellow' };
+  const finishedIni = { id: 2, name: 'Projekt Beta', status: 'fertig' };
+
+  it('gibt Milestone zurück wenn frist < heute', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-20', status: 'offen' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(1);
+    expect(result[0].milestone).toBe(ms);
+    expect(result[0].initiative).toBe(activeIni);
+  });
+
+  it('gibt Milestone zurück wenn frist = heute', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-25', status: 'offen' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(1);
+  });
+
+  it('filtert Milestone aus wenn frist > heute', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-26', status: 'offen' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(0);
+  });
+
+  it('filtert Milestone aus wenn status = erledigt', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-20', status: 'erledigt' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(0);
+  });
+
+  it('filtert Milestone aus wenn Initiative status = fertig', () => {
+    const ms = { id: 10, initiative: 2, aufgabe: 'Test', frist: '2026-03-20', status: 'offen' };
+    const result = getOverdueMilestones([ms], [finishedIni], TODAY);
+    expect(result).toHaveLength(0);
+  });
+
+  it('filtert Milestone aus wenn frist = null', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: null, status: 'offen' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(0);
+  });
+
+  it('filtert Milestone aus wenn frist leer', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '', status: 'offen' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(0);
+  });
+
+  it('filtert in_bearbeitung-Milestone nicht aus (nur erledigt wird gefiltert)', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-20', status: 'in_bearbeitung' };
+    const result = getOverdueMilestones([ms], [activeIni], TODAY);
+    expect(result).toHaveLength(1);
+  });
+
+  it('sortiert nach frist aufsteigend', () => {
+    const ms1 = { id: 10, initiative: 1, aufgabe: 'Spät', frist: '2026-03-24', status: 'offen' };
+    const ms2 = { id: 11, initiative: 1, aufgabe: 'Früh', frist: '2026-03-10', status: 'offen' };
+    const ms3 = { id: 12, initiative: 1, aufgabe: 'Mittel', frist: '2026-03-18', status: 'offen' };
+    const result = getOverdueMilestones([ms1, ms2, ms3], [activeIni], TODAY);
+    expect(result.map((r) => r.milestone.frist)).toEqual(['2026-03-10', '2026-03-18', '2026-03-24']);
+  });
+
+  it('gibt [] zurück bei leeren Arrays', () => {
+    expect(getOverdueMilestones([], [], TODAY)).toEqual([]);
+  });
+
+  it('gibt [] zurück wenn milestones null ist', () => {
+    expect(getOverdueMilestones(null, [activeIni], TODAY)).toEqual([]);
+  });
+
+  it('gibt [] zurück wenn initiatives null ist', () => {
+    const ms = { id: 10, initiative: 1, aufgabe: 'Test', frist: '2026-03-20', status: 'offen' };
+    expect(getOverdueMilestones([ms], null, TODAY)).toEqual([]);
+  });
+
+  it('gibt [] zurück und loggt bei Ausnahme', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Kaputtes Objekt das einen Fehler auslöst
+    const broken = Object.defineProperty({}, 'frist', { get() { throw new Error('boom'); } });
+    broken.initiative = 1;
+    broken.status = 'offen';
+    const result = getOverdueMilestones([broken], [activeIni], TODAY);
+    expect(result).toEqual([]);
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

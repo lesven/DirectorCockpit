@@ -433,4 +433,113 @@ class PayloadValidatorTest extends TestCase
         );
         $this->addToAssertionCount(1);
     }
+
+    // --- frist-Validierung ---
+
+    public function testValidFristDateInInitiativePasses(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'frist' => '2026-06-01']]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testNullFristInInitiativeIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'frist' => null]]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testEmptyStringFristInInitiativeIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'frist' => '']]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMissingFristKeyInInitiativeIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'name' => 'Ohne Frist']]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testInvalidFristFormatInInitiativeThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/frist.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'frist' => '25.04.2026']]],
+            ['initiatives']
+        );
+    }
+
+    public function testGarbageFristInInitiativeThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/frist.*ungültig/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'frist' => 'Q2 2026']]],
+            ['initiatives']
+        );
+    }
+
+    public function testValidFristDateInMilestonePasses(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'frist' => '2026-12-31']]],
+            ['milestones']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testNullFristInMilestoneIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'frist' => null]]],
+            ['milestones']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testEmptyStringFristInMilestoneIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'frist' => '']]],
+            ['milestones']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testInvalidFristFormatInMilestoneThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/frist.*ungültig/u');
+
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'frist' => '15/04/2026']]],
+            ['milestones']
+        );
+    }
+
+    public function testFristWithInvalidCalendarDateThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/frist.*ungültig/u');
+
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'frist' => '2026-13-99']]],
+            ['milestones']
+        );
+    }
 }

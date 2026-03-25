@@ -62,6 +62,10 @@ function buildDom() {
     </tr></thead></table>
     <div id="nv-grid"></div>
     <span id="nv-count"></span>
+    <section id="overdue-milestones-section" hidden>
+      <span id="overdue-milestones-count"></span>
+      <table><tbody id="overdue-milestones-body"></tbody></table>
+    </section>
   `;
   mockDom.kwBadge          = document.getElementById('kw-badge');
   mockDom.teamsGrid        = document.getElementById('teams-grid');
@@ -73,6 +77,9 @@ function buildDom() {
   mockDom.sortableHeaders  = document.querySelectorAll('.sortable');
   mockDom.nvGrid           = document.getElementById('nv-grid');
   mockDom.nvCount          = document.getElementById('nv-count');
+  mockDom.overdueMilestonesSection = document.getElementById('overdue-milestones-section');
+  mockDom.overdueMilestonesBody    = document.getElementById('overdue-milestones-body');
+  mockDom.overdueMilestonesCount   = document.getElementById('overdue-milestones-count');
 }
 
 beforeEach(() => {
@@ -277,5 +284,87 @@ describe('renderAll()', () => {
     expect(mockDom.teamsGrid.querySelectorAll('.team-card').length).toBe(1);
     expect(mockDom.iniBody.querySelectorAll('.ini-row').length).toBe(1);
     expect(mockDom.nvGrid.querySelectorAll('.nv-card').length).toBe(1);
+  });
+});
+
+// ── Tests: renderOverdueMilestones (via renderAll) ───────────────────────────
+
+describe('renderOverdueMilestones()', () => {
+  const activeIni = { id: 1, name: 'Projekt Alpha', status: 'yellow', team: null, projektstatus: 'ok', schritt: '', frist: '', notiz: '', wsjf: null };
+  const PAST_DATE = '2020-01-01';
+  const FUTURE_DATE = '2099-01-01';
+
+  it('blendet Sektion aus wenn keine überfälligen Milestones vorhanden', () => {
+    mockData.milestones = [];
+    mockData.initiatives = [activeIni];
+    renderAll();
+    expect(mockDom.overdueMilestonesSection.hidden).toBe(true);
+  });
+
+  it('zeigt Sektion wenn ein überfälliger Milestone vorhanden', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'Aufgabe 1', frist: PAST_DATE, status: 'offen' },
+    ];
+    renderAll();
+    expect(mockDom.overdueMilestonesSection.hidden).toBe(false);
+  });
+
+  it('erzeugt korrekte Anzahl Tabellenzeilen', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'A', frist: PAST_DATE, status: 'offen' },
+      { id: 11, initiative: 1, aufgabe: 'B', frist: PAST_DATE, status: 'in_bearbeitung' },
+    ];
+    renderAll();
+    expect(mockDom.overdueMilestonesBody.querySelectorAll('.overdue-row').length).toBe(2);
+  });
+
+  it('openDetail-Button enthält data-id der Initiative', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'Test', frist: PAST_DATE, status: 'offen' },
+    ];
+    renderAll();
+    const btn = mockDom.overdueMilestonesBody.querySelector('[data-action="openDetail"]');
+    expect(btn?.dataset.id).toBe('1');
+  });
+
+  it('zeigt den Initiativenamen im Link-Button', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'Test', frist: PAST_DATE, status: 'offen' },
+    ];
+    renderAll();
+    const btn = mockDom.overdueMilestonesBody.querySelector('.overdue-ini-btn');
+    expect(btn?.textContent).toBe('Projekt Alpha');
+  });
+
+  it('filtert erledigte Milestones heraus', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'Erledigt', frist: PAST_DATE, status: 'erledigt' },
+    ];
+    renderAll();
+    expect(mockDom.overdueMilestonesSection.hidden).toBe(true);
+  });
+
+  it('filtert zukünftige Milestones heraus', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'Zukunft', frist: FUTURE_DATE, status: 'offen' },
+    ];
+    renderAll();
+    expect(mockDom.overdueMilestonesSection.hidden).toBe(true);
+  });
+
+  it('aktualisiert den Count-Badge', () => {
+    mockData.initiatives = [activeIni];
+    mockData.milestones = [
+      { id: 10, initiative: 1, aufgabe: 'A', frist: PAST_DATE, status: 'offen' },
+      { id: 11, initiative: 1, aufgabe: 'B', frist: PAST_DATE, status: 'offen' },
+    ];
+    renderAll();
+    expect(mockDom.overdueMilestonesCount.textContent).toBe('2');
   });
 });

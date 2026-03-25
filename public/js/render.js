@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
-import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
+import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel, getOverdueMilestones } from './utils.js';
 import { dom } from './dom.js';
 
 function statusClass(s) {
@@ -119,7 +119,7 @@ function renderIniRow(ini, teamOptsBase) {
       </td>
       <td><span class="wsjf-value${wsjf == null ? ' wsjf-empty' : ''}">${wsjf != null ? wsjf : '\u2013'}</span></td>
       <td><textarea class="ini-cell ini-schritt" rows="1" maxlength="550" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives">${esc(ini.schritt)}</textarea></td>
-      <td><input type="date" class="ini-cell ini-frist-date" value="${esc(ini.frist)}" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
+      <td><input type="date" class="ini-cell ini-frist-date" value="${esc(ini.frist ?? '')}" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
         <button class="risk-btn" data-action="openDetail" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
@@ -259,6 +259,37 @@ function renderNVs() {
   dom.nvCount.textContent = data.nicht_vergessen.length || '';
 }
 
+function renderOverdueMilestones() {
+  const section = dom.overdueMilestonesSection;
+  const tbody = dom.overdueMilestonesBody;
+  const countBadge = dom.overdueMilestonesCount;
+  if (!section || !tbody) return;
+
+  const entries = getOverdueMilestones(data.milestones || [], data.initiatives || []);
+
+  tbody.innerHTML = '';
+  if (entries.length === 0) {
+    section.hidden = true;
+    return;
+  }
+
+  entries.forEach(({ milestone, initiative }) => {
+    const tr = document.createElement('tr');
+    tr.className = 'overdue-row';
+    tr.innerHTML = `
+      <td class="overdue-aufgabe">${esc(milestone.aufgabe)}</td>
+      <td class="overdue-frist">${esc(milestone.frist)}</td>
+      <td class="overdue-ini">
+        <button class="overdue-ini-btn" data-action="openDetail" data-id="${initiative.id}">${esc(initiative.name)}</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  if (countBadge) countBadge.textContent = entries.length;
+  section.hidden = false;
+}
+
 const RENDER_MAP = {
   teams: renderTeams,
   initiatives: renderInis,
@@ -272,6 +303,7 @@ export function renderEntity(type) {
 export function renderAll() {
   renderKW();
   renderTeams();
+  renderOverdueMilestones();
   renderInis();
   renderNVs();
 }

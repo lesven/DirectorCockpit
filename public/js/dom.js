@@ -62,4 +62,9 @@ export const dom = {
   header: document.querySelector('header'),
   main: document.querySelector('main'),
   footer: document.querySelector('footer'),
+
+  // Überfällige Meilensteine
+  overdueMilestonesSection: document.getElementById('overdue-milestones-section'),
+  overdueMilestonesBody: document.getElementById('overdue-milestones-body'),
+  overdueMilestonesCount: document.getElementById('overdue-milestones-count'),
 };

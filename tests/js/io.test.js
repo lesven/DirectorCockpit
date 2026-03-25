@@ -84,7 +84,7 @@ describe('migrateData()', () => {
     expect(ini.status).toBe('grey');
     expect(ini.projektstatus).toBe('ok');
     expect(ini.schritt).toBe('');
-    expect(ini.frist).toBe('');
+    expect(ini.frist).toBeNull();
     expect(ini.notiz).toBe('');
     expect(ini.businessValue).toBeNull();
     expect(ini.timeCriticality).toBeNull();
@@ -209,7 +209,7 @@ describe('migrateData()', () => {
     expect(ms.beschreibung).toBe('');
     expect(ms.owner).toBe('');
     expect(ms.status).toBe('offen');
-    expect(ms.frist).toBe('');
+    expect(ms.frist).toBeNull();
     expect(ms.bemerkung).toBe('');
   });
 
@@ -251,5 +251,42 @@ describe('migrateData()', () => {
       initiatives: [{ id: 1, name: 'Legacy', status: 'green' }],
     });
     expect(result.initiatives[0].status).toBe('fertig');
+  });
+
+  // ── frist-Konvertierung ──────────────────────────────────
+
+  it('konvertiert initiative.frist von DD.MM.YYYY nach YYYY-MM-DD', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '25.04.2026' }] });
+    expect(result.initiatives[0].frist).toBe('2026-04-25');
+  });
+
+  it('behält initiative.frist im Format YYYY-MM-DD unverändert', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '2026-04-25' }] });
+    expect(result.initiatives[0].frist).toBe('2026-04-25');
+  });
+
+  it('setzt initiative.frist auf null bei unbekanntem Format', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: 'Q2 2026' }] });
+    expect(result.initiatives[0].frist).toBeNull();
+  });
+
+  it('setzt initiative.frist auf null bei leerem String', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '' }] });
+    expect(result.initiatives[0].frist).toBeNull();
+  });
+
+  it('konvertiert milestone.frist von DD.MM.YYYY nach YYYY-MM-DD', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: '01.12.2026' }] });
+    expect(result.milestones[0].frist).toBe('2026-12-01');
+  });
+
+  it('behält milestone.frist im Format YYYY-MM-DD unverändert', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: '2026-12-01' }] });
+    expect(result.milestones[0].frist).toBe('2026-12-01');
+  });
+
+  it('setzt milestone.frist auf null bei unbekanntem Format', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: 'Ende Q4' }] });
+    expect(result.milestones[0].frist).toBeNull();
   });
 });

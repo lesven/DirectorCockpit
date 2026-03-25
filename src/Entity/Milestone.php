@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\MilestoneStatusEnum;
 use App\Repository\MilestoneRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MilestoneRepository::class)]
@@ -27,8 +28,8 @@ final class Milestone implements SyncableEntity
     #[ORM\Column(length: 20, enumType: MilestoneStatusEnum::class)]
     private MilestoneStatusEnum $status = MilestoneStatusEnum::Offen;
 
-    #[ORM\Column(length: 20)]
-    private string $frist = '';
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $frist = null;
 
     #[ORM\Column(type: 'text')]
     private string $bemerkung = '';
@@ -43,7 +44,7 @@ final class Milestone implements SyncableEntity
             'beschreibung' => $this->beschreibung,
             'owner' => $this->owner,
             'status' => $this->status->value,
-            'frist' => $this->frist,
+            'frist' => $this->frist?->format('Y-m-d'),
             'bemerkung' => $this->bemerkung,
         ];
     }
@@ -58,7 +59,7 @@ final class Milestone implements SyncableEntity
         $entity->beschreibung = $data['beschreibung'] ?? '';
         $entity->owner = $data['owner'] ?? '';
         $entity->status = MilestoneStatusEnum::tryFrom($data['status'] ?? '') ?? MilestoneStatusEnum::Offen;
-        $entity->frist = $data['frist'] ?? '';
+        $entity->frist = self::parseFrist($data['frist'] ?? null);
         $entity->bemerkung = $data['bemerkung'] ?? '';
 
         return $entity;
@@ -77,10 +78,30 @@ final class Milestone implements SyncableEntity
             $this->status = MilestoneStatusEnum::tryFrom($data['status'] ?? '') ?? $this->status;
         }
         if (array_key_exists('frist', $data)) {
-            $this->frist = $data['frist'] ?? '';
+            $this->frist = self::parseFrist($data['frist']);
         }
         if (array_key_exists('bemerkung', $data)) {
             $this->bemerkung = $data['bemerkung'] ?? '';
         }
+    }
+
+    private static function parseFrist(mixed $value): ?\DateTimeImmutable
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if (!is_string($value)) {
+            return null;
+        }
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        if ($date !== false && $date->format('Y-m-d') === $value) {
+            return $date;
+        }
+        $date = \DateTimeImmutable::createFromFormat('d.m.Y', $value);
+        if ($date !== false) {
+            return $date;
+        }
+
+        return null;
     }
 }
