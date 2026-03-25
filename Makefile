@@ -29,6 +29,7 @@ backup:
 
 test:
 	docker compose exec app php vendor/bin/phpunit
+	docker compose exec app php -d memory_limit=512M vendor/bin/phpstan analyse src/
 	npm test
 
 test-unit:
@@ -44,7 +45,7 @@ test-e2e-visible:
 	npm run test:e2e:visible
 
 analyse:
-	docker compose exec app php vendor/bin/phpstan analyse --level=6 src/
+	docker compose exec app php -d memory_limit=512M vendor/bin/phpstan analyse --level=6 src/
 
 coverage:
 	docker compose exec app php vendor/bin/phpunit --coverage-text --no-progress
