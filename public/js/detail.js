@@ -334,9 +334,9 @@ function renderRiskList(risks) {
 
   const sorted = [...risks].sort((a, b) => calcRiskScore(b) - calcRiskScore(a));
   dom.dpRiskList.innerHTML = sorted.map(riskCardHtml).join('');
-  requestAnimationFrame(() =>
-    dom.dpRiskList.querySelectorAll('.dp-risk-roam-notiz').forEach(autoGrow),
-  );
+  requestAnimationFrame(() => {
+    dom.dpRiskList.querySelectorAll('.dp-risk-roam-notiz, .dp-risk-beschreibung').forEach(autoGrow);
+  });
 }
 
 function refreshRisks() {
@@ -560,7 +560,7 @@ function handleRiskField(el) {
     refreshRisks();
   } else {
     risk[field] = el.value;
-    if (field === 'roamNotiz') autoGrow(el);
+    if (field === 'roamNotiz' || field === 'beschreibung') autoGrow(el);
   }
   dSave();
 }
