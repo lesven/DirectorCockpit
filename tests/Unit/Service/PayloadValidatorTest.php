@@ -354,4 +354,83 @@ class PayloadValidatorTest extends TestCase
         );
         $this->addToAssertionCount(1);
     }
+
+    // --- Mehrere Items: Index-Korrektheit beim Refactoring absichern ---
+
+    public function testSecondItemInvalidReportsCorrectIndex(): void
+    {
+        // Erstes Item gültig, zweites ungültig → Fehlermeldung muss Index 1 zeigen
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/teams\[1\]/');
+
+        $this->validator->validate(
+            ['teams' => [
+                ['id' => 1, 'name' => 'ok'],
+                ['name' => 'missing id'],
+            ]],
+            ['teams']
+        );
+    }
+
+    public function testThirdItemInvalidWsjfReportsCorrectIndex(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/initiatives\[2\]/');
+
+        $this->validator->validate(
+            ['initiatives' => [
+                ['id' => 1, 'businessValue' => 1],
+                ['id' => 2, 'businessValue' => 2],
+                ['id' => 3, 'businessValue' => 4], // 4 ist kein Fibonacci-Wert
+            ]],
+            ['initiatives']
+        );
+    }
+
+    public function testValidItemsBeforeInvalidDoNotPreventValidation(): void
+    {
+        // Mehrere gültige Items + ein ungültiges am Ende
+        $this->expectException(ValidationException::class);
+
+        $this->validator->validate(
+            ['risks' => [
+                ['id' => 1, 'roamStatus' => 'report'],
+                ['id' => 2, 'roamStatus' => 'on_track'],
+                ['id' => 3, 'roamStatus' => 'INVALID'],
+            ]],
+            ['risks']
+        );
+    }
+
+    public function testMultipleEntitiesFirstInvalidStopsEarly(): void
+    {
+        // Nur teams wird validiert; die initiative mit ungültigem WSJF bleibt
+        // ungeprüft, weil teams bereits fehlschlägt
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches("/teams\[0\]/");
+
+        $this->validator->validate(
+            [
+                'teams'       => [['name' => 'no id']],
+                'initiatives' => [['id' => 1, 'businessValue' => 4]],
+            ],
+            ['teams', 'initiatives']
+        );
+    }
+
+    public function testAllItemsValidPassesCompletely(): void
+    {
+        // Vollständig gemischter valider Payload über alle Entity-Typen
+        $this->validator->validate(
+            [
+                'teams'          => [['id' => 1, 'name' => 'T1'], ['id' => 2, 'name' => 'T2']],
+                'initiatives'    => [['id' => 10, 'businessValue' => 5, 'jobSize' => 3]],
+                'milestones'     => [['id' => 20, 'status' => 'offen'], ['id' => 21, 'status' => 'erledigt']],
+                'risks'          => [['id' => 30, 'roamStatus' => 'mitigated']],
+                'nicht_vergessen'=> [['id' => 40, 'title' => 'Foo']],
+            ],
+            ['teams', 'initiatives', 'milestones', 'risks', 'nicht_vergessen']
+        );
+        $this->addToAssertionCount(1);
+    }
 }

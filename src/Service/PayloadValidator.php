@@ -39,17 +39,29 @@ class PayloadValidator
                 throw new ValidationException("'{$key}' muss ein Array sein");
             }
             foreach ($payload[$key] as $i => $item) {
-                if (!is_array($item) || !isset($item['id'])) {
-                    throw new ValidationException("'{$key}[{$i}]' muss ein Objekt mit 'id' sein");
-                }
-                if (!is_int($item['id']) || $item['id'] < 1) {
-                    throw new ValidationException("'{$key}[{$i}].id' muss eine positive ganze Zahl sein, '{$item['id']}' ist ungültig");
-                }
-                $validator = $itemValidators[$key] ?? null;
-                if ($validator !== null) {
-                    $validator($item, $i);
-                }
+                $this->validateItem($key, $i, $item, $itemValidators[$key] ?? null);
             }
+        }
+    }
+
+    /**
+     * Validiert ein einzelnes Item innerhalb einer Entity-Liste.
+     *
+     * @param mixed                                              $item
+     * @param callable(array<string, mixed>, int): void|null    $extraValidator
+     *
+     * @throws ValidationException
+     */
+    private function validateItem(string $key, int $index, mixed $item, ?callable $extraValidator): void
+    {
+        if (!is_array($item) || !isset($item['id'])) {
+            throw new ValidationException("'{$key}[{$index}]' muss ein Objekt mit 'id' sein");
+        }
+        if (!is_int($item['id']) || $item['id'] < 1) {
+            throw new ValidationException("'{$key}[{$index}].id' muss eine positive ganze Zahl sein, '{$item['id']}' ist ungültig");
+        }
+        if ($extraValidator !== null) {
+            $extraValidator($item, $index);
         }
     }
 
