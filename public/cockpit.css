@@ -1710,18 +1710,18 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 #dp-risk-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dp-risk-card {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
+  border-radius: 6px;
+  padding: 7px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  gap: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   transition: border-color 0.15s;
 }
 
@@ -1737,7 +1737,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-risk-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dp-risk-bezeichnung {
@@ -1746,7 +1746,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   outline: none;
 }
@@ -1754,63 +1754,70 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-risk-bezeichnung:focus { color: var(--accent); }
 .dp-risk-bezeichnung::placeholder { color: var(--text3); }
 
-.dp-risk-body {
+.dp-risk-dropdowns {
   display: grid;
-  grid-template-columns: 1fr 210px;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
 }
 
-.dp-risk-body-left {
+.dp-risk-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dp-risk-notes-left,
+.dp-risk-notes-right {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.dp-risk-body-right {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.dp-risk-beschreibung {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text2);
-  font-family: var(--sans);
-  font-size: 13px;
-  outline: none;
-  resize: none;
-  line-height: 1.5;
-  flex: 1;
-  min-height: 70px;
-}
 
-.dp-risk-beschreibung:focus { color: var(--text); }
-.dp-risk-beschreibung::placeholder { color: var(--text3); }
 
-.dp-risk-roam {
-  display: grid;
-  grid-template-columns: 190px 1fr;
-  gap: 16px;
-  align-items: start;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
 
+.dp-risk-beschreibung,
 .dp-risk-roam-notiz {
   width: 100%;
   background: transparent;
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
   resize: none;
   overflow: hidden;
-  min-height: 2.4em;
-  line-height: 1.5;
+  line-height: 1.4;
+  min-height: 2em;
+}
+
+.dp-risk-beschreibung:focus,
+.dp-risk-roam-notiz:focus { color: var(--text); }
+.dp-risk-beschreibung::placeholder,
+.dp-risk-roam-notiz::placeholder { color: var(--text3); }
+
+.dp-risk-card .detail-input {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+.dp-risk-card .detail-select-wrap::after {
+  bottom: 7px;
+  right: 8px;
+}
+
+.dp-risk-card select.detail-input {
+  padding-right: 22px;
+}
+
+.dp-risk-card .detail-label {
+  font-size: 9px;
+}
+
+.dp-risk-card .detail-field {
+  gap: 2px;
 }
 
 .dp-risk-roam-notiz:focus { color: var(--text); }
@@ -2013,8 +2020,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 }
 
 @media (max-width: 960px) {
-  .dp-risk-body { grid-template-columns: 1fr; }
-  .dp-risk-roam { grid-template-columns: 1fr; }
+  .dp-risk-dropdowns { grid-template-columns: 1fr; }
+  .dp-risk-notes { grid-template-columns: 1fr; }
   .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; font-size: 12px; }
   .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; }
 }
