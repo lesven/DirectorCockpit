@@ -29,4 +29,14 @@
             <directory>src</directory>
         </include>
     </source>
+
+    <coverage>
+        <report>
+            <clover outputFile="var/coverage/clover.xml"/>
+        </report>
+    </coverage>
+
+    <logging>
+        <junit outputFile="var/coverage/junit.xml"/>
+    </logging>
 </phpunit>

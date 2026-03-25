@@ -63,10 +63,6 @@ function handleActionClick(e) {
     case 'openDetail':
       openDetail(id);
       break;
-    case 'openRisks':
-      // Öffnet die Detail-Seite; Risiken sind dort direkt sichtbar (scrollen)
-      openDetail(id);
-      break;
     case 'gotoPage': {
       const p = +target.dataset.page;
       if (!isNaN(p) && p >= 1) {

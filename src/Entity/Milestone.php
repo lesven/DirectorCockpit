@@ -33,6 +33,7 @@ final class Milestone implements SyncableEntity
     #[ORM\Column(type: 'text')]
     private string $bemerkung = '';
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -47,6 +48,7 @@ final class Milestone implements SyncableEntity
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -62,6 +64,7 @@ final class Milestone implements SyncableEntity
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         if (array_key_exists('initiative', $data)) {

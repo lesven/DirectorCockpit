@@ -60,6 +60,7 @@ final class Initiative implements SyncableEntity
         return round(($this->businessValue + $this->timeCriticality + $this->riskReduction) / $this->jobSize, 1);
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -79,6 +80,7 @@ final class Initiative implements SyncableEntity
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -98,6 +100,7 @@ final class Initiative implements SyncableEntity
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         $this->name = $data['name'] ?? $this->name;

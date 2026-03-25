@@ -17,6 +17,7 @@ final class NichtVergessen implements SyncableEntity
     #[ORM\Column(type: 'text')]
     private string $body = '';
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -26,6 +27,7 @@ final class NichtVergessen implements SyncableEntity
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -36,6 +38,7 @@ final class NichtVergessen implements SyncableEntity
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         $this->title = $data['title'] ?? $this->title;
