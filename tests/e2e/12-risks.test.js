@@ -7,39 +7,39 @@ fixture('US-12: Risiko-Management (CRUD)')
     await setupTest();
   });
 
-/** Öffnet die Risiko-Seite der ersten Initiative (Projekt Gamma). */
+/** Öffnet die Detail-Seite der ersten Initiative (Projekt Gamma). */
 async function openRiskPage(t) {
   const riskBtn = selectors.iniRows.nth(0).find('[data-action="openRisks"]');
   await t.hover(selectors.iniRows.nth(0));
   await t.click(riskBtn);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 }
 
-test('AC-R-WSJF-1: WSJF-Score der Initiative wird im Risk-Modal korrekt angezeigt', async (t) => {
+test('AC-R-WSJF-1: WSJF-Score der Initiative wird auf der Detail-Seite korrekt angezeigt', async (t) => {
   // Projekt Gamma: BV=8, TC=5, RR=3, JS=5 → WSJF = 3.2
   await openRiskPage(t);
 
-  const wsjfValue = Selector('.risk-ini-details .risk-ini-value').withText('3.2');
-  await t.expect(wsjfValue.exists).ok('WSJF-Score 3.2 sollte im Risk-Modal sichtbar sein');
+  const scoreEl = Selector('#dp-wsjf-score');
+  await t.expect(scoreEl.textContent).eql('3.2', 'WSJF-Score 3.2 sollte auf der Detail-Seite sichtbar sein');
 });
 
-test('AC-R-WSJF-2: Risk-Modal zeigt "–" wenn keine WSJF-Werte gesetzt sind', async (t) => {
+test('AC-R-WSJF-2: Detail-Seite zeigt "–" wenn keine WSJF-Werte gesetzt sind', async (t) => {
   // Projekt Delta (Index 1) hat keine WSJF-Werte
   const riskBtn = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 
-  const wsjfValue = Selector('.risk-ini-details').find('.risk-ini-value').withText('\u2013');
-  await t.expect(wsjfValue.exists).ok('Kein WSJF-Score → "–" soll im Risk-Modal erscheinen');
+  const scoreEl = Selector('#dp-wsjf-score');
+  await t.expect(scoreEl.textContent).eql('\u2013', 'Kein WSJF-Score → "–" soll auf der Detail-Seite erscheinen');
 });
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 
-test('AC-R-1: Risk-Button in Initiativentabelle öffnet Risiko-Seite', async (t) => {
+test('AC-R-1: Risk-Button in Initiativentabelle öffnet Detail-Seite', async (t) => {
   await openRiskPage(t);
 
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
   // Hauptansicht ist versteckt
   await t.expect(Selector('header').hasAttribute('hidden')).ok();
   await t.expect(Selector('main').hasAttribute('hidden')).ok();
@@ -52,14 +52,14 @@ test('AC-R-2: Risk-Button zeigt Anzahl der Risiken als Text', async (t) => {
   await t.expect(riskBtn.textContent).contains('2', 'Button sollte Risikoanzahl enthalten');
 });
 
-test('AC-R-3: Initiative ohne Risiken zeigt leere Risiko-Seite', async (t) => {
+test('AC-R-3: Initiative ohne Risiken zeigt leere Risiko-Sektion', async (t) => {
   // Projekt Delta (idx 1) hat keine Risiken
   const riskBtn = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
   await t.expect(selectors.riskCards.count).eql(0, 'Keine Risikokarten für Initiative ohne Risiken');
-  await t.expect(Selector('.risk-empty').exists).ok('Leer-Hinweis sollte sichtbar sein');
+  await t.expect(Selector('.dp-risk-empty').exists).ok('Leer-Hinweis sollte sichtbar sein');
 });
 
 // ── Risiko anlegen ────────────────────────────────────────────────────────────
@@ -173,12 +173,14 @@ test('AC-R-11: Score-Badge aktualisiert sich bei Änderung von W oder S', async 
   await openRiskPage(t);
 
   // Risiko 4001: W=3, S=4 → Score 12. Setze W=1 → Score = 1×4=4 → "Gering"
+  // Nach Re-Render sortiert die Liste neu (4002 Score 6 > 4001 Score 4) → 4001 wird zweites Element.
+  // Daher per data-risk-id ansprechen statt per nth(0).
   const firstWSelect = selectors.riskWahrscheinlichkeitSelects.nth(0);
   await t.click(firstWSelect).click(firstWSelect.find('option[value="1"]'));
 
-  const firstBadge = selectors.riskCards.nth(0).find('.risk-badge');
-  await t.expect(firstBadge.textContent).contains('4', 'Score sollte nach Änderung 4 sein');
-  await t.expect(firstBadge.hasClass('risk-low')).ok('Score 4 → "Gering"-Klasse');
+  const badge4001 = Selector('[data-risk-id="4001"] .risk-badge');
+  await t.expect(badge4001.textContent).contains('4', 'Score sollte nach Änderung 4 sein');
+  await t.expect(badge4001.hasClass('risk-low')).ok('Score 4 → "Gering"-Klasse');
 });
 
 // ── Löschen ───────────────────────────────────────────────────────────────────
@@ -229,7 +231,7 @@ test('AC-R-15: Risiken einer Initiative sind von anderen isoliert', async (t) =>
   const riskBtn2 = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn2);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 
   // Keine Risiken von Projekt Gamma sichtbar
   await t.expect(selectors.riskCards.count).eql(0, 'Projekt Delta hat keine Risiken');

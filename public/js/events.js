@@ -65,7 +65,8 @@ function handleActionClick(e) {
       openDetail(id);
       break;
     case 'openRisks':
-      openRiskPage(id);
+      // Öffnet die Detail-Seite; Risiken sind dort direkt sichtbar (scrollen)
+      openDetail(id);
       break;
     case 'gotoPage': {
       const p = +target.dataset.page;

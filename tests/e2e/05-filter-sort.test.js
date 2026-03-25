@@ -138,10 +138,10 @@ test('AC-5.6d: WSJF-Sortierung passt sich nach Bearbeitung einer Initiative an',
   // Projekt Delta bekommt WSJF = (21+21+21)/3 = 21.0 → wird zum höchsten Wert
   await t.click(selectors.detailBtns.nth(1)); // Projekt Delta
 
-  const bvSelect = Selector('#d-businessValue');
-  const tcSelect = Selector('#d-timeCriticality');
-  const rrSelect = Selector('#d-riskReduction');
-  const jsSelect = Selector('#d-jobSize');
+  const bvSelect = Selector('#dp-bv');
+  const tcSelect = Selector('#dp-tc');
+  const rrSelect = Selector('#dp-rr');
+  const jsSelect = Selector('#dp-js');
 
   await t.click(bvSelect).click(bvSelect.find('option[value="21"]'));
   await t.click(tcSelect).click(tcSelect.find('option[value="21"]'));

@@ -159,22 +159,25 @@ export const selectors = {
   nvBodyTextareas: Selector('.nv-body'),
   nvDeleteBtns: Selector('[data-action="removeEntity"][data-type="nicht_vergessen"]'),
 
-  // Detail modal
-  detailBackdrop: Selector('#detail-backdrop'),
-  detailModal: Selector('#detail-modal'),
-  detailClose: Selector('#detail-close'),
+  // Detail-Seite (früher Modal – jetzt Full-Page)
+  detailPage: Selector('#detail-page'),
+  detailBackdrop: Selector('#detail-page'),   // Alias für Abwärtskompatibilität
+  detailClose: Selector('#dp-back'),
   detailBtns: Selector('.detail-btn'),
 
   // Footer
   importBtn: Selector('[data-action="importJSON"]'),
   exportBtn: Selector('[data-action="exportJSON"]'),
 
-  // Risk-Seite
+  // Detail-Page Felder
+  dpBack: Selector('#dp-back'),
+
+  // Risk-Seite (jetzt Teil der Detail-Seite)
   riskBtns: Selector('[data-action="openRisks"]'),
-  riskPage: Selector('#risk-page'),
-  riskBack: Selector('#risk-back'),
-  riskAddBtn: Selector('#risk-add'),
-  riskCards: Selector('.risk-card'),
+  riskPage: Selector('#detail-page'),
+  riskBack: Selector('#dp-back'),
+  riskAddBtn: Selector('#dp-risk-add'),
+  riskCards: Selector('.dp-risk-card'),
   riskRoamSelects: Selector('[data-risk-field="roamStatus"]'),
   riskRoamNotiz: Selector('[data-risk-field="roamNotiz"]'),
   roamBadges: Selector('.roam-badge'),

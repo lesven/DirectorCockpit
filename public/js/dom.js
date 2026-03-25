@@ -1,7 +1,7 @@
 /**
  * Gecachte DOM-Referenzen für statische Elemente.
  * Nur Elemente die permanent im HTML existieren werden hier gecacht.
- * Modale/temporäre Elemente (z.B. wsjf-calc, d-name) über Lazy-Accessors.
+ * Modale/temporäre Elemente über Lazy-Accessors.
  */
 
 export const dom = {
@@ -28,18 +28,17 @@ export const dom = {
   inisCount: document.getElementById('inis-count'),
   nvCount: document.getElementById('nv-count'),
 
-  // Detail-Modal
-  detailBackdrop: document.getElementById('detail-backdrop'),
-  detailBody: document.getElementById('detail-body'),
-  detailClose: document.getElementById('detail-close'),
-
-  // Risk-Page
-  riskPage: document.getElementById('risk-page'),
-  riskList: document.getElementById('risk-list'),
-  riskIniSummary: document.getElementById('risk-ini-summary'),
-  riskPageIniName: document.getElementById('risk-page-ini-name'),
-  riskBack: document.getElementById('risk-back'),
-  riskAdd: document.getElementById('risk-add'),
+  // Detail-Page (ersetzt Modal + Risk-Page)
+  detailPage: document.getElementById('detail-page'),
+  dpBack: document.getElementById('dp-back'),
+  dpName: document.getElementById('dp-name'),
+  dpHeaderBadges: document.getElementById('dp-header-badges'),
+  dpStammdaten: document.getElementById('dp-stammdaten'),
+  dpWsjf: document.getElementById('dp-wsjf'),
+  dpRiskCount: document.getElementById('dp-risk-count'),
+  dpRiskSummaryBar: document.getElementById('dp-risk-summary-bar'),
+  dpRiskList: document.getElementById('dp-risk-list'),
+  dpRiskAdd: document.getElementById('dp-risk-add'),
 
   // Save-Indicators (NodeList → Array)
   saveIndicators: [...document.querySelectorAll('.save-indicator')],
@@ -47,7 +46,7 @@ export const dom = {
   // Sortable Headers
   sortableHeaders: [...document.querySelectorAll('.ini-table th.sortable')],
 
-  // Layout-Sections (für Risk-Page show/hide)
+  // Layout-Sections (für Detail-Page show/hide)
   header: document.querySelector('header'),
   main: document.querySelector('main'),
   footer: document.querySelector('footer'),

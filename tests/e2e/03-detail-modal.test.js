@@ -1,30 +1,30 @@
 import { Selector } from 'testcafe';
 import { BASE_URL, setupTest, waitForSave, selectors } from './helpers.js';
 
-fixture('US-3: Detail-Modal für Initiativen')
+fixture('US-3: Detail-Seite für Initiativen')
   .page(BASE_URL)
   .beforeEach(async (t) => {
     await setupTest();
   });
 
-test('AC-3.1: Klick auf ✎ öffnet Modal mit allen Feldern', async (t) => {
-  // Modal sollte initial hidden sein
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).ok();
+test('AC-3.1: Klick auf ✎ öffnet Detail-Seite mit allen Feldern', async (t) => {
+  // Detail-Seite sollte initial hidden sein
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).ok();
 
   // Klick auf Detail-Button der ersten Initiative
   await t.click(selectors.detailBtns.nth(0));
 
-  // Modal sollte sichtbar sein
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();
+  // Detail-Seite sollte sichtbar sein
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 
   // Felder prüfen
-  const nameInput = Selector('#d-name');
-  const teamSelect = Selector('#d-team');
-  const fristInput = Selector('#d-frist');
-  const statusSelect = Selector('#d-status');
-  const psSelect = Selector('#d-projektstatus');
-  const schrittInput = Selector('#d-schritt');
-  const notizTextarea = Selector('#d-notiz');
+  const nameInput = Selector('#dp-name');
+  const teamSelect = Selector('#dp-team');
+  const fristInput = Selector('#dp-frist');
+  const statusSelect = Selector('#dp-status');
+  const psSelect = Selector('#dp-projektstatus');
+  const schrittInput = Selector('#dp-schritt');
+  const notizTextarea = Selector('#dp-notiz');
 
   await t.expect(nameInput.exists).ok();
   await t.expect(teamSelect.exists).ok();
@@ -39,10 +39,10 @@ test('AC-3.1: Klick auf ✎ öffnet Modal mit allen Feldern', async (t) => {
   await t.expect(fristInput.value).eql('15.04');
 
   // WSJF-Felder prüfen
-  const bvSelect = Selector('#d-businessValue');
-  const tcSelect = Selector('#d-timeCriticality');
-  const rrSelect = Selector('#d-riskReduction');
-  const jsSelect = Selector('#d-jobSize');
+  const bvSelect = Selector('#dp-bv');
+  const tcSelect = Selector('#dp-tc');
+  const rrSelect = Selector('#dp-rr');
+  const jsSelect = Selector('#dp-js');
 
   await t.expect(bvSelect.exists).ok();
   await t.expect(tcSelect.exists).ok();
@@ -56,14 +56,14 @@ test('AC-3.1: Klick auf ✎ öffnet Modal mit allen Feldern', async (t) => {
 });
 
 test('AC-3.2: WSJF-Dropdowns aktualisieren Berechnung', async (t) => {
-  // Öffne Detail-Modal für Initiative ohne WSJF (Projekt Delta)
+  // Öffne Detail-Seite für Initiative ohne WSJF (Projekt Delta)
   await t.click(selectors.detailBtns.nth(1));
 
   // Setze WSJF-Werte
-  const bvSelect = Selector('#d-businessValue');
-  const tcSelect = Selector('#d-timeCriticality');
-  const rrSelect = Selector('#d-riskReduction');
-  const jsSelect = Selector('#d-jobSize');
+  const bvSelect = Selector('#dp-bv');
+  const tcSelect = Selector('#dp-tc');
+  const rrSelect = Selector('#dp-rr');
+  const jsSelect = Selector('#dp-js');
 
   await t.click(bvSelect).click(bvSelect.find('option[value="13"]'));
   await t.click(tcSelect).click(tcSelect.find('option[value="8"]'));
@@ -71,7 +71,7 @@ test('AC-3.2: WSJF-Dropdowns aktualisieren Berechnung', async (t) => {
   await t.click(jsSelect).click(jsSelect.find('option[value="3"]'));
   await waitForSave();
 
-  // Modal schließen
+  // Detail-Seite schließen
   await t.click(selectors.detailClose);
 
   // Tabelle prüfen: WSJF = (13+8+5)/3 ≈ 8.7
@@ -79,28 +79,28 @@ test('AC-3.2: WSJF-Dropdowns aktualisieren Berechnung', async (t) => {
   await t.expect(wsjfCell.textContent).eql('8.7');
 });
 
-test('AC-3.2b: WSJF-Live-Preview aktualisiert sich sofort beim Ändern der Dropdowns', async (t) => {
-  // Öffne Modal für Projekt Gamma: BV=8, TC=5, RR=3, JS=5 → initial 3.2
+test('AC-3.2b: WSJF-Live-Score aktualisiert sich sofort beim Ändern der Dropdowns', async (t) => {
+  // Öffne Detail-Seite für Projekt Gamma: BV=8, TC=5, RR=3, JS=5 → initial 3.2
   await t.click(selectors.detailBtns.nth(0));
 
-  const calcEl = Selector('#wsjf-calc');
-  await t.expect(calcEl.textContent).eql('3.2');
+  const scoreEl = Selector('#dp-wsjf-score');
+  await t.expect(scoreEl.textContent).eql('3.2');
 
   // Job Size auf 2 ändern → (8+5+3)/2 = 8.0
-  const jsSelect = Selector('#d-jobSize');
+  const jsSelect = Selector('#dp-js');
   await t.click(jsSelect).click(jsSelect.find('option[value="2"]'));
 
-  await t.expect(calcEl.textContent).eql('8');
+  await t.expect(scoreEl.textContent).eql('8');
 });
 
 test('AC-3.2c: WSJF auf null zurücksetzen zeigt "–" in der Tabelle', async (t) => {
   // Projekt Gamma hat WSJF 3.2 — alle Felder auf leer setzen
   await t.click(selectors.detailBtns.nth(0));
 
-  const bvSelect = Selector('#d-businessValue');
-  const tcSelect = Selector('#d-timeCriticality');
-  const rrSelect = Selector('#d-riskReduction');
-  const jsSelect = Selector('#d-jobSize');
+  const bvSelect = Selector('#dp-bv');
+  const tcSelect = Selector('#dp-tc');
+  const rrSelect = Selector('#dp-rr');
+  const jsSelect = Selector('#dp-js');
 
   await t.click(bvSelect).click(bvSelect.find('option[value=""]'));
   await t.click(tcSelect).click(tcSelect.find('option[value=""]'));
@@ -131,13 +131,13 @@ test('AC-3.2e: Partielles WSJF-Update – nur ein Feld gesetzt lässt WSJF auf n
   // Projekt Delta: initial kein WSJF – nur BV setzen, Rest null lassen
   await t.click(selectors.detailBtns.nth(1));
 
-  const bvSelect = Selector('#d-businessValue');
+  const bvSelect = Selector('#dp-bv');
   await t.click(bvSelect).click(bvSelect.find('option[value="8"]'));
   await waitForSave();
 
-  // Live-Preview: TC, RR, JS fehlen noch → "–"
-  const calcEl = Selector('#wsjf-calc');
-  await t.expect(calcEl.textContent).eql('–');
+  // Live-Score: TC, RR, JS fehlen noch → "–"
+  const scoreEl = Selector('#dp-wsjf-score');
+  await t.expect(scoreEl.textContent).eql('–');
 
   await t.click(selectors.detailClose);
 
@@ -147,44 +147,35 @@ test('AC-3.2e: Partielles WSJF-Update – nur ein Feld gesetzt lässt WSJF auf n
   await t.expect(wsjfCell.hasClass('wsjf-empty')).ok();
 });
 
-test('AC-3.3: Modal schließen per ESC', async (t) => {
+test('AC-3.3: Detail-Seite schließen per ESC', async (t) => {
   await t.click(selectors.detailBtns.nth(0));
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 
   await t.pressKey('esc');
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).ok();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).ok();
 });
 
-test('AC-3.3: Modal schließen per Backdrop-Click', async (t) => {
+test('AC-3.3: Detail-Seite schließen per Zurück-Button', async (t) => {
   await t.click(selectors.detailBtns.nth(0));
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();
-
-  // Klick auf den Backdrop (nicht auf das Modal selbst)
-  await t.click(selectors.detailBackdrop, { offsetX: 10, offsetY: 10 });
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).ok();
-});
-
-test('AC-3.3: Modal schließen per Close-Button', async (t) => {
-  await t.click(selectors.detailBtns.nth(0));
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).notOk();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
 
   await t.click(selectors.detailClose);
-  await t.expect(selectors.detailBackdrop.hasAttribute('hidden')).ok();
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).ok();
 });
 
-test('AC-3.4: Änderungen im Modal sind nach Schließen in Tabelle sichtbar', async (t) => {
+test('AC-3.4: Änderungen in der Detail-Seite sind nach Schließen in Tabelle sichtbar', async (t) => {
   await t.click(selectors.detailBtns.nth(0));
 
   // Name ändern
-  const nameInput = Selector('#d-name');
+  const nameInput = Selector('#dp-name');
   await t.selectText(nameInput).typeText(nameInput, 'Geändertes Projekt');
 
   // Schritt ändern
-  const schrittInput = Selector('#d-schritt');
+  const schrittInput = Selector('#dp-schritt');
   await t.selectText(schrittInput).typeText(schrittInput, 'Neuer Modal-Schritt');
   await waitForSave();
 
-  // Modal schließen
+  // Detail-Seite schließen
   await t.click(selectors.detailClose);
 
   // Tabelle prüfen

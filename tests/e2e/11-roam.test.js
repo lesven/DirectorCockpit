@@ -7,12 +7,12 @@ fixture('US-11: ROAMing für Risiken')
     await setupTest();
   });
 
-/** Öffnet die Risiko-Seite der ersten Initiative (Projekt Gamma, id 2001). */
+/** Öffnet die Detail-Seite der ersten Initiative (Projekt Gamma, id 2001). */
 async function openRiskPage(t) {
   const riskBtn = selectors.iniRows.nth(0).find('[data-action="openRisks"]');
   await t.hover(selectors.iniRows.nth(0));
   await t.click(riskBtn);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).notOk('Risk-Seite sollte sichtbar sein');
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk('Detail-Seite sollte sichtbar sein');
 }
 
 test('AC-ROAM-1: Risiko-Seite öffnet sich und zeigt Risiken der Initiative', async (t) => {
@@ -134,10 +134,10 @@ test('AC-ROAM-11: ROAM-Select hat genau 5 Optionen (4 + Leer)', async (t) => {
   await t.expect(select.find('option').count).eql(5, '4 ROAM-Werte + 1 Leer-Option');
 });
 
-test('AC-ROAM-12: Zurück-Button schließt Risk-Seite und zeigt Hauptansicht', async (t) => {
+test('AC-ROAM-12: Zurück-Button schließt Detail-Seite und zeigt Hauptansicht', async (t) => {
   await openRiskPage(t);
 
   await t.click(selectors.riskBack);
-  await t.expect(selectors.riskPage.hasAttribute('hidden')).ok('Risk-Seite sollte versteckt sein');
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).ok('Detail-Seite sollte versteckt sein');
   await t.expect(Selector('header').hasAttribute('hidden')).notOk('Header sollte wieder sichtbar sein');
 });

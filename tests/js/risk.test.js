@@ -50,7 +50,7 @@ import {
   ROAM_STATUS_CSS,
 } from '../../public/js/config.js';
 
-import { openRiskPage } from '../../public/js/risk.js';
+import { openDetail } from '../../public/js/detail.js';
 
 // ── DOM-Hilfsfunktion ─────────────────────────────────────────────────────────
 
@@ -59,27 +59,40 @@ function buildDom() {
     <header></header>
     <main></main>
     <footer></footer>
-    <div id="risk-page" hidden>
-      <div id="risk-page-header-bar">
-        <span id="risk-page-ini-name"></span>
-        <button id="risk-back"></button>
+    <section id="detail-page" hidden>
+      <div class="dp-header-bar">
+        <button id="dp-back"></button>
+        <input id="dp-name">
+        <div id="dp-header-badges"></div>
+        <span id="dp-save-ind"></span>
       </div>
-      <div id="risk-ini-summary"></div>
-      <button id="risk-add">+ Risiko</button>
-      <div id="risk-list"></div>
-    </div>
+      <div class="dp-content">
+        <div class="dp-grid">
+          <div id="dp-stammdaten"></div>
+          <div id="dp-wsjf"></div>
+        </div>
+        <div class="dp-risks-wrap">
+          <span id="dp-risk-count"></span>
+          <button id="dp-risk-add"></button>
+          <div id="dp-risk-summary-bar"></div>
+          <div id="dp-risk-list"></div>
+        </div>
+      </div>
+    </section>
   `;
-  // Populate mockDom with DOM references
-  mockDom.riskPage = document.getElementById('risk-page');
-  mockDom.riskList = document.getElementById('risk-list');
-  mockDom.riskIniSummary = document.getElementById('risk-ini-summary');
-  mockDom.riskPageIniName = document.getElementById('risk-page-ini-name');
-  mockDom.riskBack = document.getElementById('risk-back');
-  mockDom.riskAdd = document.getElementById('risk-add');
-  mockDom.detailBackdrop = null;
-  mockDom.header = document.querySelector('header');
-  mockDom.main = document.querySelector('main');
-  mockDom.footer = document.querySelector('footer');
+  mockDom.detailPage          = document.getElementById('detail-page');
+  mockDom.dpBack              = document.getElementById('dp-back');
+  mockDom.dpName              = document.getElementById('dp-name');
+  mockDom.dpHeaderBadges      = document.getElementById('dp-header-badges');
+  mockDom.dpStammdaten        = document.getElementById('dp-stammdaten');
+  mockDom.dpWsjf              = document.getElementById('dp-wsjf');
+  mockDom.dpRiskCount         = document.getElementById('dp-risk-count');
+  mockDom.dpRiskSummaryBar    = document.getElementById('dp-risk-summary-bar');
+  mockDom.dpRiskList          = document.getElementById('dp-risk-list');
+  mockDom.dpRiskAdd           = document.getElementById('dp-risk-add');
+  mockDom.header              = document.querySelector('header');
+  mockDom.main                = document.querySelector('main');
+  mockDom.footer              = document.querySelector('footer');
 }
 
 function baseRisk(overrides = {}) {
@@ -156,14 +169,14 @@ describe('ROAM-UI in der Risikokarte', () => {
 
   it('zeigt kein roam-badge wenn kein ROAM-Status gesetzt ist', () => {
     mockData.risks = [baseRisk({ roamStatus: null })];
-    openRiskPage(10);
+    openDetail(10);
     const badge = document.querySelector('.roam-badge');
     expect(badge).toBeNull();
   });
 
   it('zeigt ein roam-badge mit korrektem Label für "resolved"', () => {
     mockData.risks = [baseRisk({ roamStatus: 'resolved' })];
-    openRiskPage(10);
+    openDetail(10);
     const badge = document.querySelector('.roam-badge');
     expect(badge).not.toBeNull();
     expect(badge.textContent).toBe('Resolved');
@@ -180,7 +193,7 @@ describe('ROAM-UI in der Risikokarte', () => {
     for (const [status, expectedCss] of Object.entries(statusMap)) {
       buildDom();
       mockData.risks = [baseRisk({ roamStatus: status })];
-      openRiskPage(10);
+      openDetail(10);
       const badge = document.querySelector('.roam-badge');
       expect(badge?.classList.contains(expectedCss)).toBe(true);
     }
@@ -188,7 +201,7 @@ describe('ROAM-UI in der Risikokarte', () => {
 
   it('rendert den ROAM-Status-Select mit allen vier Optionen plus Leer-Option', () => {
     mockData.risks = [baseRisk()];
-    openRiskPage(10);
+    openDetail(10);
     const select = document.querySelector('select[data-risk-field="roamStatus"]');
     expect(select).not.toBeNull();
     // 4 ROAM-Werte + 1 Leer-Option
@@ -197,35 +210,35 @@ describe('ROAM-UI in der Risikokarte', () => {
 
   it('wählt den gespeicherten ROAM-Status im Select vor', () => {
     mockData.risks = [baseRisk({ roamStatus: 'accepted' })];
-    openRiskPage(10);
+    openDetail(10);
     const select = document.querySelector('select[data-risk-field="roamStatus"]');
     expect(select.value).toBe('accepted');
   });
 
   it('wählt die Leer-Option wenn kein ROAM-Status gesetzt ist', () => {
     mockData.risks = [baseRisk({ roamStatus: null })];
-    openRiskPage(10);
+    openDetail(10);
     const select = document.querySelector('select[data-risk-field="roamStatus"]');
     expect(select.value).toBe('');
   });
 
   it('rendert das ROAM-Notizfeld', () => {
     mockData.risks = [baseRisk()];
-    openRiskPage(10);
-    const notiz = document.querySelector('.risk-roam-notiz');
+    openDetail(10);
+    const notiz = document.querySelector('.dp-risk-roam-notiz');
     expect(notiz).not.toBeNull();
   });
 
   it('zeigt den gespeicherten ROAM-Notiztext an', () => {
     mockData.risks = [baseRisk({ roamNotiz: 'Fallback-Lieferant organisiert' })];
-    openRiskPage(10);
-    const notiz = document.querySelector('.risk-roam-notiz');
+    openDetail(10);
+    const notiz = document.querySelector('.dp-risk-roam-notiz');
     expect(notiz.textContent).toBe('Fallback-Lieferant organisiert');
   });
 
   it('hat data-risk-field="roamNotiz" am Notiz-Textarea', () => {
     mockData.risks = [baseRisk()];
-    openRiskPage(10);
+    openDetail(10);
     const notiz = document.querySelector('[data-risk-field="roamNotiz"]');
     expect(notiz).not.toBeNull();
     expect(notiz.tagName.toLowerCase()).toBe('textarea');
@@ -233,8 +246,8 @@ describe('ROAM-UI in der Risikokarte', () => {
 
   it('escapet Sonderzeichen im Notizfeld', () => {
     mockData.risks = [baseRisk({ roamNotiz: '<script>alert(1)</script>' })];
-    openRiskPage(10);
-    const notiz = document.querySelector('.risk-roam-notiz');
+    openDetail(10);
+    const notiz = document.querySelector('.dp-risk-roam-notiz');
     expect(notiz.innerHTML).not.toContain('<script>');
     expect(notiz.innerHTML).toContain('&lt;script&gt;');
   });
