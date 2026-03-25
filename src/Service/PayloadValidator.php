@@ -12,6 +12,7 @@ class PayloadValidator
 {
     private const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
     private const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
+    private const MILESTONE_STATUSES = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
 
     /**
      * @param array<string, mixed> $payload
@@ -35,6 +36,9 @@ class PayloadValidator
                 if ($key === 'initiatives') {
                     $this->validateWsjfFields($item, $i);
                 }
+                if ($key === 'milestones') {
+                    $this->validateMilestoneStatus($item, $i);
+                }
             }
         }
     }
@@ -55,6 +59,18 @@ class PayloadValidator
                     "initiatives[{$index}].{$field} muss ein WSJF-Fibonacci-Wert sein (1,2,3,5,8,13,21), '{$item[$field]}' ist ungültig"
                 );
             }
+        }
+    }
+
+    private function validateMilestoneStatus(array $item, int $index): void
+    {
+        if (!array_key_exists('status', $item) || $item['status'] === null) {
+            return;
+        }
+        if (!in_array($item['status'], self::MILESTONE_STATUSES, true)) {
+            throw new ValidationException(
+                "milestones[{$index}].status muss einer der Werte offen, in_bearbeitung, erledigt, blockiert sein, '{$item['status']}' ist ungültig"
+            );
         }
     }
 }

@@ -79,6 +79,26 @@ const SEED_PAYLOAD = {
       roamNotiz: '',
     },
   ],
+  milestones: [
+    {
+      id: 5001,
+      initiative: 2001,
+      aufgabe: 'Konzept erstellen',
+      beschreibung: 'Architektur und Design dokumentieren',
+      owner: 'Max',
+      status: 'erledigt',
+      frist: '2026-03-01',
+    },
+    {
+      id: 5002,
+      initiative: 2001,
+      aufgabe: 'Implementierung',
+      beschreibung: 'Backend und Frontend umsetzen',
+      owner: 'Anna',
+      status: 'in_bearbeitung',
+      frist: '2026-04-15',
+    },
+  ],
 };
 
 const seedViaAPI = ClientFunction((json) => {
@@ -187,4 +207,14 @@ export const selectors = {
   riskSchadensausmasSelects: Selector('[data-risk-field="schadensausmass"]'),
   riskDeleteBtns: Selector('[data-action="removeRisk"]'),
   riskScoreBadges: Selector('.risk-badge'),
+
+  // Milestones
+  milestoneCards: Selector('.dp-milestone-row'),
+  milestoneAddBtn: Selector('#dp-milestone-add'),
+  milestoneCopyBtn: Selector('#dp-milestone-copy'),
+  milestoneAufgabeInputs: Selector('[data-milestone-field="aufgabe"]'),
+  milestoneOwnerInputs: Selector('[data-milestone-field="owner"]'),
+  milestoneStatusSelects: Selector('[data-milestone-field="status"]'),
+  milestoneFristInputs: Selector('[data-milestone-field="frist"]'),
+  milestoneDeleteBtns: Selector('[data-action="removeMilestone"]'),
 };

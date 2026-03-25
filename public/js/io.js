@@ -30,6 +30,9 @@ export function migrateData(parsed) {
   // Risks-Array sicherstellen
   if (!Array.isArray(parsed.risks)) parsed.risks = [];
 
+  // Milestones-Array sicherstellen
+  if (!Array.isArray(parsed.milestones)) parsed.milestones = [];
+
   parsed.teams = parsed.teams.map((t) => ({
     id: t.id ?? generateId(),
     name: t.name ?? '',
@@ -70,6 +73,17 @@ export function migrateData(parsed) {
     schadensausmass: r.schadensausmass ?? 1,
   }));
 
+  const validMsStatus = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
+  parsed.milestones = parsed.milestones.map((m) => ({
+    id: m.id ?? generateId(),
+    initiative: m.initiative,
+    aufgabe: m.aufgabe ?? '',
+    beschreibung: m.beschreibung ?? '',
+    owner: m.owner ?? '',
+    status: validMsStatus.includes(m.status) ? m.status : 'offen',
+    frist: m.frist ?? '',
+  }));
+
   return parsed;
 }
 
@@ -97,7 +111,7 @@ export function importJSON() {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
         const migrated = migrateData(parsed);
-        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken`;
+        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken, ${migrated.milestones.length} Meilensteine`;
         if (
           !confirm(
             `Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`,

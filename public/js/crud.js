@@ -32,6 +32,7 @@ export function removeEntity(type, id) {
   data[type] = data[type].filter((x) => x.id !== id);
   if (type === 'initiatives') {
     data.risks = data.risks.filter((r) => r.initiative !== id);
+    data.milestones = data.milestones.filter((m) => m.initiative !== id);
   }
   save();
   renderEntity(type);

@@ -11,6 +11,7 @@ const mockData = {
   initiatives: [],
   nicht_vergessen: [],
   risks: [],
+  milestones: [],
 };
 
 vi.mock('../../public/js/store.js', () => ({
@@ -77,6 +78,11 @@ function buildDom() {
           <div id="dp-risk-summary-bar"></div>
           <div id="dp-risk-list"></div>
         </div>
+        <div class="dp-milestones-wrap">
+          <span id="dp-milestone-count"></span>
+          <button id="dp-milestone-add"></button>
+          <div id="dp-milestone-list"></div>
+        </div>
       </div>
     </section>
   `;
@@ -90,6 +96,9 @@ function buildDom() {
   mockDom.dpRiskSummaryBar    = document.getElementById('dp-risk-summary-bar');
   mockDom.dpRiskList          = document.getElementById('dp-risk-list');
   mockDom.dpRiskAdd           = document.getElementById('dp-risk-add');
+  mockDom.dpMilestoneCount    = document.getElementById('dp-milestone-count');
+  mockDom.dpMilestoneList     = document.getElementById('dp-milestone-list');
+  mockDom.dpMilestoneAdd      = document.getElementById('dp-milestone-add');
   mockDom.header              = document.querySelector('header');
   mockDom.main                = document.querySelector('main');
   mockDom.footer              = document.querySelector('footer');

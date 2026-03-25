@@ -174,6 +174,31 @@ main {
   background: rgba(122,169,255,0.07);
 }
 
+.copy-btn {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--text2);
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: rgba(122,169,255,0.4);
+  background: rgba(122,169,255,0.07);
+}
+
+.copy-btn:disabled {
+  color: var(--green);
+  border-color: rgba(74,222,128,0.4);
+  background: rgba(74,222,128,0.07);
+  cursor: default;
+}
+
 /* ── Teams grid ──────────────────────────────────────────── */
 .teams-grid {
   display: grid;
@@ -1825,6 +1850,151 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   color: var(--text3);
 }
 
+/* ── Meilensteine ─────────────────────────────────────────── */
+.dp-milestones-wrap {
+  margin-top: 32px;
+}
+
+#dp-milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Table header row ─────────────────────────────────────── */
+.dp-ms-header-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 28px;
+  gap: 8px;
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Compact milestone row ────────────────────────────────── */
+.dp-milestone-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 28px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  transition: background 0.12s;
+}
+
+.dp-milestone-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.dp-milestone-row[data-ms-status="offen"]           { border-left-color: var(--text3); }
+.dp-milestone-row[data-ms-status="in_bearbeitung"]  { border-left-color: var(--accent); }
+.dp-milestone-row[data-ms-status="erledigt"]        { border-left-color: var(--green); }
+.dp-milestone-row[data-ms-status="blockiert"]       { border-left-color: var(--red); }
+
+/* ── Row field inputs ─────────────────────────────────────── */
+.dp-ms-aufgabe,
+.dp-ms-owner {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  outline: none;
+  padding: 4px 2px;
+  min-width: 0;
+}
+
+.dp-ms-aufgabe { font-weight: 500; }
+.dp-ms-aufgabe:focus,
+.dp-ms-owner:focus { color: var(--accent); }
+.dp-ms-aufgabe::placeholder,
+.dp-ms-owner::placeholder { color: var(--text3); }
+
+.dp-ms-frist {
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 12px;
+  outline: none;
+  padding: 4px 2px;
+  min-width: 0;
+}
+
+.dp-ms-frist:focus { color: var(--accent); }
+
+.dp-ms-status-wrap {
+  position: relative;
+}
+
+.dp-ms-status {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dp-ms-status.ms-status-offen          { color: var(--text3); background: rgba(148,163,184,0.12); }
+.dp-ms-status.ms-status-in-bearbeitung { color: var(--accent); background: rgba(96,165,250,0.12); }
+.dp-ms-status.ms-status-erledigt       { color: var(--green); background: rgba(74,222,128,0.12); }
+.dp-ms-status.ms-status-blockiert      { color: var(--red); background: rgba(248,113,113,0.12); }
+
+/* Options must always be readable regardless of the select's status color */
+.dp-ms-status option {
+  color: #e8ecff;
+  background: #2a2f49;
+  font-weight: 500;
+}
+
+.dp-ms-delete {
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.dp-milestone-row:hover .dp-ms-delete { opacity: 0.5; }
+
+.dp-ms-delete:hover {
+  color: var(--red) !important;
+  opacity: 1 !important;
+}
+
+/* ── Leerer Meilenstein-Zustand ───────────────────────────── */
+.dp-milestone-empty {
+  text-align: center;
+  padding: 40px 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dp-milestone-empty-icon {
+  font-size: 28px;
+  opacity: 0.25;
+}
+
+.dp-milestone-empty p {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text3);
+}
+
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 1100px) {
   .dp-content {
@@ -1842,6 +2012,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 @media (max-width: 960px) {
   .dp-risk-body { grid-template-columns: 1fr; }
   .dp-risk-roam { grid-template-columns: 1fr; }
+  .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 28px; font-size: 12px; }
+  .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 28px; }
 }
 
 @media (max-width: 700px) {
@@ -1850,5 +2022,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   .dp-header-badges { display: none; }
   .dp-section { padding: 16px; }
   .dp-risks-wrap { padding: 16px; }
+  .dp-milestones-wrap { padding: 16px; }
   .dp-left-col { flex-direction: column; }
 }
