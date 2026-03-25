@@ -114,17 +114,11 @@ final class Initiative implements SyncableEntity
         $this->schritt = $data['schritt'] ?? $this->schritt;
         $this->frist = $data['frist'] ?? $this->frist;
         $this->notiz = $data['notiz'] ?? $this->notiz;
-        if (array_key_exists('businessValue', $data)) {
-            $this->businessValue = $data['businessValue'];
-        }
-        if (array_key_exists('timeCriticality', $data)) {
-            $this->timeCriticality = $data['timeCriticality'];
-        }
-        if (array_key_exists('riskReduction', $data)) {
-            $this->riskReduction = $data['riskReduction'];
-        }
-        if (array_key_exists('jobSize', $data)) {
-            $this->jobSize = $data['jobSize'];
+
+        foreach (['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $this->$field = $data[$field];
+            }
         }
     }
 }
