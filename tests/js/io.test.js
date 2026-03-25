@@ -152,7 +152,7 @@ describe('migrateData()', () => {
           status: 'yellow',
           projektstatus: 'kritisch',
           schritt: 's',
-          frist: '01.04',
+          frist: '2026-04-01',
           notiz: 'n',
           businessValue: 3,
           timeCriticality: 5,

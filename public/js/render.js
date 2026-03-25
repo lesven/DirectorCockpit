@@ -118,7 +118,7 @@ function renderIniRow(ini, teamOptsBase) {
       </td>
       <td><span class="wsjf-value${wsjf == null ? ' wsjf-empty' : ''}">${wsjf != null ? wsjf : '\u2013'}</span></td>
       <td><textarea class="ini-cell ini-schritt" rows="1" maxlength="550" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives">${esc(ini.schritt)}</textarea></td>
-      <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
+      <td><input type="date" class="ini-cell ini-frist-date" value="${esc(ini.frist)}" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
         <button class="risk-btn" data-action="openRisks" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
