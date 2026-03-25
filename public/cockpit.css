@@ -623,12 +623,12 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   pointer-events: none;
 }
 
-.status-select-wrap.s-fertig::after { color: var(--green); }
-.status-select-wrap.s-yellow::after { color: var(--yellow); }
-.status-select-wrap.s-red::after { color: var(--red); }
-.status-select-wrap.s-grey::after { color: var(--text3); }
-.status-select-wrap.s-ungeplant::after { color: var(--red); }
+.status-select-wrap.s-fertig::after,
 .status-select-wrap.ps-ok::after { color: var(--green); }
+.status-select-wrap.s-yellow::after { color: var(--yellow); }
+.status-select-wrap.s-grey::after { color: var(--text3); }
+.status-select-wrap.s-red::after,
+.status-select-wrap.s-ungeplant::after,
 .status-select-wrap.ps-kritisch::after { color: var(--red); }
 
 .team-tag {
@@ -926,7 +926,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 }
 
 /* ── Detail-Button in Tabellenzeile ───────────────────────── */
-.detail-btn {
+.detail-btn,
+.risk-btn {
   background: none;
   border: none;
   color: var(--text3);
@@ -938,9 +939,13 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   transition: all 0.15s;
 }
 
-.ini-row:hover .detail-btn { opacity: 1; }
+.risk-btn { position: relative; }
 
-.detail-btn:hover {
+.ini-row:hover .detail-btn,
+.ini-row:hover .risk-btn { opacity: 1; }
+
+.detail-btn:hover,
+.risk-btn:hover {
   color: var(--accent);
   background: rgba(122,169,255,0.1);
 }
@@ -994,7 +999,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   z-index: 10;
 }
 
-.risk-back-btn {
+.risk-back-btn,
+.dp-back-btn {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--text3);
@@ -1008,7 +1014,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   flex-shrink: 0;
 }
 
-.risk-back-btn:hover { color: var(--accent); }
+.risk-back-btn:hover,
+.dp-back-btn:hover { color: var(--accent); }
 
 .risk-breadcrumb {
   display: flex;
@@ -1204,8 +1211,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-card:hover .risk-delete { opacity: 1; }
 
-.risk-delete:hover {
-  color: var(--red) !important;
+.risk-card .risk-delete:hover {
+  color: var(--red);
 }
 
 /* ── ROAM-Section ─────────────────────────────────────────── */
@@ -1273,27 +1280,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   color: var(--text3);
   text-align: center;
   padding: 24px 0;
-}
-
-/* Risk button in initiative table */
-.risk-btn {
-  background: none;
-  border: none;
-  color: var(--text3);
-  cursor: pointer;
-  font-size: 13px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  opacity: 0.4;
-  transition: all 0.15s;
-  position: relative;
-}
-
-.ini-row:hover .risk-btn { opacity: 1; }
-
-.risk-btn:hover {
-  color: var(--accent);
-  background: rgba(122,169,255,0.1);
 }
 
 .risk-badge-mini {
@@ -1456,22 +1442,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   flex-shrink: 0;
 }
 
-.dp-back-btn {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.15s;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.dp-back-btn:hover { color: var(--accent); }
-
 .dp-title-input {
   flex: 1;
   background: transparent;
@@ -1527,13 +1497,6 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 /* Rechte Hauptfläche — Risiken */
 .dp-right-col {
   min-width: 0;
-}
-
-/* ── Zwei-Spalten-Grid (alte Klasse, nicht mehr im Einsatz) ── */
-.dp-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
 }
 
 .dp-section {
@@ -1788,14 +1751,15 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-risk-card:hover .dp-risk-delete { opacity: 1; }
 
-.dp-risk-delete:hover {
-  color: var(--red) !important;
-  background: rgba(248,113,113,0.1) !important;
-  opacity: 1 !important;
+.dp-risk-card .dp-risk-delete:hover {
+  color: var(--red);
+  background: rgba(248,113,113,0.1);
+  opacity: 1;
 }
 
-/* ── Leerer Risiko-Zustand ────────────────────────────────── */
-.dp-risk-empty {
+/* ── Leerer Zustand (Risiken / Meilensteine) ─────────────── */
+.dp-risk-empty,
+.dp-milestone-empty {
   text-align: center;
   padding: 40px 0 24px;
   display: flex;
@@ -1804,12 +1768,14 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   gap: 12px;
 }
 
-.dp-risk-empty-icon {
+.dp-risk-empty-icon,
+.dp-milestone-empty-icon {
   font-size: 28px;
   opacity: 0.25;
 }
 
-.dp-risk-empty p {
+.dp-risk-empty p,
+.dp-milestone-empty p {
   font-family: var(--sans);
   font-size: 14px;
   color: var(--text3);
@@ -1923,8 +1889,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 /* Options must always be readable regardless of the select's status color */
 .dp-ms-status option {
-  color: #e8ecff;
-  background: #2a2f49;
+  color: var(--text);
+  background: var(--surface2);
   font-weight: 500;
 }
 
@@ -1937,30 +1903,9 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-milestone-row:hover .dp-ms-delete { opacity: 0.5; }
 
-.dp-ms-delete:hover {
-  color: var(--red) !important;
-  opacity: 1 !important;
-}
-
-/* ── Leerer Meilenstein-Zustand ───────────────────────────── */
-.dp-milestone-empty {
-  text-align: center;
-  padding: 40px 0 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.dp-milestone-empty-icon {
-  font-size: 28px;
-  opacity: 0.25;
-}
-
-.dp-milestone-empty p {
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--text3);
+.dp-milestone-row .dp-ms-delete:hover {
+  color: var(--red);
+  opacity: 1;
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
