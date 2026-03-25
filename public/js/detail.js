@@ -629,6 +629,13 @@ export function bindDetailEvents() {
   dom.detailPage.addEventListener('input',  handleDetailInput);
   dom.detailPage.addEventListener('change', handleDetailInput);
 
+  // Block keyboard input on milestone date fields so only the native picker works.
+  dom.detailPage.addEventListener('keydown', (e) => {
+    if (e.target.dataset && e.target.dataset.milestoneField === 'frist' && e.target.type === 'date') {
+      e.preventDefault();
+    }
+  });
+
   dom.detailPage.addEventListener('click', (e) => {
     const riskTarget = e.target.closest('[data-action="removeRisk"]');
     if (riskTarget) removeRisk(+riskTarget.dataset.riskId);
