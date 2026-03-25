@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { debounce } from './utils.js';
 import { dom } from './dom.js';
 
-export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] };
+export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] };
 
 let indicatorTimer;
 let savePromise = null;
@@ -28,7 +28,7 @@ export async function load() {
       const fallback = await fetch('/default_data.json');
       setData(await fallback.json());
     } catch {
-      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] });
+      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] });
     }
   }
 }

@@ -178,6 +178,71 @@ class PayloadValidatorTest extends TestCase
         );
     }
 
+    // --- Milestone-Status-Validierung ---
+
+    public function testValidMilestonePayloadPasses(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'initiative' => 1, 'aufgabe' => 'Test', 'status' => 'offen']]],
+            ['milestones']
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testAllValidMilestoneStatusesPass(): void
+    {
+        foreach (['offen', 'in_bearbeitung', 'erledigt', 'blockiert'] as $status) {
+            $this->validator->validate(
+                ['milestones' => [['id' => 1, 'status' => $status]]],
+                ['milestones']
+            );
+        }
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMilestoneWithoutIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches("/muss ein Objekt mit 'id' sein/");
+
+        $this->validator->validate(
+            ['milestones' => [['aufgabe' => 'no id']]],
+            ['milestones']
+        );
+    }
+
+    public function testInvalidMilestoneStatusThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/status.*ungültig/u');
+
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'status' => 'done']]],
+            ['milestones']
+        );
+    }
+
+    public function testMilestoneWithNullStatusIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'status' => null]]],
+            ['milestones']
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMilestoneWithoutStatusKeyIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['milestones' => [['id' => 1, 'aufgabe' => 'Test']]],
+            ['milestones']
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
     public function testNegativeWsjfValueThrows(): void
     {
         $this->expectException(ValidationException::class);

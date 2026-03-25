@@ -29,6 +29,20 @@ const PROJEKTSTATUS_OPTIONS = [
   { value: 'kritisch', label: 'Kritisch' },
 ];
 
+const MILESTONE_STATUS_OPTIONS = [
+  { value: 'offen',           label: 'Offen' },
+  { value: 'in_bearbeitung',  label: 'In Bearbeitung' },
+  { value: 'erledigt',        label: 'Erledigt' },
+  { value: 'blockiert',       label: 'Blockiert' },
+];
+
+const MILESTONE_STATUS_CSS = {
+  offen: 'ms-status-offen',
+  in_bearbeitung: 'ms-status-in-bearbeitung',
+  erledigt: 'ms-status-erledigt',
+  blockiert: 'ms-status-blockiert',
+};
+
 const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
 
 const STATUS_CSS_MAP   = { fertig: 'pill-green', yellow: 'pill-yellow', grey: 'pill-grey', ungeplant: 'pill-red' };
@@ -364,6 +378,120 @@ function removeRisk(riskId) {
   refreshRisks();
 }
 
+// ─── Milestone Card HTML ─────────────────────────────────────
+
+function milestoneCardHtml(ms) {
+  const statusCss = MILESTONE_STATUS_CSS[ms.status] || 'ms-status-offen';
+  const statusLabel = (MILESTONE_STATUS_OPTIONS.find((o) => o.value === ms.status) || {}).label || 'Offen';
+
+  return `
+    <div class="dp-milestone-card" data-milestone-id="${ms.id}" data-ms-status="${ms.status}">
+      <div class="dp-milestone-card-header">
+        <input class="dp-milestone-aufgabe"
+               value="${esc(ms.aufgabe)}"
+               placeholder="Aufgabe…"
+               data-milestone-id="${ms.id}" data-milestone-field="aufgabe">
+        <span class="ms-status-badge ${statusCss}">${statusLabel}</span>
+        <button class="icon-btn dp-milestone-delete"
+                data-action="removeMilestone" data-milestone-id="${ms.id}"
+                title="Meilenstein löschen">✕</button>
+      </div>
+      <div class="dp-milestone-body">
+        <div class="dp-milestone-body-left">
+          <label class="detail-label">Beschreibung</label>
+          <textarea class="dp-milestone-beschreibung" rows="2"
+                    placeholder="Was ist zu tun?"
+                    data-milestone-id="${ms.id}" data-milestone-field="beschreibung">${esc(ms.beschreibung)}</textarea>
+        </div>
+        <div class="dp-milestone-body-right">
+          <div class="detail-field">
+            <label class="detail-label">Owner</label>
+            <input class="detail-input"
+                   value="${esc(ms.owner)}"
+                   placeholder="Verantwortlich…"
+                   data-milestone-id="${ms.id}" data-milestone-field="owner">
+          </div>
+          <div class="detail-field">
+            <label class="detail-label">Status</label>
+            <div class="detail-select-wrap">
+              <select class="detail-input"
+                      data-milestone-id="${ms.id}" data-milestone-field="status">
+                ${selectHtml(MILESTONE_STATUS_OPTIONS, ms.status)}
+              </select>
+            </div>
+          </div>
+          <div class="detail-field">
+            <label class="detail-label">Frist</label>
+            <input type="date" class="detail-input"
+                   value="${esc(ms.frist)}"
+                   data-milestone-id="${ms.id}" data-milestone-field="frist">
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ─── Milestone List ──────────────────────────────────────────
+
+function renderMilestoneList(milestones) {
+  if (!milestones.length) {
+    dom.dpMilestoneList.innerHTML = `
+      <div class="dp-milestone-empty">
+        <span class="dp-milestone-empty-icon">📋</span>
+        <p>Noch keine Meilensteine erfasst.</p>
+        <button class="add-btn" id="dp-milestone-add-empty">+ Ersten Meilenstein hinzufügen</button>
+      </div>
+    `;
+    document.getElementById('dp-milestone-add-empty')?.addEventListener('click', addMilestone);
+    return;
+  }
+
+  const sorted = [...milestones].sort((a, b) => {
+    if (!a.frist && !b.frist) return 0;
+    if (!a.frist) return 1;
+    if (!b.frist) return -1;
+    return a.frist.localeCompare(b.frist);
+  });
+  dom.dpMilestoneList.innerHTML = sorted.map(milestoneCardHtml).join('');
+}
+
+function refreshMilestones() {
+  if (currentId === null) return;
+  const milestones = data.milestones.filter((m) => m.initiative === currentId);
+  if (dom.dpMilestoneCount) dom.dpMilestoneCount.textContent = milestones.length || '';
+  renderMilestoneList(milestones);
+}
+
+// ─── Add / Remove Milestones ─────────────────────────────────
+
+function addMilestone() {
+  if (currentId === null) return;
+  const ms = {
+    id: generateId(),
+    initiative: currentId,
+    aufgabe: '',
+    beschreibung: '',
+    owner: '',
+    status: 'offen',
+    frist: '',
+  };
+  data.milestones.push(ms);
+  save();
+  refreshMilestones();
+  const inputs = dom.dpMilestoneList.querySelectorAll('.dp-milestone-aufgabe');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+function removeMilestone(msId) {
+  const ms = findById(data.milestones, msId);
+  const name = ms && ms.aufgabe ? `„${ms.aufgabe}"` : 'diesen Meilenstein';
+  if (!confirm(`${name} wirklich löschen?`)) return;
+  data.milestones = data.milestones.filter((m) => m.id !== msId);
+  save();
+  refreshMilestones();
+}
+
 // ─── Open / Close ────────────────────────────────────────────
 
 export function openDetail(id) {
@@ -376,6 +504,7 @@ export function openDetail(id) {
   renderStammdaten(ini);
   renderWsjf(ini);
   refreshRisks();
+  refreshMilestones();
 
   dom.header.hidden = true;
   dom.main.hidden   = true;
@@ -446,6 +575,22 @@ function handleRiskField(el) {
   dSave();
 }
 
+function handleMilestoneField(el) {
+  const msId  = el.dataset.milestoneId ? +el.dataset.milestoneId : null;
+  const field = el.dataset.milestoneField;
+  if (!msId || !field) return;
+
+  const ms = findById(data.milestones, msId);
+  if (!ms) return;
+
+  ms[field] = el.value;
+
+  if (field === 'status' || field === 'frist') {
+    refreshMilestones();
+  }
+  dSave();
+}
+
 function handleDetailInput(e) {
   const el = e.target;
 
@@ -460,6 +605,11 @@ function handleDetailInput(e) {
     return;
   }
 
+  if (el.dataset.milestoneField) {
+    handleMilestoneField(el);
+    return;
+  }
+
   if (el.dataset.dpField) {
     handleIniField(el);
   }
@@ -470,6 +620,7 @@ function handleDetailInput(e) {
 export function bindDetailEvents() {
   dom.dpBack.addEventListener('click', closeDetail);
   dom.dpRiskAdd.addEventListener('click', addRisk);
+  dom.dpMilestoneAdd.addEventListener('click', addMilestone);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !dom.detailPage.hidden) closeDetail();
@@ -479,7 +630,10 @@ export function bindDetailEvents() {
   dom.detailPage.addEventListener('change', handleDetailInput);
 
   dom.detailPage.addEventListener('click', (e) => {
-    const target = e.target.closest('[data-action="removeRisk"]');
-    if (target) removeRisk(+target.dataset.riskId);
+    const riskTarget = e.target.closest('[data-action="removeRisk"]');
+    if (riskTarget) removeRisk(+riskTarget.dataset.riskId);
+
+    const msTarget = e.target.closest('[data-action="removeMilestone"]');
+    if (msTarget) removeMilestone(+msTarget.dataset.milestoneId);
   });
 }

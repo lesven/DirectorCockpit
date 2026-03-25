@@ -40,6 +40,11 @@ export const dom = {
   dpRiskList: document.getElementById('dp-risk-list'),
   dpRiskAdd: document.getElementById('dp-risk-add'),
 
+  // Milestone-Detail
+  dpMilestoneCount: document.getElementById('dp-milestone-count'),
+  dpMilestoneList: document.getElementById('dp-milestone-list'),
+  dpMilestoneAdd: document.getElementById('dp-milestone-add'),
+
   // Save-Indicators (NodeList → Array)
   saveIndicators: [...document.querySelectorAll('.save-indicator')],
 

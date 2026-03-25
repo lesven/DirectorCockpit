@@ -12,5 +12,6 @@
     { "id": 3, "name": "Onboarding SVA Fortinet","team": 2, "status": "green",  "projektstatus": "ok", "schritt": "Kick-off durchführen",       "frist": "", "notiz": "", "businessValue": null, "timeCriticality": null, "riskReduction": null, "jobSize": null },
     { "id": 4, "name": "Onboarding SVA MSSQL",  "team": 4, "status": "green",  "projektstatus": "ok", "schritt": "Anforderungen & SLA klären", "frist": "", "notiz": "", "businessValue": null, "timeCriticality": null, "riskReduction": null, "jobSize": null }
   ],
-  "nicht_vergessen": []
+  "nicht_vergessen": [],
+  "milestones": []
 }

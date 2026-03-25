@@ -44,6 +44,7 @@ describe('migrateData()', () => {
     expect(result.teams).toEqual([]);
     expect(result.initiatives).toEqual([]);
     expect(result.nicht_vergessen).toEqual([]);
+    expect(result.milestones).toEqual([]);
   });
 
   it('defaults kw to empty string', () => {
@@ -167,5 +168,42 @@ describe('migrateData()', () => {
     expect(result.teams[0].name).toBe('T1');
     expect(result.initiatives[0].name).toBe('I1');
     expect(result.nicht_vergessen[0].title).toBe('NV1');
+  });
+
+  // ── Milestone-Normalisierung ─────────────────────────────
+
+  it('normalizes milestone fields with defaults', () => {
+    const result = migrateData({ milestones: [{ id: 50, initiative: 1 }] });
+    const ms = result.milestones[0];
+    expect(ms.id).toBe(50);
+    expect(ms.initiative).toBe(1);
+    expect(ms.aufgabe).toBe('');
+    expect(ms.beschreibung).toBe('');
+    expect(ms.owner).toBe('');
+    expect(ms.status).toBe('offen');
+    expect(ms.frist).toBe('');
+  });
+
+  it('preserves existing milestone values', () => {
+    const result = migrateData({
+      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01' }],
+    });
+    const ms = result.milestones[0];
+    expect(ms.aufgabe).toBe('Design');
+    expect(ms.owner).toBe('Max');
+    expect(ms.status).toBe('erledigt');
+    expect(ms.frist).toBe('2026-04-01');
+  });
+
+  it('validates milestone status and falls back to "offen" for invalid values', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, status: 'done' }] });
+    expect(result.milestones[0].status).toBe('offen');
+  });
+
+  it('accepts valid milestone status values', () => {
+    ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'].forEach((s) => {
+      const result = migrateData({ milestones: [{ id: 1, initiative: 1, status: s }] });
+      expect(result.milestones[0].status).toBe(s);
+    });
   });
 });

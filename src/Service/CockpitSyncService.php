@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Initiative;
+use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\SyncableEntity;
@@ -24,6 +25,7 @@ class CockpitSyncService
         'initiatives'     => Initiative::class,
         'nicht_vergessen' => NichtVergessen::class,
         'risks'           => Risk::class,
+        'milestones'      => Milestone::class,
     ];
 
     public function __construct(

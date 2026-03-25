@@ -27,7 +27,7 @@ import { dom } from '../../public/js/dom.js';
 
 beforeEach(() => {
   // Reset data to defaults
-  setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [] });
+  setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] });
 
   // Setup minimal DOM for save indicator
   document.body.innerHTML = '<span id="save-ind" class="save-indicator"></span>';
@@ -52,6 +52,10 @@ describe('setData()', () => {
     data.extraKey = 'should be removed';
     setData({ kw: '5', teams: [], initiatives: [], nicht_vergessen: [] });
     expect(data.extraKey).toBeUndefined();
+  });
+
+  it('initializes milestones array', () => {
+    expect(data.milestones).toEqual([]);
   });
 });
 

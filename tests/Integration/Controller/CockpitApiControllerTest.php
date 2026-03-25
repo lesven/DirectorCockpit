@@ -18,6 +18,7 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('teams', $data);
         $this->assertArrayHasKey('initiatives', $data);
         $this->assertArrayHasKey('nicht_vergessen', $data);
+        $this->assertArrayHasKey('milestones', $data);
     }
 
     public function testSyncRoundtrip(): void
@@ -194,5 +195,72 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertNull($ini['timeCriticality']);
         $this->assertNull($ini['riskReduction']);
         $this->assertNull($ini['jobSize']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Milestone-Tests
+    // -------------------------------------------------------------------------
+
+    public function testSyncMilestoneRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 200, 'name' => 'Test-Ini', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 500, 'initiative' => 200, 'aufgabe' => 'Design Review', 'beschreibung' => 'Architektur prüfen', 'owner' => 'Max', 'status' => 'in_bearbeitung', 'frist' => '2026-04-15'],
+            ],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertCount(1, $data['milestones']);
+        $ms = $data['milestones'][0];
+        $this->assertSame(500, $ms['id']);
+        $this->assertSame(200, $ms['initiative']);
+        $this->assertSame('Design Review', $ms['aufgabe']);
+        $this->assertSame('Architektur prüfen', $ms['beschreibung']);
+        $this->assertSame('Max', $ms['owner']);
+        $this->assertSame('in_bearbeitung', $ms['status']);
+        $this->assertSame('2026-04-15', $ms['frist']);
+    }
+
+    public function testMilestoneWithDefaultValues(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 200, 'name' => 'Test-Ini', 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 501, 'initiative' => 200],
+            ],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $ms = $data['milestones'][0];
+        $this->assertSame('', $ms['aufgabe']);
+        $this->assertSame('', $ms['beschreibung']);
+        $this->assertSame('', $ms['owner']);
+        $this->assertSame('offen', $ms['status']);
+        $this->assertSame('', $ms['frist']);
     }
 }
