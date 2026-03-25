@@ -215,6 +215,7 @@ describe('copyMilestonesToClipboard()', () => {
   });
 
   it('wirft Fehler wenn clipboard.write einen Fehler wirft', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     Object.defineProperty(navigator, 'clipboard', {
       value: { write: vi.fn().mockRejectedValue(new Error('Permission denied')) },
       configurable: true,
@@ -224,6 +225,7 @@ describe('copyMilestonesToClipboard()', () => {
     };
 
     await expect(copyMilestonesToClipboard([makeMilestone()], '')).rejects.toThrow('Permission denied');
+    errorSpy.mockRestore();
   });
 
   it('loggt Warnung wenn Meilensteine-Liste leer ist', async () => {
