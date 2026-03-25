@@ -82,6 +82,7 @@ export function migrateData(parsed) {
     owner: m.owner ?? '',
     status: validMsStatus.includes(m.status) ? m.status : 'offen',
     frist: m.frist ?? '',
+    bemerkung: m.bemerkung ?? '',
   }));
 
   return parsed;
