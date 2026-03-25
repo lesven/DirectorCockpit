@@ -424,6 +424,59 @@ main {
 .ini-table th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
 .ini-table th.sort-desc::after { content: ' ↓'; color: var(--accent); }
 
+/* ── Überfällige Meilensteine ───────────────────────────── */
+.overdue-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.overdue-table th {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  padding: 6px 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.overdue-row td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+
+.overdue-row:last-child td {
+  border-bottom: none;
+}
+
+.overdue-frist {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--danger, #f87171);
+  font-weight: 500;
+}
+
+.overdue-ini-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.overdue-ini-btn:hover {
+  color: var(--text1);
+}
+
 /* ── Initiatives pagination ─────────────────────────────── */
 .ini-pagination {
   display: flex;

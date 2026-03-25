@@ -43,6 +43,9 @@ describe('dom – gecachte statische Elemente', () => {
     ['dpRiskAdd',        'dp-risk-add'],
     ['toast',            'toast'],
     ['dpCopyLink',       'dp-copy-link'],
+    ['overdueMilestonesSection', 'overdue-milestones-section'],
+    ['overdueMilestonesBody',    'overdue-milestones-body'],
+    ['overdueMilestonesCount',   'overdue-milestones-count'],
   ];
 
   it.each(staticIds)('dom.%s referenziert #%s', (prop, id) => {
