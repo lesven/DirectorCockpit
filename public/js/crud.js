@@ -1,17 +1,20 @@
 import { ENTITY_DEFS, STATUSES, CONFIG } from './config.js';
 import { data, save } from './store.js';
 import { renderEntity } from './render.js';
-
-export function findById(arr, id) {
-  return arr.find(x => x.id === id);
-}
+import { findById, generateId } from './utils.js';
+import { openDetail } from './detail.js';
 
 export function addEntity(type) {
   const def = ENTITY_DEFS[type];
-  const id = Date.now();
+  const id = generateId();
   data[type].push({ id, ...def.defaults });
   save();
   renderEntity(type);
+
+  if (type === 'initiatives') {
+    openDetail(id);
+    return;
+  }
 
   if (def.focusSelector) {
     setTimeout(() => {
@@ -26,17 +29,20 @@ export function removeEntity(type, id) {
   const item = findById(data[type], id);
   const name = item && item[def.labelField] ? `\u201E${item[def.labelField]}\u201C` : def.fallback;
   if (!confirm(`${name} wirklich löschen?`)) return;
-  data[type] = data[type].filter(x => x.id !== id);
+  data[type] = data[type].filter((x) => x.id !== id);
+  if (type === 'initiatives') {
+    data.risks = data.risks.filter((r) => r.initiative !== id);
+  }
   save();
   renderEntity(type);
 }
 
 export function cycleStatus(id, isTeam) {
-  const arr = isTeam ? data.teams : data.inis;
+  const arr = isTeam ? data.teams : data.initiatives;
   const item = findById(arr, id);
   if (!item) return;
   const idx = STATUSES.indexOf(item.status);
   item.status = STATUSES[(idx + 1) % STATUSES.length];
   save();
-  renderEntity(isTeam ? 'teams' : 'inis');
+  renderEntity(isTeam ? 'teams' : 'initiatives');
 }

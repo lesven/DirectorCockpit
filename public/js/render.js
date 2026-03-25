@@ -1,11 +1,8 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
-import { findById } from './crud.js';
-import { getSortedInis, sortState, filterState } from './sort.js';
-
-function esc(s) {
-  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
+import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel } from './utils.js';
+import { dom } from './dom.js';
 
 function statusClass(s) {
   return 'status-' + (s || 'grey');
@@ -19,16 +16,15 @@ function autoGrow(el) {
 export { autoGrow };
 
 function renderKW() {
-  const el = document.getElementById('kw-badge');
-  el.textContent = data.kw ? 'KW ' + data.kw : 'KW \u2014';
+  dom.kwBadge.textContent = data.kw ? 'KW ' + data.kw : 'KW \u2014';
 }
 
 function populateTeamFilter() {
-  const sel = document.getElementById('filter-team');
+  const sel = dom.filterTeam;
   if (!sel) return;
-  const currentVal = sel.value;
+  const currentVal = sel.value || filterState.team;
   while (sel.options.length > 1) sel.remove(1);
-  data.teams.forEach(t => {
+  data.teams.forEach((t) => {
     const opt = document.createElement('option');
     opt.value = String(t.id);
     opt.textContent = t.name;
@@ -38,24 +34,18 @@ function populateTeamFilter() {
   filterState.team = sel.value; // sync if previously-filtered team was deleted
 }
 
-function renderTeams() {
-  populateTeamFilter();
-  const grid = document.getElementById('teams-grid');
-  grid.innerHTML = '';
-  data.teams.forEach(t => {
-    const card = document.createElement('div');
-    card.className = 'team-card';
-    card.innerHTML = `
+function renderTeamCard(t) {
+  const card = document.createElement('div');
+  card.className = 'team-card';
+  const stats = calculateTeamStats(t.id, data.initiatives);
+  const statsStr = formatTeamStats(stats);
+  card.innerHTML = `
       <div class="team-card-top">
         <div class="status-dot ${statusClass(t.status)}" title="Status wechseln: ${STATUS_LABELS[t.status] || t.status}" data-action="cycleStatus" data-id="${t.id}" data-team="true"></div>
         <input class="team-name" value="${esc(t.name)}" placeholder="Teamname" data-id="${t.id}" data-field="name" data-source="teams">
       </div>
       <div class="card-actions">
         <button class="icon-btn" data-action="removeEntity" data-type="teams" data-id="${t.id}" title="Löschen">✕</button>
-      </div>
-      <div class="field-row">
-        <div class="field-label">Thema</div>
-        <input class="field-input" value="${esc(t.sub)}" placeholder="Kurzbeschreibung" data-id="${t.id}" data-field="sub" data-source="teams">
       </div>
       <div class="field-row">
         <div class="field-label">Aktueller Fokus</div>
@@ -65,21 +55,20 @@ function renderTeams() {
         <div class="field-label">Mein nächster Schritt</div>
         <input class="field-input" value="${esc(t.schritt)}" placeholder="Was muss ich tun?" data-id="${t.id}" data-field="schritt" data-source="teams">
       </div>
+      <div class="team-stats-badge">${statsStr}</div>
     `;
-    grid.appendChild(card);
-  });
+  return card;
 }
 
-function teamOptions(selectedId) {
-  const none = `<option value=""${!selectedId ? ' selected' : ''}>—</option>`;
-  const opts = data.teams.map(t =>
-    `<option value="${t.id}"${t.id === selectedId ? ' selected' : ''}>${esc(t.name)}</option>`
-  ).join('');
-  return none + opts;
+function renderTeams() {
+  populateTeamFilter();
+  dom.teamsGrid.innerHTML = '';
+  data.teams.forEach((t) => dom.teamsGrid.appendChild(renderTeamCard(t)));
+  if (dom.teamsCount) dom.teamsCount.textContent = data.teams.length || '';
 }
 
 function updateSortHeaders() {
-  document.querySelectorAll('.ini-table th.sortable').forEach(th => {
+  dom.sortableHeaders.forEach((th) => {
     th.classList.remove('sort-asc', 'sort-desc');
     const field = th.dataset.sort;
     if (field === sortState.field) {
@@ -88,27 +77,30 @@ function updateSortHeaders() {
   });
 }
 
-function renderInis() {
-  const tbody = document.getElementById('ini-body');
-  tbody.innerHTML = '';
-  updateSortHeaders();
-  getSortedInis().forEach(ini => {
-    const s = ini.status || 'grey';
-    const ps = ini.projektstatus || 'ok';
-    const tr = document.createElement('tr');
-    tr.className = 'ini-row';
-    tr.innerHTML = `
-      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="inis"></td>
+function renderIniRow(ini, teamOptsBase) {
+  const s = ini.status || 'grey';
+  const ps = ini.projektstatus || 'ok';
+  const wsjf = ini.wsjf;
+  const riskCount = data.risks ? data.risks.filter((r) => r.initiative === ini.id).length : 0;
+  const topScore = maxRiskScore(data.risks || [], ini.id);
+  const riskLevel = topScore ? getRiskLevel(topScore) : null;
+  const riskBadgeHtml = riskLevel
+    ? `<span class="risk-badge-mini ${riskLevel.css}">${riskCount}</span>`
+    : (riskCount ? `<span class="risk-badge-mini">${riskCount}</span>` : '');
+  const tr = document.createElement('tr');
+  tr.className = 'ini-row';
+  tr.innerHTML = `
+      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives"></td>
       <td>
         <div class="select-wrap">
-          <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="inis">
-            ${teamOptions(ini.team)}
+          <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="initiatives">
+            ${teamOptsBase}
           </select>
         </div>
       </td>
       <td>
         <div class="status-select-wrap s-${s}">
-          <select class="status-select s-${s}" data-id="${ini.id}" data-field="status" data-source="inis">
+          <select class="status-select s-${s}" data-id="${ini.id}" data-field="status" data-source="initiatives">
             <option value="fertig"${s === 'fertig' ? ' selected' : ''}>Fertig</option>
             <option value="yellow"${s === 'yellow' ? ' selected' : ''}>In Arbeit</option>
             <option value="grey"${s === 'grey' ? ' selected' : ''}>Geplant</option>
@@ -118,44 +110,146 @@ function renderInis() {
       </td>
       <td>
         <div class="status-select-wrap ps-${ps}">
-          <select class="status-select ps-select ps-${ps}" data-id="${ini.id}" data-field="projektstatus" data-source="inis">
+          <select class="status-select ps-select ps-${ps}" data-id="${ini.id}" data-field="projektstatus" data-source="initiatives">
             <option value="ok"${ps === 'ok' ? ' selected' : ''}>Alles gut</option>
             <option value="kritisch"${ps === 'kritisch' ? ' selected' : ''}>Kritisch</option>
           </select>
         </div>
       </td>
-      <td><input class="ini-cell" value="${esc(ini.schritt)}" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="inis"></td>
-      <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="inis"></td>
-      <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="inis" rows="1">${esc(ini.notiz)}</textarea></td>
-      <td><button class="del-row-btn" data-action="removeEntity" data-type="inis" data-id="${ini.id}" title="Löschen">✕</button></td>
+      <td><span class="wsjf-value${wsjf == null ? ' wsjf-empty' : ''}">${wsjf != null ? wsjf : '\u2013'}</span></td>
+      <td><textarea class="ini-cell ini-schritt" rows="1" maxlength="550" placeholder="Nächster Schritt" data-id="${ini.id}" data-field="schritt" data-source="initiatives">${esc(ini.schritt)}</textarea></td>
+      <td><input class="ini-cell" value="${esc(ini.frist)}" placeholder="TT.MM" data-id="${ini.id}" data-field="frist" data-source="initiatives"></td>
+      <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
+      <td>
+        <button class="risk-btn" data-action="openRisks" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
+        <button class="detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details">✎</button>
+        <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
+      </td>
     `;
-    tbody.appendChild(tr);
-  });
+  tr.querySelector('[data-field="team"]').value = ini.team ?? '';
+  return tr;
+}
 
-  tbody.querySelectorAll('.ini-notiz').forEach(autoGrow);
+function renderPagination(total, page, pageSize, totalPages) {
+  const el = dom.iniPagination;
+  if (!el) return;
+  el.innerHTML = '';
+  if (total <= pageSize) return;
+
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+
+  const info = document.createElement('span');
+  info.className = 'pagination-info';
+  info.textContent = `${start}\u2013${end} von ${total}`;
+  el.appendChild(info);
+
+  const nav = document.createElement('div');
+  nav.className = 'pagination-nav';
+
+  const prevBtn = document.createElement('button');
+  prevBtn.className = 'pagination-btn';
+  prevBtn.textContent = '\u2039';
+  prevBtn.disabled = page === 1;
+  prevBtn.dataset.action = 'gotoPage';
+  prevBtn.dataset.page = String(page - 1);
+  nav.appendChild(prevBtn);
+
+  const delta = 2;
+  let pStart = Math.max(1, page - delta);
+  let pEnd = Math.min(totalPages, page + delta);
+  if (pEnd - pStart < 4) {
+    if (pStart === 1) pEnd = Math.min(totalPages, pStart + 4);
+    else pStart = Math.max(1, pEnd - 4);
+  }
+
+  if (pStart > 1) {
+    const first = document.createElement('button');
+    first.className = 'pagination-btn';
+    first.textContent = '1';
+    first.dataset.action = 'gotoPage';
+    first.dataset.page = '1';
+    nav.appendChild(first);
+    if (pStart > 2) {
+      const dots = document.createElement('span');
+      dots.className = 'pagination-dots';
+      dots.textContent = '\u2026';
+      nav.appendChild(dots);
+    }
+  }
+
+  for (let p = pStart; p <= pEnd; p++) {
+    const btn = document.createElement('button');
+    btn.className = 'pagination-btn' + (p === page ? ' active' : '');
+    btn.textContent = String(p);
+    btn.dataset.action = 'gotoPage';
+    btn.dataset.page = String(p);
+    nav.appendChild(btn);
+  }
+
+  if (pEnd < totalPages) {
+    if (pEnd < totalPages - 1) {
+      const dots = document.createElement('span');
+      dots.className = 'pagination-dots';
+      dots.textContent = '\u2026';
+      nav.appendChild(dots);
+    }
+    const last = document.createElement('button');
+    last.className = 'pagination-btn';
+    last.textContent = String(totalPages);
+    last.dataset.action = 'gotoPage';
+    last.dataset.page = String(totalPages);
+    nav.appendChild(last);
+  }
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'pagination-btn';
+  nextBtn.textContent = '\u203a';
+  nextBtn.disabled = page === totalPages;
+  nextBtn.dataset.action = 'gotoPage';
+  nextBtn.dataset.page = String(page + 1);
+  nav.appendChild(nextBtn);
+
+  el.appendChild(nav);
+}
+
+function renderInis() {
+  dom.iniBody.innerHTML = '';
+  updateSortHeaders();
+
+  const teamOptsBase =
+    '<option value="">\u2014</option>' + data.teams.map((t) => `<option value="${t.id}">${esc(t.name)}</option>`).join('');
+
+  const { items, total, page, pageSize, totalPages } = getPaginatedInis();
+  items.forEach((ini) => dom.iniBody.appendChild(renderIniRow(ini, teamOptsBase)));
+  dom.iniBody.querySelectorAll('.ini-notiz, .ini-schritt').forEach(autoGrow);
+  renderPagination(total, page, pageSize, totalPages);
+  if (dom.inisCount) dom.inisCount.textContent = total || '';
+}
+
+function renderNVCard(nv) {
+  const card = document.createElement('div');
+  card.className = 'nv-card';
+  card.innerHTML = `
+      <div class="card-actions">
+        <button class="icon-btn" data-action="removeEntity" data-type="nicht_vergessen" data-id="${nv.id}" title="L\u00f6schen">✕</button>
+      </div>
+      <input class="nv-title" value="${esc(nv.title)}" placeholder="Thema" data-id="${nv.id}" data-field="title" data-source="nicht_vergessen">
+      <textarea class="nv-body" rows="3" placeholder="Warum wichtig / n\u00e4chste Aktion..." data-id="${nv.id}" data-field="body" data-source="nicht_vergessen">${esc(nv.body)}</textarea>
+    `;
+  return card;
 }
 
 function renderNVs() {
-  const grid = document.getElementById('nv-grid');
-  grid.innerHTML = '';
-  data.nvs.forEach(nv => {
-    const card = document.createElement('div');
-    card.className = 'nv-card';
-    card.innerHTML = `
-      <div class="card-actions">
-        <button class="icon-btn" data-action="removeEntity" data-type="nvs" data-id="${nv.id}" title="Löschen">✕</button>
-      </div>
-      <input class="nv-title" value="${esc(nv.title)}" placeholder="Thema" data-id="${nv.id}" data-field="title" data-source="nvs">
-      <textarea class="nv-body" rows="3" placeholder="Warum wichtig / nächste Aktion..." data-id="${nv.id}" data-field="body" data-source="nvs">${esc(nv.body)}</textarea>
-    `;
-    grid.appendChild(card);
-  });
+  dom.nvGrid.innerHTML = '';
+  data.nicht_vergessen.forEach((nv) => dom.nvGrid.appendChild(renderNVCard(nv)));
+  if (dom.nvCount) dom.nvCount.textContent = data.nicht_vergessen.length || '';
 }
 
 const RENDER_MAP = {
   teams: renderTeams,
-  inis: renderInis,
-  nvs: renderNVs,
+  initiatives: renderInis,
+  nicht_vergessen: renderNVs,
 };
 
 export function renderEntity(type) {

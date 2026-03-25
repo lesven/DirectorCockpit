@@ -12,8 +12,10 @@
 <header>
   <h1>Director's Cockpit</h1>
   <span class="kw-badge" id="kw-badge" title="Klicken zum Bearbeiten" data-action="editKW">KW —</span>
-  <span class="save-indicator" id="save-ind">gespeichert</span>
+  <span class="save-indicator" id="save-ind" role="status" aria-live="polite">gespeichert</span>
 </header>
+
+<div id="loading-banner" class="loading-banner">Lade Daten…</div>
 
 <main>
 
@@ -21,6 +23,7 @@
   <section>
     <div class="section-header">
       <span class="section-label">Teams</span>
+      <span class="section-count" id="teams-count"></span>
       <div class="section-line"></div>
       <button class="add-btn" data-action="addEntity" data-type="teams">+ Team</button>
     </div>
@@ -31,8 +34,9 @@
   <section>
     <div class="section-header">
       <span class="section-label">Initiativen &amp; Projekte</span>
+      <span class="section-count" id="inis-count"></span>
       <div class="section-line"></div>
-      <button class="add-btn" data-action="addEntity" data-type="inis">+ Initiative</button>
+      <button class="add-btn" data-action="addEntity" data-type="initiatives">+ Initiative</button>
     </div>
     <div id="ini-filters">
       <input id="filter-name" type="text" placeholder="Projekt suchen…">
@@ -62,31 +66,72 @@
     <table class="ini-table">
       <thead>
         <tr>
-          <th style="width:20%" class="sortable" data-action="sortInis" data-sort="name">Initiative / Projekt</th>
-          <th style="width:13%" class="sortable" data-action="sortInis" data-sort="team">Team</th>
-          <th style="width:12%" class="sortable" data-action="sortInis" data-sort="status">Status</th>
-          <th style="width:11%" class="sortable" data-action="sortInis" data-sort="projektstatus">Projektstatus</th>
-          <th style="width:18%">Nächster Schritt</th>
-          <th style="width:9%" class="sortable" data-action="sortInis" data-sort="frist">Frist</th>
+          <th style="width:18%" class="sortable" data-action="sortInis" data-sort="name">Initiative / Projekt</th>
+          <th style="width:12%" class="sortable" data-action="sortInis" data-sort="team">Team</th>
+          <th style="width:11%" class="sortable" data-action="sortInis" data-sort="status">Status</th>
+          <th style="width:10%" class="sortable" data-action="sortInis" data-sort="projektstatus">Projektstatus</th>
+          <th style="width:5%" class="sortable" data-action="sortInis" data-sort="wsjf">WSJF</th>
+          <th style="width:16%">Nächster Schritt</th>
+          <th style="width:8%" class="sortable" data-action="sortInis" data-sort="frist">Frist</th>
           <th style="width:13%">Notiz</th>
           <th></th>
         </tr>
       </thead>
       <tbody id="ini-body"></tbody>
     </table>
+    <div id="ini-pagination" class="ini-pagination"></div>
   </section>
 
   <!-- NICHT VERGESSEN -->
   <section>
     <div class="section-header">
       <span class="section-label">Nicht vergessen</span>
+      <span class="section-count" id="nv-count"></span>
       <div class="section-line"></div>
-      <button class="add-btn" data-action="addEntity" data-type="nvs">+ Eintrag</button>
+      <button class="add-btn" data-action="addEntity" data-type="nicht_vergessen">+ Eintrag</button>
     </div>
     <div class="nv-grid" id="nv-grid"></div>
   </section>
 
 </main>
+
+<!-- DETAIL-SEITE (Initiative + Risiken, ersetzt Modal + Risiko-Detailseite) -->
+<section id="detail-page" class="detail-page" hidden>
+  <div class="dp-header-bar">
+    <button class="dp-back-btn" id="dp-back">← Cockpit</button>
+    <input class="dp-title-input" id="dp-name" placeholder="Projektname…" autocomplete="off" aria-label="Initiativenname">
+    <div class="dp-header-badges" id="dp-header-badges"></div>
+    <span class="save-indicator" id="dp-save-ind" role="status" aria-live="polite">gespeichert</span>
+  </div>
+
+  <div class="dp-content">
+    <!-- Linke Sidebar: Stammdaten + WSJF übereinander, sticky -->
+    <div class="dp-left-col">
+      <div class="dp-section">
+        <span class="dp-section-title">Initiative</span>
+        <div class="dp-form" id="dp-stammdaten"></div>
+      </div>
+      <div class="dp-section">
+        <span class="dp-section-title">WSJF-Bewertung</span>
+        <div id="dp-wsjf"></div>
+      </div>
+    </div>
+
+    <!-- Rechte Hauptfläche: Risiken -->
+    <div class="dp-right-col">
+      <div class="dp-risks-wrap">
+        <div class="section-header">
+          <span class="section-label">Risiken</span>
+          <span class="section-count" id="dp-risk-count"></span>
+          <div class="section-line"></div>
+          <button class="add-btn" id="dp-risk-add">+ Risiko</button>
+        </div>
+        <div id="dp-risk-summary-bar"></div>
+        <div id="dp-risk-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <script type="module" src="cockpit.js"></script>
 

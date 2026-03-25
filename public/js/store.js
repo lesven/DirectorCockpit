@@ -1,59 +1,75 @@
-import { CONFIG, DEFAULT_DATA } from './config.js';
+import { CONFIG } from './config.js';
+import { debounce } from './utils.js';
+import { dom } from './dom.js';
 
-export let data;
+export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] };
 
-let saveTimer;
-let saveInFlight = false;
+let indicatorTimer;
+let savePromise = null;
 let saveQueued = false;
+
+/**
+ * Ersetzt den Inhalt von data durch newData (in-place),
+ * damit alle Module dieselbe Objekt-Referenz behalten.
+ */
+export function setData(newData) {
+  for (const k in data) delete data[k];
+  Object.assign(data, newData);
+}
 
 export async function load() {
   try {
     const res = await fetch(CONFIG.API_URL);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    data = await res.json();
+    setData(await res.json());
   } catch (e) {
-    console.warn('Backend nicht erreichbar, verwende Standarddaten:', e);
-    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    console.warn('Backend nicht erreichbar, lade Standarddaten:', e);
+    try {
+      const fallback = await fetch('/default_data.json');
+      setData(await fallback.json());
+    } catch {
+      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] });
+    }
+  }
+}
+
+function showIndicator(text, duration) {
+  dom.saveIndicators.forEach((ind) => {
+    ind.textContent = text;
+    ind.classList.add('show');
+  });
+  clearTimeout(indicatorTimer);
+  indicatorTimer = setTimeout(
+    () => dom.saveIndicators.forEach((ind) => ind.classList.remove('show')),
+    duration,
+  );
+}
+
+async function _doSave() {
+  try {
+    const res = await fetch(CONFIG.API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    showIndicator('gespeichert', CONFIG.SAVE_INDICATOR_MS);
+  } catch (err) {
+    console.error('Speichern fehlgeschlagen:', err);
+    showIndicator('Fehler!', CONFIG.ERROR_INDICATOR_MS);
   }
 }
 
 export function save() {
-  if (saveInFlight) {
+  if (savePromise) {
     saveQueued = true;
     return;
   }
-
-  saveInFlight = true;
-  const ind = document.getElementById('save-ind');
-
-  fetch(CONFIG.API_URL, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  }).then(res => {
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    ind.textContent = 'gespeichert';
-    ind.classList.add('show');
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => ind.classList.remove('show'), CONFIG.SAVE_INDICATOR_MS);
-  }).catch(err => {
-    console.error('Speichern fehlgeschlagen:', err);
-    ind.textContent = 'Fehler!';
-    ind.classList.add('show');
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => ind.classList.remove('show'), CONFIG.ERROR_INDICATOR_MS);
-  }).finally(() => {
-    saveInFlight = false;
-    if (saveQueued) {
-      saveQueued = false;
-      save();
-    }
+  saveQueued = false;
+  savePromise = _doSave().finally(() => {
+    savePromise = null;
+    if (saveQueued) save();
   });
-}
-
-function debounce(fn, ms) {
-  let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
 export const dSave = debounce(save, CONFIG.SAVE_DEBOUNCE_MS);

@@ -5,9 +5,12 @@ namespace App\Tests\Unit\Service;
 use App\Entity\Initiative;
 use App\Entity\Metadata;
 use App\Entity\NichtVergessen;
+use App\Entity\Risk;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
 use App\Service\CockpitSyncService;
+use App\Service\EntitySyncer;
+use App\Service\PayloadValidator;
 use App\Service\SyncException;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +24,7 @@ class CockpitSyncServiceTest extends TestCase
     private MetadataRepository&MockObject $metaRepo;
     private Connection&MockObject $connection;
     private CockpitSyncService $service;
+    private Metadata $meta;
 
     /** @var list<object> */
     private array $persisted = [];
@@ -45,28 +49,41 @@ class CockpitSyncServiceTest extends TestCase
             $this->removed[] = $entity;
         });
 
-        $meta = new Metadata();
-        $this->metaRepo->method('getOrCreate')->willReturn($meta);
+        $this->meta = new Metadata();
+        $this->metaRepo->method('getOrCreate')->willReturn($this->meta);
 
-        $this->service = new CockpitSyncService($this->em, $this->metaRepo);
+        $this->service = new CockpitSyncService(
+            $this->em,
+            $this->metaRepo,
+            new PayloadValidator(),
+            new EntitySyncer($this->em),
+        );
     }
 
-    private function stubRepositories(array $teams = [], array $inis = [], array $nvs = []): void
+    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = []): void
     {
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
+        $teamRepo->method('findBy')->willReturn($teams);
 
-        $iniRepo = $this->createMock(EntityRepository::class);
-        $iniRepo->method('findAll')->willReturn($inis);
+        $initiativeRepo = $this->createMock(EntityRepository::class);
+        $initiativeRepo->method('findAll')->willReturn($initiatives);
+        $initiativeRepo->method('findBy')->willReturn($initiatives);
 
-        $nvRepo = $this->createMock(EntityRepository::class);
-        $nvRepo->method('findAll')->willReturn($nvs);
+        $nichtVergessenRepo = $this->createMock(EntityRepository::class);
+        $nichtVergessenRepo->method('findAll')->willReturn($nichtVergessen);
+        $nichtVergessenRepo->method('findBy')->willReturn($nichtVergessen);
+
+        $riskRepo = $this->createMock(EntityRepository::class);
+        $riskRepo->method('findAll')->willReturn($risks);
+        $riskRepo->method('findBy')->willReturn($risks);
 
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
-                Team::class => $teamRepo,
-                Initiative::class => $iniRepo,
-                NichtVergessen::class => $nvRepo,
+                Team::class           => $teamRepo,
+                Initiative::class     => $initiativeRepo,
+                NichtVergessen::class => $nichtVergessenRepo,
+                Risk::class           => $riskRepo,
                 default => throw new \LogicException("Unexpected class: $class"),
             }
         );
@@ -79,8 +96,8 @@ class CockpitSyncServiceTest extends TestCase
         $payload = [
             'kw' => '10',
             'teams' => [['id' => 1, 'name' => 'Team A']],
-            'inis' => [['id' => 2, 'name' => 'Ini A']],
-            'nvs' => [['id' => 3, 'title' => 'NV A']],
+            'initiatives' => [['id' => 2, 'name' => 'Ini A']],
+            'nicht_vergessen' => [['id' => 3, 'title' => 'NV A']],
         ];
 
         $this->em->expects($this->once())->method('flush');
@@ -100,7 +117,7 @@ class CockpitSyncServiceTest extends TestCase
         $existingTeam = Team::fromArray(['id' => 1, 'name' => 'Old']);
         $this->stubRepositories(teams: [$existingTeam]);
 
-        $payload = ['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []];
+        $payload = ['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []];
         $this->service->syncAll($payload);
 
         $this->assertCount(1, $this->removed);
@@ -115,8 +132,8 @@ class CockpitSyncServiceTest extends TestCase
         $payload = [
             'kw' => '',
             'teams' => [['id' => 1, 'name' => 'New']],
-            'inis' => [],
-            'nvs' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
         ];
         $this->service->syncAll($payload);
 
@@ -129,9 +146,9 @@ class CockpitSyncServiceTest extends TestCase
     {
         $team = Team::fromArray(['id' => 1, 'name' => 'A']);
         $ini = Initiative::fromArray(['id' => 2, 'name' => 'B']);
-        $this->stubRepositories(teams: [$team], inis: [$ini]);
+        $this->stubRepositories(teams: [$team], initiatives: [$ini]);
 
-        $payload = ['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []];
+        $payload = ['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []];
         $this->service->syncAll($payload);
 
         $this->assertCount(2, $this->removed);
@@ -146,7 +163,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->expectException(SyncException::class);
         $this->expectExceptionMessageMatches('/Sync fehlgeschlagen/');
 
-        $this->service->syncAll(['kw' => '', 'teams' => [], 'inis' => [], 'nvs' => []]);
+        $this->service->syncAll(['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []]);
     }
 
     public function testInvalidPayloadStructureThrows(): void
@@ -171,14 +188,77 @@ class CockpitSyncServiceTest extends TestCase
         $ini = Initiative::fromArray(['id' => 2, 'name' => 'I']);
         $nv = NichtVergessen::fromArray(['id' => 3, 'title' => 'N']);
 
-        $this->stubRepositories(teams: [$team], inis: [$ini], nvs: [$nv]);
+        $this->stubRepositories(teams: [$team], initiatives: [$ini], nichtVergessen: [$nv]);
 
         $result = $this->service->loadAll();
 
         $this->assertArrayHasKey('kw', $result);
         $this->assertCount(1, $result['teams']);
-        $this->assertCount(1, $result['inis']);
-        $this->assertCount(1, $result['nvs']);
+        $this->assertCount(1, $result['initiatives']);
+        $this->assertCount(1, $result['nicht_vergessen']);
         $this->assertSame(1, $result['teams'][0]['id']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Phase 2: Neue Tests für bisher ungetestete Pfade
+    // -------------------------------------------------------------------------
+
+    /** Nur 'kw' im Payload – fehlende Entity-Arrays werden als leer behandelt. */
+    public function testSyncWithPartialPayloadSucceeds(): void
+    {
+        $this->stubRepositories();
+        $this->connection->expects($this->once())->method('beginTransaction');
+        $this->connection->expects($this->once())->method('commit');
+        $this->em->expects($this->once())->method('flush');
+
+        $this->service->syncAll(['kw' => '42']);
+
+        $this->assertEmpty($this->persisted);
+        $this->assertEmpty($this->removed);
+    }
+
+    /** Validierung schlägt vor beginTransaction fehl → kein rollBack nötig. */
+    public function testValidationFailsBeforeTransactionBegins(): void
+    {
+        $this->connection->expects($this->never())->method('beginTransaction');
+        $this->connection->expects($this->never())->method('rollBack');
+
+        $this->expectException(SyncException::class);
+        $this->service->syncAll(['teams' => 'ungültige-nicht-array-eingabe']);
+    }
+
+    /** kw-Wert wird tatsächlich auf dem Metadata-Objekt gesetzt. */
+    public function testSyncSetsKwOnMetadata(): void
+    {
+        $this->stubRepositories();
+        $this->service->syncAll(['kw' => '52', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []]);
+
+        $this->assertSame('52', $this->meta->getKw());
+    }
+
+    /**
+     * Dokumentiert das aktuelle Verhalten bei doppelten IDs im Eingangs-Payload:
+     * Da $byId nur existierende DB-Entities enthält, werden beide als neu behandelt
+     * und zweimal gepersistet – ein echter DB-Flush würde einen PK-Constraint-Fehler liefern.
+     */
+    public function testSyncWithDuplicateIdsPersistedTwice(): void
+    {
+        $this->stubRepositories();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [
+                ['id' => 1, 'name' => 'Erster'],
+                ['id' => 1, 'name' => 'Duplikat'],
+            ],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+
+        $this->service->syncAll($payload);
+
+        // Beide Einträge werden gepersistet, weil biId aus leerer DB-Liste gebaut wird.
+        // Dieses Verhalten ist ein bekannter Bug (PK-Verletzung beim Flush).
+        $this->assertCount(2, $this->persisted);
     }
 }

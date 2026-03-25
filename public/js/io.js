@@ -1,37 +1,73 @@
-import { data, save } from './store.js';
+import { data, save, setData } from './store.js';
 import { renderAll } from './render.js';
+import { generateId } from './utils.js';
 
-function migrateData(parsed) {
+/**
+ * Normalisiert importierte JSON-Daten auf das aktuelle Format.
+ * Akzeptiert BEIDE Schlüssel-Versionen:
+ *   - Alt (vor Refactoring): inis, nvs
+ *   - Neu (aktuell):         initiatives, nicht_vergessen
+ */
+export function migrateData(parsed) {
+  // Schlüssel-Migration: altes Format → neues Format
+  if (!Array.isArray(parsed.initiatives) && Array.isArray(parsed.inis)) {
+    parsed.initiatives = parsed.inis;
+  }
+  if (!Array.isArray(parsed.nicht_vergessen) && Array.isArray(parsed.nvs)) {
+    parsed.nicht_vergessen = parsed.nvs;
+  }
+
+  // Defaults sicherstellen
   if (!Array.isArray(parsed.teams)) parsed.teams = [];
-  if (!Array.isArray(parsed.inis))  parsed.inis  = [];
-  if (!Array.isArray(parsed.nvs))   parsed.nvs   = [];
+  if (!Array.isArray(parsed.initiatives)) parsed.initiatives = [];
+  if (!Array.isArray(parsed.nicht_vergessen)) parsed.nicht_vergessen = [];
   if (!parsed.kw) parsed.kw = '';
 
-  parsed.teams = parsed.teams.map(t => ({
-    id:      t.id      ?? Date.now(),
-    name:    t.name    ?? '',
-    sub:     t.sub     ?? '',
-    status:  t.status  ?? 'grey',
-    fokus:   t.fokus   ?? '',
+  // Alte Schlüssel entfernen, damit der API-Sync keine leeren Arrays drüberschreibt
+  delete parsed.inis;
+  delete parsed.nvs;
+
+  // Risks-Array sicherstellen
+  if (!Array.isArray(parsed.risks)) parsed.risks = [];
+
+  parsed.teams = parsed.teams.map((t) => ({
+    id: t.id ?? generateId(),
+    name: t.name ?? '',
+    status: t.status ?? 'grey',
+    fokus: t.fokus ?? '',
     schritt: t.schritt ?? '',
   }));
 
   const validStatus = ['fertig', 'yellow', 'grey', 'ungeplant'];
-  parsed.inis = parsed.inis.map(i => ({
-    id:             i.id             ?? Date.now(),
-    name:           i.name           ?? '',
-    team:           i.team           ?? null,
-    status:         validStatus.includes(i.status) ? i.status : 'grey',
-    projektstatus:  i.projektstatus  ?? 'ok',
-    schritt:        i.schritt        ?? '',
-    frist:          i.frist          ?? '',
-    notiz:          i.notiz          ?? '',
+  parsed.initiatives = parsed.initiatives.map((i) => ({
+    id: i.id ?? generateId(),
+    name: i.name ?? '',
+    team: i.team ?? null,
+    status: validStatus.includes(i.status) ? i.status : 'grey',
+    projektstatus: i.projektstatus ?? 'ok',
+    schritt: i.schritt ?? '',
+    frist: i.frist ?? '',
+    notiz: i.notiz ?? '',
+    businessValue: i.businessValue ?? null,
+    timeCriticality: i.timeCriticality ?? null,
+    riskReduction: i.riskReduction ?? null,
+    jobSize: i.jobSize ?? null,
+    wsjf: i.wsjf ?? null,
   }));
 
-  parsed.nvs = parsed.nvs.map(n => ({
-    id:    n.id    ?? Date.now(),
+  parsed.nicht_vergessen = parsed.nicht_vergessen.map((n) => ({
+    id: n.id ?? generateId(),
     title: n.title ?? '',
-    body:  n.body  ?? '',
+    body: n.body ?? '',
+  }));
+
+  parsed.risks = parsed.risks.map((r) => ({
+    id: r.id ?? generateId(),
+    initiative: r.initiative,
+    bezeichnung: r.bezeichnung ?? '',
+    beschreibung: r.beschreibung ?? '',
+    eintrittswahrscheinlichkeit: r.eintrittswahrscheinlichkeit ?? 1,
+    schadensausmass: r.schadensausmass ?? 1,
   }));
 
   return parsed;
@@ -52,19 +88,23 @@ export function importJSON() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'application/json,.json';
-  input.onchange = e => {
+  input.onchange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = (ev) => {
       try {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
         const migrated = migrateData(parsed);
-        const summary = `${migrated.teams.length} Teams, ${migrated.inis.length} Initiativen, ${migrated.nvs.length} Nicht-vergessen-Einträge`;
-        if (!confirm(`Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`)) return;
-        // Overwrite data properties in-place so all modules see the change
-        Object.assign(data, migrated);
+        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken`;
+        if (
+          !confirm(
+            `Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`,
+          )
+        )
+          return;
+        setData(migrated);
         save();
         renderAll();
       } catch (err) {

@@ -1,0 +1,23 @@
+{
+  "name": "director-cockpit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "testcafe",
+    "test:e2e:visible": "testcafe chromium tests/e2e/ --speed 0.5",
+    "lint": "eslint public/js",
+    "format": "prettier --write public/js"
+  },
+  "devDependencies": {
+    "@eslint/js": "^8.57.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "jsdom": "^24.1.3",
+    "prettier": "^3.8.1",
+    "testcafe": "^3.7.4",
+    "vitest": "^1.6.1"
+  }
+}
