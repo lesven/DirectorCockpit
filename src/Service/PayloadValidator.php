@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use App\Enum\MilestoneStatusEnum;
+use App\Enum\RoamStatusEnum;
+
 /**
  * Prüft die Grundstruktur eines Sync-Payloads.
  * Keine Doctrine/DB-Abhängigkeit – einfach isoliert testbar.
@@ -12,7 +15,6 @@ class PayloadValidator
 {
     private const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
     private const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
-    private const MILESTONE_STATUSES = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
 
     /**
      * @param array<string, mixed> $payload
@@ -22,6 +24,13 @@ class PayloadValidator
      */
     public function validate(array $payload, array $entityKeys): void
     {
+        /** @var array<string, callable(array<string, mixed>, int): void> */
+        $itemValidators = [
+            'initiatives' => fn(array $item, int $i) => $this->validateWsjfFields($item, $i),
+            'milestones'  => fn(array $item, int $i) => $this->validateMilestoneStatus($item, $i),
+            'risks'       => fn(array $item, int $i) => $this->validateRoamStatus($item, $i),
+        ];
+
         foreach ($entityKeys as $key) {
             if (!isset($payload[$key])) {
                 continue;
@@ -30,23 +39,36 @@ class PayloadValidator
                 throw new ValidationException("'{$key}' muss ein Array sein");
             }
             foreach ($payload[$key] as $i => $item) {
-                if (!is_array($item) || !isset($item['id'])) {
-                    throw new ValidationException("'{$key}[{$i}]' muss ein Objekt mit 'id' sein");
-                }
-                if ($key === 'initiatives') {
-                    $this->validateWsjfFields($item, $i);
-                }
-                if ($key === 'milestones') {
-                    $this->validateMilestoneStatus($item, $i);
-                }
+                $this->validateItem($key, $i, $item, $itemValidators[$key] ?? null);
             }
+        }
+    }
+
+    /**
+     * Validiert ein einzelnes Item innerhalb einer Entity-Liste.
+     *
+     * @param mixed                                              $item
+     * @param callable(array<string, mixed>, int): void|null    $extraValidator
+     *
+     * @throws ValidationException
+     */
+    private function validateItem(string $key, int $index, mixed $item, ?callable $extraValidator): void
+    {
+        if (!is_array($item) || !isset($item['id'])) {
+            throw new ValidationException("'{$key}[{$index}]' muss ein Objekt mit 'id' sein");
+        }
+        if (!is_int($item['id']) || $item['id'] < 1) {
+            throw new ValidationException("'{$key}[{$index}].id' muss eine positive ganze Zahl sein, '{$item['id']}' ist ungültig");
+        }
+        if ($extraValidator !== null) {
+            $extraValidator($item, $index);
         }
     }
 
     /**
      * @param array<string, mixed> $item
      *
-     * @throws SyncException
+     * @throws ValidationException
      */
     private function validateWsjfFields(array $item, int $index): void
     {
@@ -62,14 +84,38 @@ class PayloadValidator
         }
     }
 
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @throws ValidationException
+     */
     private function validateMilestoneStatus(array $item, int $index): void
     {
         if (!array_key_exists('status', $item) || $item['status'] === null) {
             return;
         }
-        if (!in_array($item['status'], self::MILESTONE_STATUSES, true)) {
+        $valid = array_column(MilestoneStatusEnum::cases(), 'value');
+        if (!in_array($item['status'], $valid, true)) {
             throw new ValidationException(
-                "milestones[{$index}].status muss einer der Werte offen, in_bearbeitung, erledigt, blockiert sein, '{$item['status']}' ist ungültig"
+                "milestones[{$index}].status muss einer der Werte " . implode(', ', $valid) . " sein, '{$item['status']}' ist ungültig"
+            );
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @throws ValidationException
+     */
+    private function validateRoamStatus(array $item, int $index): void
+    {
+        if (!array_key_exists('roamStatus', $item) || $item['roamStatus'] === null) {
+            return;
+        }
+        $valid = array_column(RoamStatusEnum::cases(), 'value');
+        if (!in_array($item['roamStatus'], $valid, true)) {
+            throw new ValidationException(
+                "risks[{$index}].roamStatus muss einer der Werte " . implode(', ', $valid) . " sein, '{$item['roamStatus']}' ist ungültig"
             );
         }
     }

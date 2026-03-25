@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\RoamStatusEnum;
 use App\Repository\RiskRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -26,12 +27,13 @@ final class Risk implements SyncableEntity
     #[ORM\Column(type: 'integer')]
     private int $schadensausmass = 1;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $roamStatus = null;
+    #[ORM\Column(length: 20, nullable: true, enumType: RoamStatusEnum::class)]
+    private ?RoamStatusEnum $roamStatus = null;
 
     #[ORM\Column(type: 'text')]
     private string $roamNotiz = '';
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -41,11 +43,12 @@ final class Risk implements SyncableEntity
             'beschreibung' => $this->beschreibung,
             'eintrittswahrscheinlichkeit' => $this->eintrittswahrscheinlichkeit,
             'schadensausmass' => $this->schadensausmass,
-            'roamStatus' => $this->roamStatus,
+            'roamStatus' => $this->roamStatus?->value,
             'roamNotiz' => $this->roamNotiz,
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -55,12 +58,13 @@ final class Risk implements SyncableEntity
         $entity->beschreibung = $data['beschreibung'] ?? '';
         $entity->eintrittswahrscheinlichkeit = $data['eintrittswahrscheinlichkeit'] ?? 1;
         $entity->schadensausmass = $data['schadensausmass'] ?? 1;
-        $entity->roamStatus = $data['roamStatus'] ?? null;
+        $entity->roamStatus = isset($data['roamStatus']) ? RoamStatusEnum::tryFrom($data['roamStatus']) : null;
         $entity->roamNotiz = $data['roamNotiz'] ?? '';
 
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         if (array_key_exists('initiative', $data)) {
@@ -75,10 +79,11 @@ final class Risk implements SyncableEntity
             $this->schadensausmass = $data['schadensausmass'];
         }
         if (array_key_exists('roamStatus', $data)) {
-            $this->roamStatus = $data['roamStatus'] ?: null;
+            $this->roamStatus = $data['roamStatus'] ? RoamStatusEnum::tryFrom($data['roamStatus']) : null;
         }
         if (array_key_exists('roamNotiz', $data)) {
             $this->roamNotiz = $data['roamNotiz'];
         }
     }
 }
+

@@ -15,15 +15,4 @@ class MilestoneRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Milestone::class);
     }
-
-    /** Alle Meilensteine einer Initiative, nach ID sortiert. */
-    public function findByInitiative(int $initiativeId): array
-    {
-        return $this->createQueryBuilder('m')
-            ->where('m.initiative = :ini')
-            ->setParameter('ini', $initiativeId)
-            ->orderBy('m.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
 }

@@ -9,7 +9,7 @@ fixture('US-12: Risiko-Management (CRUD)')
 
 /** Öffnet die Detail-Seite der ersten Initiative (Projekt Gamma). */
 async function openRiskPage(t) {
-  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openRisks"]');
+  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(0));
   await t.click(riskBtn);
   await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
@@ -25,7 +25,7 @@ test('AC-R-WSJF-1: WSJF-Score der Initiative wird auf der Detail-Seite korrekt a
 
 test('AC-R-WSJF-2: Detail-Seite zeigt "–" wenn keine WSJF-Werte gesetzt sind', async (t) => {
   // Projekt Delta (Index 1) hat keine WSJF-Werte
-  const riskBtn = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
+  const riskBtn = selectors.iniRows.nth(1).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn);
   await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
@@ -47,14 +47,14 @@ test('AC-R-1: Risk-Button in Initiativentabelle öffnet Detail-Seite', async (t)
 
 test('AC-R-2: Risk-Button zeigt Anzahl der Risiken als Text', async (t) => {
   // Projekt Gamma (id 2001) hat 2 Risiken im Seed
-  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openRisks"]');
+  const riskBtn = selectors.iniRows.nth(0).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(0));
   await t.expect(riskBtn.textContent).contains('2', 'Button sollte Risikoanzahl enthalten');
 });
 
 test('AC-R-3: Initiative ohne Risiken zeigt leere Risiko-Sektion', async (t) => {
   // Projekt Delta (idx 1) hat keine Risiken
-  const riskBtn = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
+  const riskBtn = selectors.iniRows.nth(1).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn);
   await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();
@@ -228,7 +228,7 @@ test('AC-R-14: Gelöschtes Risiko wird nach Reload nicht mehr angezeigt', async 
 
 test('AC-R-15: Risiken einer Initiative sind von anderen isoliert', async (t) => {
   // Projekt Delta (idx 1) hat keine Risiken im Seed
-  const riskBtn2 = selectors.iniRows.nth(1).find('[data-action="openRisks"]');
+  const riskBtn2 = selectors.iniRows.nth(1).find('[data-action="openDetail"]');
   await t.hover(selectors.iniRows.nth(1));
   await t.click(riskBtn2);
   await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk();

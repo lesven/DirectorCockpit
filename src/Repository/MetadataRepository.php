@@ -19,6 +19,11 @@ class MetadataRepository extends ServiceEntityRepository
         parent::__construct($registry, Metadata::class);
     }
 
+    /**
+     * Gibt die einzige Metadata-Zeile zurück oder legt sie an.
+     * Ruft bewusst kein flush() auf – das obliegt dem Aufrufer,
+     * damit keine Partial-Writes innerhalb fremder Transaktionen entstehen.
+     */
     public function getOrCreate(): Metadata
     {
         if ($this->cached !== null) {
@@ -29,7 +34,7 @@ class MetadataRepository extends ServiceEntityRepository
         if ($meta === null) {
             $meta = new Metadata();
             $this->getEntityManager()->persist($meta);
-            $this->getEntityManager()->flush();
+            // Kein flush() hier – Aufrufer ist für Transaktions-Management zuständig
         }
 
         $this->cached = $meta;

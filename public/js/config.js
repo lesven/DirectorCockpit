@@ -9,9 +9,44 @@ export const CONFIG = {
 export const STATUSES = ['fertig', 'yellow', 'grey', 'ungeplant'];
 export const STATUS_LABELS = { fertig: 'Fertig', yellow: 'In Arbeit', grey: 'Geplant', ungeplant: 'Ungeplant' };
 export const STATUS_ORDER = { fertig: 0, yellow: 1, grey: 2, ungeplant: 3 };
+export const STATUS_OPTIONS = [
+  { value: 'fertig',     label: 'Fertig' },
+  { value: 'yellow',    label: 'In Arbeit' },
+  { value: 'grey',      label: 'Geplant' },
+  { value: 'ungeplant', label: 'Ungeplant' },
+];
+export const STATUS_CSS_MAP = { fertig: 'pill-green', yellow: 'pill-yellow', grey: 'pill-grey', ungeplant: 'pill-red' };
+
 export const PROJECT_STATUS_ORDER = { ok: 0, kritisch: 1 };
 
 export const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
+export const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
+
+export const MILESTONE_STATUSES = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
+export const MILESTONE_STATUS_LABELS = {
+  offen:          'Offen',
+  in_bearbeitung: 'In Bearbeitung',
+  erledigt:       'Erledigt',
+  blockiert:      'Blockiert',
+};
+export const MILESTONE_STATUS_OPTIONS = [
+  { value: 'offen',           label: 'Offen' },
+  { value: 'in_bearbeitung',  label: 'In Bearbeitung' },
+  { value: 'erledigt',        label: 'Erledigt' },
+  { value: 'blockiert',       label: 'Blockiert' },
+];
+export const MILESTONE_STATUS_CSS = {
+  offen:          'ms-status-offen',
+  in_bearbeitung: 'ms-status-in-bearbeitung',
+  erledigt:       'ms-status-erledigt',
+  blockiert:      'ms-status-blockiert',
+};
+export const MILESTONE_STATUS_COLORS = {
+  offen:          { bg: '#e5e7eb', text: '#374151' },
+  in_bearbeitung: { bg: '#fef3c7', text: '#92400e' },
+  erledigt:       { bg: '#d1fae5', text: '#065f46' },
+  blockiert:      { bg: '#fee2e2', text: '#991b1b' },
+};
 
 export const RISK_PROBABILITY_LABELS = {
   1: 'Sehr gering',

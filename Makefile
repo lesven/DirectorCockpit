@@ -1,4 +1,4 @@
-.PHONY: up down build composer-install migrate seed backup test test-unit test-integration test-e2e test-e2e-visible analyse fresh
+.PHONY: up down build composer-install migrate seed backup test test-unit test-integration test-e2e test-e2e-visible analyse phpmd coverage fresh
 
 BACKUP_DATE := $(shell date +%y-%m-%d)
 BACKUP_DIR := backups
@@ -29,6 +29,8 @@ backup:
 
 test:
 	docker compose exec app php vendor/bin/phpunit
+	docker compose exec app php -d memory_limit=512M vendor/bin/phpstan analyse src/
+	docker compose exec app php vendor/bin/phpmd src/ text /var/www/html/phpmd.xml
 	npm test
 
 test-unit:
@@ -44,7 +46,14 @@ test-e2e-visible:
 	npm run test:e2e:visible
 
 analyse:
-	docker compose exec app php vendor/bin/phpstan analyse --level=5 src/
+	docker compose exec app php -d memory_limit=512M vendor/bin/phpstan analyse --level=6 src/
+
+phpmd:
+	docker compose exec app php vendor/bin/phpmd src/ text /var/www/html/phpmd.xml
+
+coverage:
+	docker compose exec app php vendor/bin/phpunit --coverage-text --no-progress
+	npx vitest run --coverage
 
 fresh: down
 	docker compose up -d --build

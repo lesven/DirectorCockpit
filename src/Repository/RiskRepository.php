@@ -15,15 +15,4 @@ class RiskRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Risk::class);
     }
-
-    /** Alle Risiken einer Initiative, nach ID sortiert. */
-    public function findByInitiative(int $initiativeId): array
-    {
-        return $this->createQueryBuilder('r')
-            ->where('r.initiative = :ini')
-            ->setParameter('ini', $initiativeId)
-            ->orderBy('r.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
 }

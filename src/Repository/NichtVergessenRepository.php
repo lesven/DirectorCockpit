@@ -15,13 +15,4 @@ class NichtVergessenRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, NichtVergessen::class);
     }
-
-    /** Einträge alphabetisch nach Titel sortiert. */
-    public function findAllOrderedByTitle(): array
-    {
-        return $this->createQueryBuilder('n')
-            ->orderBy('n.title', 'ASC')
-            ->getQuery()
-            ->getResult();
-    }
 }

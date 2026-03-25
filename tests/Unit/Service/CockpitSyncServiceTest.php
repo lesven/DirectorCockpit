@@ -13,6 +13,7 @@ use App\Service\CockpitSyncService;
 use App\Service\EntitySyncer;
 use App\Service\PayloadValidator;
 use App\Service\SyncException;
+use App\Service\ValidationException;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -174,7 +175,7 @@ class CockpitSyncServiceTest extends TestCase
 
     public function testInvalidPayloadStructureThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Array sein/");
 
         $this->service->syncAll(['teams' => 'not-array']);
@@ -182,7 +183,7 @@ class CockpitSyncServiceTest extends TestCase
 
     public function testPayloadWithMissingIdThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Objekt mit 'id' sein/");
 
         $this->service->syncAll(['teams' => [['name' => 'no id']]]);
@@ -230,7 +231,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->connection->expects($this->never())->method('beginTransaction');
         $this->connection->expects($this->never())->method('rollBack');
 
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->service->syncAll(['teams' => 'ungültige-nicht-array-eingabe']);
     }
 

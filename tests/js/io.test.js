@@ -236,4 +236,20 @@ describe('migrateData()', () => {
       expect(result.milestones[0].status).toBe(s);
     });
   });
+
+  // ── Regression En-2: deprecated "green" Status ───────────
+
+  // REGRESSION En-2:
+  // StatusEnum::Green existiert im PHP-Backend, wurde aber im Frontend nie unterstützt.
+  // Ein exportierter Datensatz mit status:'green' wurde bisher stillschweigend zu 'grey'
+  // normalisiert (silent data loss). Der Wert soll stattdessen explizit auf 'fertig'
+  // gemappt werden, bis die DB-Migration alle 'green'-Einträge bereinigt hat.
+  //
+  // Status: ROT bis legacy-Mapping 'green' → 'fertig' in migrateData() ergänzt wird.
+  it('maps deprecated "green" initiative status to "fertig" instead of silently dropping to "grey"', () => {
+    const result = migrateData({
+      initiatives: [{ id: 1, name: 'Legacy', status: 'green' }],
+    });
+    expect(result.initiatives[0].status).toBe('fertig');
+  });
 });

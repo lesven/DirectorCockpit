@@ -1,38 +1,17 @@
 // ─── Milestone HTML Export ───────────────────────────────────
-
-const STATUS_COLORS = {
-  offen:          { bg: '#e5e7eb', text: '#374151' },
-  in_bearbeitung: { bg: '#fef3c7', text: '#92400e' },
-  erledigt:       { bg: '#d1fae5', text: '#065f46' },
-  blockiert:      { bg: '#fee2e2', text: '#991b1b' },
-};
-
-const STATUS_LABELS = {
-  offen:          'Offen',
-  in_bearbeitung: 'In Bearbeitung',
-  erledigt:       'Erledigt',
-  blockiert:      'Blockiert',
-};
-
-function escHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+import { MILESTONE_STATUS_COLORS, MILESTONE_STATUS_LABELS } from './config.js';
+import { esc } from './utils.js';
 
 function formatFrist(frist) {
   if (!frist) return '—';
   // YYYY-MM-DD → DD.MM.YYYY
   const parts = frist.split('-');
   if (parts.length === 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-  return escHtml(frist);
+  return esc(frist);
 }
 
 export function buildMilestoneTableHtml(milestones, initiativeName) {
-  const title = initiativeName ? escHtml(initiativeName) : 'Meilensteine';
+  const title = initiativeName ? esc(initiativeName) : 'Meilensteine';
 
   const tdBase = 'padding:8px 12px;border:1px solid #d1d5db;font-family:Arial,Helvetica,sans-serif;font-size:13px;vertical-align:top;';
   const thBase = tdBase + 'background-color:#1e3a5f;color:#ffffff;font-weight:bold;white-space:nowrap;';
@@ -64,18 +43,18 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
   });
 
   const rows = sorted.map((ms) => {
-    const colors = STATUS_COLORS[ms.status] || STATUS_COLORS.offen;
-    const statusLabel = STATUS_LABELS[ms.status] || escHtml(ms.status);
+    const colors = MILESTONE_STATUS_COLORS[ms.status] || MILESTONE_STATUS_COLORS.offen;
+    const statusLabel = MILESTONE_STATUS_LABELS[ms.status] || esc(ms.status);
     const statusTd = `style="${tdBase}background-color:${colors.bg};color:${colors.text};white-space:nowrap;font-weight:600;"`;
-    const beschreibung = ms.beschreibung ? escHtml(ms.beschreibung) : '<span style="color:#9ca3af;">—</span>';
+    const beschreibung = ms.beschreibung ? esc(ms.beschreibung) : '<span style="color:#9ca3af;">—</span>';
 
     return `<tr>
-      <td style="${tdBase}">${escHtml(ms.aufgabe) || '—'}</td>
+      <td style="${tdBase}">${esc(ms.aufgabe) || '—'}</td>
       <td style="${tdBase}">${beschreibung}</td>
-      <td style="${tdBase}">${escHtml(ms.owner) || '—'}</td>
+      <td style="${tdBase}">${esc(ms.owner) || '—'}</td>
       <td style="${tdBase};white-space:nowrap;">${formatFrist(ms.frist)}</td>
       <td ${statusTd}>${statusLabel}</td>
-      <td style="${tdBase}">${ms.bemerkung ? escHtml(ms.bemerkung) : '<span style="color:#9ca3af;">—</span>'}</td>
+      <td style="${tdBase}">${ms.bemerkung ? esc(ms.bemerkung) : '<span style="color:#9ca3af;">—</span>'}</td>
     </tr>`;
   }).join('');
 

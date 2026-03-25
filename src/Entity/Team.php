@@ -24,6 +24,7 @@ final class Team implements SyncableEntity
     #[ORM\Column(length: 500)]
     private string $schritt = '';
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -35,6 +36,7 @@ final class Team implements SyncableEntity
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -47,6 +49,7 @@ final class Team implements SyncableEntity
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         $this->name = $data['name'] ?? $this->name;
