@@ -382,52 +382,29 @@ function removeRisk(riskId) {
 
 function milestoneCardHtml(ms) {
   const statusCss = MILESTONE_STATUS_CSS[ms.status] || 'ms-status-offen';
-  const statusLabel = (MILESTONE_STATUS_OPTIONS.find((o) => o.value === ms.status) || {}).label || 'Offen';
 
   return `
-    <div class="dp-milestone-card" data-milestone-id="${ms.id}" data-ms-status="${ms.status}">
-      <div class="dp-milestone-card-header">
-        <input class="dp-milestone-aufgabe"
-               value="${esc(ms.aufgabe)}"
-               placeholder="Aufgabe…"
-               data-milestone-id="${ms.id}" data-milestone-field="aufgabe">
-        <span class="ms-status-badge ${statusCss}">${statusLabel}</span>
-        <button class="icon-btn dp-milestone-delete"
-                data-action="removeMilestone" data-milestone-id="${ms.id}"
-                title="Meilenstein löschen">✕</button>
+    <div class="dp-milestone-row" data-milestone-id="${ms.id}" data-ms-status="${ms.status}">
+      <input class="dp-ms-aufgabe"
+             value="${esc(ms.aufgabe)}"
+             placeholder="Aufgabe…"
+             data-milestone-id="${ms.id}" data-milestone-field="aufgabe">
+      <input class="dp-ms-owner"
+             value="${esc(ms.owner)}"
+             placeholder="Owner…"
+             data-milestone-id="${ms.id}" data-milestone-field="owner">
+      <input type="date" class="dp-ms-frist"
+             value="${esc(ms.frist)}"
+             data-milestone-id="${ms.id}" data-milestone-field="frist">
+      <div class="dp-ms-status-wrap">
+        <select class="dp-ms-status ${statusCss}"
+                data-milestone-id="${ms.id}" data-milestone-field="status">
+          ${selectHtml(MILESTONE_STATUS_OPTIONS, ms.status)}
+        </select>
       </div>
-      <div class="dp-milestone-body">
-        <div class="dp-milestone-body-left">
-          <label class="detail-label">Beschreibung</label>
-          <textarea class="dp-milestone-beschreibung" rows="2"
-                    placeholder="Was ist zu tun?"
-                    data-milestone-id="${ms.id}" data-milestone-field="beschreibung">${esc(ms.beschreibung)}</textarea>
-        </div>
-        <div class="dp-milestone-body-right">
-          <div class="detail-field">
-            <label class="detail-label">Owner</label>
-            <input class="detail-input"
-                   value="${esc(ms.owner)}"
-                   placeholder="Verantwortlich…"
-                   data-milestone-id="${ms.id}" data-milestone-field="owner">
-          </div>
-          <div class="detail-field">
-            <label class="detail-label">Status</label>
-            <div class="detail-select-wrap">
-              <select class="detail-input"
-                      data-milestone-id="${ms.id}" data-milestone-field="status">
-                ${selectHtml(MILESTONE_STATUS_OPTIONS, ms.status)}
-              </select>
-            </div>
-          </div>
-          <div class="detail-field">
-            <label class="detail-label">Frist</label>
-            <input type="date" class="detail-input"
-                   value="${esc(ms.frist)}"
-                   data-milestone-id="${ms.id}" data-milestone-field="frist">
-          </div>
-        </div>
-      </div>
+      <button class="icon-btn dp-ms-delete"
+              data-action="removeMilestone" data-milestone-id="${ms.id}"
+              title="Meilenstein löschen">✕</button>
     </div>
   `;
 }
@@ -453,7 +430,15 @@ function renderMilestoneList(milestones) {
     if (!b.frist) return -1;
     return a.frist.localeCompare(b.frist);
   });
-  dom.dpMilestoneList.innerHTML = sorted.map(milestoneCardHtml).join('');
+  dom.dpMilestoneList.innerHTML =
+    `<div class="dp-ms-header-row">
+       <span class="dp-ms-h-aufgabe">Aufgabe</span>
+       <span class="dp-ms-h-owner">Owner</span>
+       <span class="dp-ms-h-frist">Frist</span>
+       <span class="dp-ms-h-status">Status</span>
+       <span class="dp-ms-h-del"></span>
+     </div>` +
+    sorted.map(milestoneCardHtml).join('');
 }
 
 function refreshMilestones() {
@@ -479,7 +464,7 @@ function addMilestone() {
   data.milestones.push(ms);
   save();
   refreshMilestones();
-  const inputs = dom.dpMilestoneList.querySelectorAll('.dp-milestone-aufgabe');
+  const inputs = dom.dpMilestoneList.querySelectorAll('.dp-ms-aufgabe');
   if (inputs.length) inputs[inputs.length - 1].focus();
 }
 

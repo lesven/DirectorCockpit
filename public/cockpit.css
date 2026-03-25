@@ -1833,110 +1833,119 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 #dp-milestone-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0;
 }
 
-.dp-milestone-card {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  transition: border-color 0.15s;
-}
-
-.dp-milestone-card:hover {
-  border-color: var(--border2);
-}
-
-.dp-milestone-card[data-ms-status="offen"]           { border-left: 3px solid var(--text3); }
-.dp-milestone-card[data-ms-status="in_bearbeitung"]  { border-left: 3px solid var(--accent); }
-.dp-milestone-card[data-ms-status="erledigt"]        { border-left: 3px solid var(--green); }
-.dp-milestone-card[data-ms-status="blockiert"]       { border-left: 4px solid var(--red); }
-
-.dp-milestone-card-header {
-  display: flex;
-  align-items: center;
+/* ── Table header row ─────────────────────────────────────── */
+.dp-ms-header-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 28px;
   gap: 8px;
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
 }
 
-.dp-milestone-aufgabe {
-  flex: 1;
+/* ── Compact milestone row ────────────────────────────────── */
+.dp-milestone-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 28px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  transition: background 0.12s;
+}
+
+.dp-milestone-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.dp-milestone-row[data-ms-status="offen"]           { border-left-color: var(--text3); }
+.dp-milestone-row[data-ms-status="in_bearbeitung"]  { border-left-color: var(--accent); }
+.dp-milestone-row[data-ms-status="erledigt"]        { border-left-color: var(--green); }
+.dp-milestone-row[data-ms-status="blockiert"]       { border-left-color: var(--red); }
+
+/* ── Row field inputs ─────────────────────────────────────── */
+.dp-ms-aufgabe,
+.dp-ms-owner {
   background: transparent;
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
   outline: none;
+  padding: 4px 2px;
+  min-width: 0;
 }
 
-.dp-milestone-aufgabe:focus { color: var(--accent); }
-.dp-milestone-aufgabe::placeholder { color: var(--text3); }
+.dp-ms-aufgabe { font-weight: 500; }
+.dp-ms-aufgabe:focus,
+.dp-ms-owner:focus { color: var(--accent); }
+.dp-ms-aufgabe::placeholder,
+.dp-ms-owner::placeholder { color: var(--text3); }
 
-.ms-status-badge {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-
-.ms-status-offen           { background: rgba(148,163,184,0.15); color: var(--text3); }
-.ms-status-in-bearbeitung  { background: rgba(96,165,250,0.15); color: var(--accent); }
-.ms-status-erledigt        { background: rgba(74,222,128,0.15); color: var(--green); }
-.ms-status-blockiert       { background: rgba(248,113,113,0.15); color: var(--red); }
-
-.dp-milestone-body {
-  display: grid;
-  grid-template-columns: 1fr 210px;
-  gap: 16px;
-  align-items: start;
-}
-
-.dp-milestone-body-left {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dp-milestone-body-right {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.dp-milestone-beschreibung {
-  width: 100%;
+.dp-ms-frist {
   background: transparent;
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
-  resize: none;
-  line-height: 1.5;
-  flex: 1;
-  min-height: 50px;
+  padding: 4px 2px;
+  min-width: 0;
 }
 
-.dp-milestone-beschreibung:focus { color: var(--text); }
-.dp-milestone-beschreibung::placeholder { color: var(--text3); }
+.dp-ms-frist:focus { color: var(--accent); }
 
-.dp-milestone-delete {
-  opacity: 0.35;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
+.dp-ms-status-wrap {
+  position: relative;
 }
 
-.dp-milestone-card:hover .dp-milestone-delete { opacity: 1; }
+.dp-ms-status {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+}
 
-.dp-milestone-delete:hover {
+.dp-ms-status.ms-status-offen          { color: var(--text3); background: rgba(148,163,184,0.12); }
+.dp-ms-status.ms-status-in-bearbeitung { color: var(--accent); background: rgba(96,165,250,0.12); }
+.dp-ms-status.ms-status-erledigt       { color: var(--green); background: rgba(74,222,128,0.12); }
+.dp-ms-status.ms-status-blockiert      { color: var(--red); background: rgba(248,113,113,0.12); }
+
+/* Options must always be readable regardless of the select's status color */
+.dp-ms-status option {
+  color: #e8ecff;
+  background: #2a2f49;
+  font-weight: 500;
+}
+
+.dp-ms-delete {
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.dp-milestone-row:hover .dp-ms-delete { opacity: 0.5; }
+
+.dp-ms-delete:hover {
   color: var(--red) !important;
-  background: rgba(248,113,113,0.1) !important;
   opacity: 1 !important;
 }
 
@@ -1978,7 +1987,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 @media (max-width: 960px) {
   .dp-risk-body { grid-template-columns: 1fr; }
   .dp-risk-roam { grid-template-columns: 1fr; }
-  .dp-milestone-body { grid-template-columns: 1fr; }
+  .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 28px; font-size: 12px; }
+  .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 28px; }
 }
 
 @media (max-width: 700px) {

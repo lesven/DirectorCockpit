@@ -209,13 +209,11 @@ export const selectors = {
   riskScoreBadges: Selector('.risk-badge'),
 
   // Milestones
-  milestoneCards: Selector('.dp-milestone-card'),
+  milestoneCards: Selector('.dp-milestone-row'),
   milestoneAddBtn: Selector('#dp-milestone-add'),
   milestoneAufgabeInputs: Selector('[data-milestone-field="aufgabe"]'),
-  milestoneBeschreibungTextareas: Selector('[data-milestone-field="beschreibung"]'),
   milestoneOwnerInputs: Selector('[data-milestone-field="owner"]'),
   milestoneStatusSelects: Selector('[data-milestone-field="status"]'),
   milestoneFristInputs: Selector('[data-milestone-field="frist"]'),
   milestoneDeleteBtns: Selector('[data-action="removeMilestone"]'),
-  milestoneStatusBadges: Selector('.ms-status-badge'),
 };

@@ -122,9 +122,9 @@ test('AC-MS-10: Status ändern aktualisiert Badge und Karten-Border', async (t) 
   await t.click(statusSelect).click(statusSelect.find('option[value="blockiert"]'));
   await waitForSave();
 
-  // Badge prüfen
-  const badge = selectors.milestoneStatusBadges.nth(0);
-  await t.expect(badge.textContent).eql('Blockiert');
+  // Status-Select prüfen
+  const updatedSelect = selectors.milestoneStatusSelects.nth(0);
+  await t.expect(updatedSelect.value).eql('blockiert');
 
   // Persistence prüfen
   const apiData = await t.eval(() => fetch('/api/cockpit').then((r) => r.json()));
