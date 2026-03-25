@@ -183,3 +183,48 @@ test('AC-MS-14: Meilensteine sind initiative-isoliert', async (t) => {
   await openDetailPage(t);
   await t.expect(selectors.milestoneCards.count).eql(2, 'Gamma hat 2 Meilensteine');
 });
+
+// ── HTML-Tabelle kopieren ─────────────────────────────────────────────────────
+
+const mockClipboard = ClientFunction(() => {
+  const calls = [];
+  window.__clipboardItems = calls;
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      write: (items) => {
+        calls.push(items.length);
+        return Promise.resolve();
+      },
+    },
+    configurable: true,
+  });
+  // ClipboardItem muss auch gemockt sein
+  window.ClipboardItem = class {
+    constructor(data) { this.data = data; }
+  };
+});
+
+const getClipboardCallCount = ClientFunction(() => (window.__clipboardItems || []).length);
+
+test('AC-MS-15: Kopieren-Button ist sichtbar und ändert Text nach Klick', async (t) => {
+  await openDetailPage(t);
+
+  await t.expect(selectors.milestoneCopyBtn.exists).ok('Kopieren-Button existiert');
+  await t.expect(selectors.milestoneCopyBtn.visible).ok('Kopieren-Button ist sichtbar');
+
+  await mockClipboard();
+  await t.click(selectors.milestoneCopyBtn);
+
+  // Button-Text wechselt kurzzeitig
+  await t.expect(selectors.milestoneCopyBtn.innerText).contains('Kopiert', 'Button zeigt Bestätigung');
+});
+
+test('AC-MS-16: Kopieren-Button ruft Clipboard-API mit HTML auf', async (t) => {
+  await openDetailPage(t);
+
+  await mockClipboard();
+  await t.click(selectors.milestoneCopyBtn);
+
+  const callCount = await getClipboardCallCount();
+  await t.expect(callCount).eql(1, 'clipboard.write wurde genau einmal aufgerufen');
+});

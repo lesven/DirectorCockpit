@@ -44,6 +44,7 @@ export const dom = {
   dpMilestoneCount: document.getElementById('dp-milestone-count'),
   dpMilestoneList: document.getElementById('dp-milestone-list'),
   dpMilestoneAdd: document.getElementById('dp-milestone-add'),
+  dpMilestoneCopy: document.getElementById('dp-milestone-copy'),
 
   // Save-Indicators (NodeList → Array)
   saveIndicators: [...document.querySelectorAll('.save-indicator')],

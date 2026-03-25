@@ -211,6 +211,7 @@ export const selectors = {
   // Milestones
   milestoneCards: Selector('.dp-milestone-row'),
   milestoneAddBtn: Selector('#dp-milestone-add'),
+  milestoneCopyBtn: Selector('#dp-milestone-copy'),
   milestoneAufgabeInputs: Selector('[data-milestone-field="aufgabe"]'),
   milestoneOwnerInputs: Selector('[data-milestone-field="owner"]'),
   milestoneStatusSelects: Selector('[data-milestone-field="status"]'),

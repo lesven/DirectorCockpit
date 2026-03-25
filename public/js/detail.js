@@ -1,4 +1,5 @@
 import { data, dSave, save } from './store.js';
+import { copyMilestonesToClipboard } from './milestoneExport.js';
 import {
   findById,
   esc,
@@ -600,12 +601,37 @@ function handleDetailInput(e) {
   }
 }
 
+// ─── Milestone Copy Handler ──────────────────────────────────
+
+async function handleMilestoneCopy() {
+  const btn = dom.dpMilestoneCopy;
+  const milestones = data.milestones.filter((m) => m.initiative === currentId);
+  const ini = findById(data.initiatives, currentId);
+  const initiativeName = ini ? ini.name : '';
+
+  try {
+    await copyMilestonesToClipboard(milestones, initiativeName);
+    const original = btn.textContent;
+    btn.textContent = '✓ Kopiert!';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.disabled = false;
+    }, 1500);
+  } catch (_err) {
+    const original = btn.textContent;
+    btn.textContent = '⚠ Fehler';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  }
+}
+
 // ─── Event Binding ───────────────────────────────────────────
 
 export function bindDetailEvents() {
   dom.dpBack.addEventListener('click', closeDetail);
   dom.dpRiskAdd.addEventListener('click', addRisk);
   dom.dpMilestoneAdd.addEventListener('click', addMilestone);
+  dom.dpMilestoneCopy.addEventListener('click', handleMilestoneCopy);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !dom.detailPage.hidden) closeDetail();
