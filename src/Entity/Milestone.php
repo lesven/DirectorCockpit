@@ -30,6 +30,9 @@ final class Milestone implements SyncableEntity
     #[ORM\Column(length: 20)]
     private string $frist = '';
 
+    #[ORM\Column(type: 'text')]
+    private string $bemerkung = '';
+
     public function toArray(): array
     {
         return [
@@ -40,6 +43,7 @@ final class Milestone implements SyncableEntity
             'owner' => $this->owner,
             'status' => $this->status->value,
             'frist' => $this->frist,
+            'bemerkung' => $this->bemerkung,
         ];
     }
 
@@ -53,6 +57,7 @@ final class Milestone implements SyncableEntity
         $entity->owner = $data['owner'] ?? '';
         $entity->status = MilestoneStatusEnum::tryFrom($data['status'] ?? '') ?? MilestoneStatusEnum::Offen;
         $entity->frist = $data['frist'] ?? '';
+        $entity->bemerkung = $data['bemerkung'] ?? '';
 
         return $entity;
     }
@@ -70,6 +75,9 @@ final class Milestone implements SyncableEntity
         }
         if (array_key_exists('frist', $data)) {
             $this->frist = $data['frist'] ?? '';
+        }
+        if (array_key_exists('bemerkung', $data)) {
+            $this->bemerkung = $data['bemerkung'] ?? '';
         }
     }
 }

@@ -403,6 +403,10 @@ function milestoneCardHtml(ms) {
           ${selectHtml(MILESTONE_STATUS_OPTIONS, ms.status)}
         </select>
       </div>
+      <input class="dp-ms-bemerkung"
+             value="${esc(ms.bemerkung || '')}"
+             placeholder="Bemerkung…"
+             data-milestone-id="${ms.id}" data-milestone-field="bemerkung">
       <button class="icon-btn dp-ms-delete"
               data-action="removeMilestone" data-milestone-id="${ms.id}"
               title="Meilenstein löschen">✕</button>
@@ -437,6 +441,7 @@ function renderMilestoneList(milestones) {
        <span class="dp-ms-h-owner">Owner</span>
        <span class="dp-ms-h-frist">Frist</span>
        <span class="dp-ms-h-status">Status</span>
+       <span class="dp-ms-h-bemerkung">Bemerkung</span>
        <span class="dp-ms-h-del"></span>
      </div>` +
     sorted.map(milestoneCardHtml).join('');
@@ -461,6 +466,7 @@ function addMilestone() {
     owner: '',
     status: 'offen',
     frist: '',
+    bemerkung: '',
   };
   data.milestones.push(ms);
   save();
@@ -571,7 +577,7 @@ function handleMilestoneField(el) {
 
   ms[field] = el.value;
 
-  if (field === 'status' || field === 'frist') {
+  if (field === 'status') {
     refreshMilestones();
   }
   dSave();
@@ -640,10 +646,10 @@ export function bindDetailEvents() {
   dom.detailPage.addEventListener('input',  handleDetailInput);
   dom.detailPage.addEventListener('change', handleDetailInput);
 
-  // Block keyboard input on milestone date fields so only the native picker works.
-  dom.detailPage.addEventListener('keydown', (e) => {
-    if (e.target.dataset && e.target.dataset.milestoneField === 'frist' && e.target.type === 'date') {
-      e.preventDefault();
+  // Re-sort milestones only after the date field loses focus, not during editing.
+  dom.detailPage.addEventListener('focusout', (e) => {
+    if (e.target.dataset?.milestoneField === 'frist') {
+      refreshMilestones();
     }
   });
 

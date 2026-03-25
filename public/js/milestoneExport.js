@@ -44,10 +44,11 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
       <th style="${thBase}">Owner</th>
       <th style="${thBase}">Frist</th>
       <th style="${thBase}">Status</th>
+      <th style="${thBase}">Bemerkung</th>
     </tr>`;
 
   if (!milestones || milestones.length === 0) {
-    const emptyTd = `style="${tdBase}color:#6b7280;font-style:italic;" colspan="5"`;
+    const emptyTd = `style="${tdBase}color:#6b7280;font-style:italic;" colspan="6"`;
     return `<table style="border-collapse:collapse;width:100%;font-family:Arial,Helvetica,sans-serif;">
       <caption style="font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:left;padding-bottom:8px;">${title}</caption>
       <thead>${header}</thead>
@@ -74,6 +75,7 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
       <td style="${tdBase}">${escHtml(ms.owner) || '—'}</td>
       <td style="${tdBase};white-space:nowrap;">${formatFrist(ms.frist)}</td>
       <td ${statusTd}>${statusLabel}</td>
+      <td style="${tdBase}">${ms.bemerkung ? escHtml(ms.bemerkung) : '<span style="color:#9ca3af;">—</span>'}</td>
     </tr>`;
   }).join('');
 

@@ -1864,7 +1864,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 /* ── Table header row ─────────────────────────────────────── */
 .dp-ms-header-row {
   display: grid;
-  grid-template-columns: 1fr 120px 130px 130px 28px;
+  grid-template-columns: 1fr 120px 130px 130px 1fr 28px;
   gap: 8px;
   padding: 4px 10px;
   font-family: var(--sans);
@@ -1879,7 +1879,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 /* ── Compact milestone row ────────────────────────────────── */
 .dp-milestone-row {
   display: grid;
-  grid-template-columns: 1fr 120px 130px 130px 28px;
+  grid-template-columns: 1fr 120px 130px 130px 1fr 28px;
   gap: 8px;
   align-items: center;
   padding: 6px 10px;
@@ -1899,7 +1899,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 /* ── Row field inputs ─────────────────────────────────────── */
 .dp-ms-aufgabe,
-.dp-ms-owner {
+.dp-ms-owner,
+.dp-ms-bemerkung {
   background: transparent;
   border: none;
   color: var(--text);
@@ -1912,9 +1913,11 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-ms-aufgabe { font-weight: 500; }
 .dp-ms-aufgabe:focus,
-.dp-ms-owner:focus { color: var(--accent); }
+.dp-ms-owner:focus,
+.dp-ms-bemerkung:focus { color: var(--accent); }
 .dp-ms-aufgabe::placeholder,
-.dp-ms-owner::placeholder { color: var(--text3); }
+.dp-ms-owner::placeholder,
+.dp-ms-bemerkung::placeholder { color: var(--text3); }
 
 .dp-ms-frist {
   background: transparent;
@@ -2012,8 +2015,8 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 @media (max-width: 960px) {
   .dp-risk-body { grid-template-columns: 1fr; }
   .dp-risk-roam { grid-template-columns: 1fr; }
-  .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 28px; font-size: 12px; }
-  .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 28px; }
+  .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; font-size: 12px; }
+  .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; }
 }
 
 @media (max-width: 700px) {
