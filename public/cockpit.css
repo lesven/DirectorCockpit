@@ -81,7 +81,7 @@ header {
 
 header h1 {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.08em;
@@ -90,11 +90,11 @@ header h1 {
 
 .kw-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--accent);
   background: rgba(122,169,255,0.1);
   border: 1px solid rgba(122,169,255,0.2);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 2px 8px;
   cursor: pointer;
 }
@@ -104,7 +104,7 @@ header h1 {
 .save-indicator {
   margin-left: auto;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   opacity: 0;
   transition: opacity 0.3s;
@@ -142,7 +142,7 @@ main {
   color: var(--accent);
   background: rgba(122,169,255,0.1);
   border: 1px solid rgba(122,169,255,0.18);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1px 7px;
   min-width: 22px;
   text-align: center;
@@ -192,7 +192,7 @@ main {
 .team-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 16px;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
@@ -228,7 +228,7 @@ main {
 .status-grey { background: var(--grey); }
 
 .team-name {
-  font-size: 14px;
+  font-size: var(--text-md);
   font-weight: 500;
   color: var(--text);
   outline: none;
@@ -246,7 +246,7 @@ main {
 
 .field-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.06em;
   margin-bottom: 3px;
@@ -260,7 +260,7 @@ main {
   padding: 5px 8px;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   transition: border-color 0.15s, color 0.15s;
@@ -291,7 +291,7 @@ main {
   cursor: pointer;
   font-size: 12px;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: color 0.15s, background 0.15s;
 }
 
@@ -307,7 +307,7 @@ main {
   padding: 8px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   flex-wrap: wrap;
 }
 
@@ -319,7 +319,7 @@ main {
   border-radius: 5px;
   padding: 4px 8px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   outline: none;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -355,7 +355,7 @@ main {
   border-radius: 5px;
   padding: 4px 24px 4px 8px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
@@ -374,7 +374,7 @@ main {
   border-radius: 5px;
   color: var(--text3);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   padding: 4px 8px;
   cursor: default;
   opacity: 0.3;
@@ -404,7 +404,7 @@ main {
 
 .ini-table th {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -435,7 +435,7 @@ main {
 
 .pagination-info {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   letter-spacing: 0.04em;
 }
@@ -451,10 +451,10 @@ main {
   height: 26px;
   padding: 0 6px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text2);
-  font-size: 13px;
+  font-size: var(--text-base);
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
 }
@@ -478,7 +478,7 @@ main {
 }
 
 .pagination-dots {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text3);
   padding: 0 3px;
   user-select: none;
@@ -503,7 +503,7 @@ main {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   transition: color 0.15s;
 }
@@ -556,7 +556,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text3);
-  font-size: 10px;
+  font-size: var(--text-xs);
   pointer-events: none;
 }
 
@@ -566,7 +566,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   gap: 5px;
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-family: var(--mono);
   white-space: nowrap;
   border: 1px solid transparent;
@@ -597,7 +597,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   outline: none;
   cursor: pointer;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   padding: 3px 22px 3px 9px;
   border-radius: 20px;
   border: 1px solid transparent;
@@ -634,9 +634,9 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
 .team-tag {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: rgba(122,169,255,0.08);
   color: var(--accent);
   border: 1px solid rgba(122,169,255,0.15);
@@ -660,7 +660,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   color: var(--red);
   opacity: 0.35;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-md);
   padding: 4px 8px;
   transition: opacity 0.15s;
 }
@@ -678,7 +678,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 3px solid var(--yellow);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 12px;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -692,7 +692,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
   margin-bottom: 6px;
@@ -719,7 +719,7 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
 /* ── Status cycle tooltip ────────────────────────────────── */
 .status-hint {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   margin-top: 10px;
   text-align: right;
@@ -746,7 +746,7 @@ footer {
 
 .footer-left {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -759,11 +759,11 @@ footer {
 
 .footer-btn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 5px 12px;
   cursor: pointer;
   transition: all 0.15s;
@@ -792,7 +792,7 @@ footer {
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   width: 560px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 64px);
@@ -809,7 +809,7 @@ footer {
 
 .modal-title {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.08em;
@@ -821,7 +821,7 @@ footer {
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text3);
-  font-size: 14px;
+  font-size: var(--text-md);
   padding: 4px 10px;
   cursor: pointer;
   transition: all 0.15s;
@@ -848,7 +848,7 @@ footer {
 
 .detail-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -858,11 +858,11 @@ footer {
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 9px 12px;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   outline: none;
   transition: border-color 0.15s;
 }
@@ -909,7 +909,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   pointer-events: none;
 }
@@ -932,9 +932,9 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text3);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-base);
   padding: 4px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   opacity: 0.4;
   transition: all 0.15s;
 }
@@ -953,7 +953,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 /* ── WSJF ─────────────────────────────────────────────────── */
 .wsjf-value {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text2);
   text-align: right;
@@ -972,7 +972,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .detail-section-title {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.06em;
@@ -1002,7 +1002,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .risk-back-btn,
 .dp-back-btn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   background: none;
   border: none;
@@ -1028,7 +1028,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-breadcrumb-sep {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   opacity: 0.5;
   flex-shrink: 0;
@@ -1036,7 +1036,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-breadcrumb-ini {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text2);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1046,7 +1046,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-breadcrumb-cur {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -1090,7 +1090,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-ini-value {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text2);
 }
 
@@ -1101,7 +1101,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 }
 
 .risk-ini-notiz p {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text2);
   margin-top: 4px;
   line-height: 1.5;
@@ -1118,7 +1118,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .risk-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
@@ -1138,7 +1138,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   font-weight: 500;
   outline: none;
 }
@@ -1152,7 +1152,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   line-height: 1.5;
@@ -1175,7 +1175,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 2px 10px;
   border-radius: 12px;
@@ -1231,7 +1231,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   overflow: hidden;
@@ -1244,7 +1244,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .roam-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 2px 10px;
   border-radius: 12px;
@@ -1276,7 +1276,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .risk-empty {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--text3);
   text-align: center;
   padding: 24px 0;
@@ -1287,7 +1287,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   font-size: 9px;
   font-weight: 500;
   padding: 1px 5px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-left: 2px;
   vertical-align: top;
   background: var(--border);
@@ -1466,7 +1466,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-wsjf-header-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text2);
   background: rgba(122,169,255,0.08);
   border: 1px solid rgba(122,169,255,0.18);
@@ -1508,7 +1508,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-section-title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text3);
   letter-spacing: 0.10em;
@@ -1545,7 +1545,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-wsjf-score-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1562,20 +1562,20 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   padding: 8px 16px;
   background: rgba(122,169,255,0.06);
   border: 1px solid rgba(122,169,255,0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 18px;
 }
 
 .dp-wsjf-formula-part {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.02em;
 }
 
 .dp-wsjf-formula-op {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--accent);
   font-weight: 600;
 }
@@ -1604,7 +1604,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .dp-risk-seg {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 3px 12px;
   border-radius: 12px;
@@ -1670,7 +1670,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
 }
@@ -1777,7 +1777,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-risk-empty p,
 .dp-milestone-empty p {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--text3);
 }
 
@@ -1799,7 +1799,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   gap: 8px;
   padding: 4px 10px;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text3);
   text-transform: uppercase;
@@ -1836,7 +1836,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   padding: 4px 2px;
   min-width: 0;
@@ -1873,10 +1873,10 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   background: transparent;
   border: none;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   outline: none;
   cursor: pointer;
   width: 100%;
@@ -1965,7 +1965,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 /* ── Deep-Link copy button ─────────────────────────────── */
 .dp-copy-link-btn {
-  font-size: 14px;
+  font-size: var(--text-md);
   background: none;
   border: none;
   cursor: pointer;
