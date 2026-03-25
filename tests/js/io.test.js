@@ -139,6 +139,34 @@ describe('migrateData()', () => {
     expect(nv.body).toBe('');
   });
 
+  // ── Risk-Normalisierung ──────────────────────────────────
+
+  it('normalizes risk fields with defaults', () => {
+    const result = migrateData({ risks: [{ id: 10, initiative: 2 }] });
+    const r = result.risks[0];
+    expect(r.id).toBe(10);
+    expect(r.initiative).toBe(2);
+    expect(r.bezeichnung).toBe('');
+    expect(r.beschreibung).toBe('');
+    expect(r.eintrittswahrscheinlichkeit).toBe(1);
+    expect(r.schadensausmass).toBe(1);
+    expect(r.roamStatus).toBeNull();
+    expect(r.roamNotiz).toBe('');
+  });
+
+  it('preserves existing risk values including roamStatus and roamNotiz', () => {
+    const result = migrateData({
+      risks: [{ id: 1, initiative: 3, bezeichnung: 'Kosten', beschreibung: 'Details', eintrittswahrscheinlichkeit: 3, schadensausmass: 4, roamStatus: 'mitigate', roamNotiz: 'Plan vorhanden' }],
+    });
+    const r = result.risks[0];
+    expect(r.bezeichnung).toBe('Kosten');
+    expect(r.beschreibung).toBe('Details');
+    expect(r.eintrittswahrscheinlichkeit).toBe(3);
+    expect(r.schadensausmass).toBe(4);
+    expect(r.roamStatus).toBe('mitigate');
+    expect(r.roamNotiz).toBe('Plan vorhanden');
+  });
+
   // ── Vollständiger Roundtrip ──────────────────────────────
 
   it('handles a complete data object without changes', () => {

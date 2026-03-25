@@ -71,6 +71,8 @@ export function migrateData(parsed) {
     beschreibung: r.beschreibung ?? '',
     eintrittswahrscheinlichkeit: r.eintrittswahrscheinlichkeit ?? 1,
     schadensausmass: r.schadensausmass ?? 1,
+    roamStatus: r.roamStatus ?? null,
+    roamNotiz: r.roamNotiz ?? '',
   }));
 
   const validMsStatus = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
