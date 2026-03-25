@@ -182,17 +182,19 @@ describe('migrateData()', () => {
     expect(ms.owner).toBe('');
     expect(ms.status).toBe('offen');
     expect(ms.frist).toBe('');
+    expect(ms.bemerkung).toBe('');
   });
 
   it('preserves existing milestone values', () => {
     const result = migrateData({
-      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01' }],
+      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01', bemerkung: 'Wichtig' }],
     });
     const ms = result.milestones[0];
     expect(ms.aufgabe).toBe('Design');
     expect(ms.owner).toBe('Max');
     expect(ms.status).toBe('erledigt');
     expect(ms.frist).toBe('2026-04-01');
+    expect(ms.bemerkung).toBe('Wichtig');
   });
 
   it('validates milestone status and falls back to "offen" for invalid values', () => {
