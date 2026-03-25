@@ -26,8 +26,8 @@ function setTeams(teams) {
   mockData.teams = teams;
 }
 
-const INI_A = { id: 1, name: 'Alpha', team: 10, status: 'yellow', projektstatus: 'ok', frist: '01.04', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 };
-const INI_B = { id: 2, name: 'Beta', team: 20, status: 'fertig', projektstatus: 'kritisch', frist: '15.03', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21, wsjf: 0.1 };
+const INI_A = { id: 1, name: 'Alpha', team: 10, status: 'yellow', projektstatus: 'ok', frist: '2026-04-01', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 };
+const INI_B = { id: 2, name: 'Beta', team: 20, status: 'fertig', projektstatus: 'kritisch', frist: '2026-03-15', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21, wsjf: 0.1 };
 const INI_C = { id: 3, name: 'Charlie', team: null, status: 'grey', projektstatus: 'ok', frist: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null, wsjf: null };
 
 const TEAM_A = { id: 10, name: 'Frontend' };
@@ -136,9 +136,11 @@ describe('getSortedInis() — Sorting', () => {
   it('sorts by frist asc (empty last)', () => {
     sortState.field = 'frist';
     sortState.dir = 'asc';
-    // "01.04", "15.03", "" → "15.03" < "01.04" (string) ... actually "01.04" < "15.03"
+    // "2026-04-01", "2026-03-15", "" → "2026-03-15" < "2026-04-01" < "" (empty last as 'zzz')
     const result = getSortedInis();
     expect(result[result.length - 1].frist).toBe(''); // empty is last ('zzz')
+    expect(result[0].id).toBe(2); // March (2026-03-15) before April (2026-04-01)
+    expect(result[1].id).toBe(1);
   });
 
   it('sorts by wsjf desc (null last)', () => {

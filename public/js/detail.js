@@ -113,8 +113,8 @@ function renderStammdaten(ini) {
       </div>
       <div class="detail-field">
         <label class="detail-label" for="dp-frist">Frist</label>
-        <input class="detail-input" id="dp-frist" data-dp-field="frist"
-               value="${esc(ini.frist)}" placeholder="TT.MM">
+        <input type="date" class="detail-input" id="dp-frist" data-dp-field="frist"
+               value="${esc(ini.frist)}">
       </div>
     </div>
     <div class="detail-row">

@@ -503,6 +503,15 @@ main {
 .ini-cell:focus { color: var(--text); }
 .ini-cell::placeholder { color: var(--text3); }
 
+input[type="date"].ini-frist-date {
+  color-scheme: dark;
+  cursor: pointer;
+}
+input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
 .ini-name { font-weight: 500; color: var(--text); }
 .ini-name:focus { color: var(--accent); }
 
@@ -878,6 +887,15 @@ select.detail-input {
 select.detail-input option {
   background: var(--surface2);
   color: var(--text);
+}
+
+input[type="date"].detail-input {
+  color-scheme: dark;
+  cursor: pointer;
+}
+input[type="date"].detail-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
 }
 
 .detail-select-wrap {

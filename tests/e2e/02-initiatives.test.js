@@ -36,8 +36,17 @@ test('AC-2.2: Inline-Bearbeitung von Name, Schritt, Frist und Notiz', async (t) 
   await t.selectText(schrittInput).typeText(schrittInput, 'Neuer Schritt');
   await waitForSave();
 
-  // Frist setzen
-  await t.selectText(fristInput).typeText(fristInput, '30.06');
+  // Frist setzen (type="date" erfordert YYYY-MM-DD Format)
+  const setFrist = ClientFunction((id, value) => {
+    const el = document.querySelector(`[data-field="frist"][data-id="${id}"]`);
+    if (!el) return;
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    setter.call(el, value);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  const fristId = await fristInput.getAttribute('data-id');
+  await setFrist(fristId, '2026-06-30');
   await waitForSave();
 
   // Notiz ändern
@@ -55,7 +64,7 @@ test('AC-2.2: Inline-Bearbeitung von Name, Schritt, Frist und Notiz', async (t) 
   });
   await t.expect(renamedRow.count).eql(1, 'Umbenannte Initiative sollte existieren');
   await t.expect(renamedRow.find('[data-field="schritt"]').value).eql('Neuer Schritt');
-  await t.expect(renamedRow.find('[data-field="frist"]').value).eql('30.06');
+  await t.expect(renamedRow.find('[data-field="frist"]').value).eql('2026-06-30');
   await t.expect(renamedRow.find('[data-field="notiz"]').value).eql('Test-Notiz');
 });
 

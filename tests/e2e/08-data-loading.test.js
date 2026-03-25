@@ -46,7 +46,7 @@ test('AC-9.2: Seite zeigt Daten auch nach API-Roundtrip korrekt an', async (t) =
             status: 'yellow',
             projektstatus: 'kritisch',
             schritt: 'Test',
-            frist: '01.01',
+            frist: '2026-01-01',
             notiz: 'RT Notiz',
             businessValue: 5,
             timeCriticality: 3,
