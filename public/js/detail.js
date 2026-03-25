@@ -11,44 +11,24 @@ import {
 import { renderEntity, autoGrow } from './render.js';
 import {
   WSJF_SCALE,
+  WSJF_FIELDS,
   RISK_PROBABILITY_LABELS,
   RISK_IMPACT_LABELS,
   ROAM_STATUS_LABELS,
   ROAM_STATUS_CSS,
+  STATUS_LABELS,
+  STATUS_CSS_MAP,
+  STATUS_OPTIONS,
+  MILESTONE_STATUS_OPTIONS,
+  MILESTONE_STATUS_CSS,
 } from './config.js';
 import { dom } from './dom.js';
 import { setHash, clearHash, buildDeepLink } from './routing.js';
-
-const STATUS_OPTIONS = [
-  { value: 'fertig',    label: 'Fertig' },
-  { value: 'yellow',   label: 'In Arbeit' },
-  { value: 'grey',     label: 'Geplant' },
-  { value: 'ungeplant', label: 'Ungeplant' },
-];
 
 const PROJEKTSTATUS_OPTIONS = [
   { value: 'ok',       label: 'Alles gut' },
   { value: 'kritisch', label: 'Kritisch' },
 ];
-
-const MILESTONE_STATUS_OPTIONS = [
-  { value: 'offen',           label: 'Offen' },
-  { value: 'in_bearbeitung',  label: 'In Bearbeitung' },
-  { value: 'erledigt',        label: 'Erledigt' },
-  { value: 'blockiert',       label: 'Blockiert' },
-];
-
-const MILESTONE_STATUS_CSS = {
-  offen: 'ms-status-offen',
-  in_bearbeitung: 'ms-status-in-bearbeitung',
-  erledigt: 'ms-status-erledigt',
-  blockiert: 'ms-status-blockiert',
-};
-
-const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
-
-const STATUS_CSS_MAP   = { fertig: 'pill-green', yellow: 'pill-yellow', grey: 'pill-grey', ungeplant: 'pill-red' };
-const STATUS_LABEL_MAP = { fertig: 'Fertig', yellow: 'In Arbeit', grey: 'Geplant', ungeplant: 'Ungeplant' };
 
 let currentId = null;
 
@@ -102,7 +82,7 @@ function wsjfScoreClass(score) {
 
 function renderHeaderBadges(ini) {
   const statusCss   = STATUS_CSS_MAP[ini.status]   || 'pill-grey';
-  const statusLabel = STATUS_LABEL_MAP[ini.status] || ini.status || '—';
+  const statusLabel = STATUS_LABELS[ini.status] || ini.status || '—';
   const psCss       = ini.projektstatus === 'kritisch' ? 'pill-red'   : 'pill-green';
   const psLabel     = ini.projektstatus === 'kritisch' ? 'Kritisch'   : 'Alles gut';
   const wsjfVal     = ini.wsjf != null ? ini.wsjf : '–';

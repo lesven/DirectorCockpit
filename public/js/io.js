@@ -1,6 +1,7 @@
 import { data, save, setData } from './store.js';
 import { renderAll } from './render.js';
 import { generateId } from './utils.js';
+import { MILESTONE_STATUSES } from './config.js';
 
 /**
  * Normalisiert importierte JSON-Daten auf das aktuelle Format.
@@ -42,11 +43,14 @@ export function migrateData(parsed) {
   }));
 
   const validStatus = ['fertig', 'yellow', 'grey', 'ungeplant'];
+  // Legacy-Mapping: 'green' war in StatusEnum::Green definiert, wird aber im
+  // Frontend nicht unterstützt. Explizit auf 'fertig' mappen statt still zu 'grey'.
+  const legacyStatusMap = { green: 'fertig' };
   parsed.initiatives = parsed.initiatives.map((i) => ({
     id: i.id ?? generateId(),
     name: i.name ?? '',
     team: i.team ?? null,
-    status: validStatus.includes(i.status) ? i.status : 'grey',
+    status: validStatus.includes(i.status) ? i.status : (legacyStatusMap[i.status] ?? 'grey'),
     projektstatus: i.projektstatus ?? 'ok',
     schritt: i.schritt ?? '',
     frist: i.frist ?? '',
@@ -75,14 +79,13 @@ export function migrateData(parsed) {
     roamNotiz: r.roamNotiz ?? '',
   }));
 
-  const validMsStatus = ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'];
   parsed.milestones = parsed.milestones.map((m) => ({
     id: m.id ?? generateId(),
     initiative: m.initiative,
     aufgabe: m.aufgabe ?? '',
     beschreibung: m.beschreibung ?? '',
     owner: m.owner ?? '',
-    status: validMsStatus.includes(m.status) ? m.status : 'offen',
+    status: MILESTONE_STATUSES.includes(m.status) ? m.status : 'offen',
     frist: m.frist ?? '',
     bemerkung: m.bemerkung ?? '',
   }));

@@ -253,10 +253,11 @@ class PayloadValidatorTest extends TestCase
         );
     }
 
-    public function testValidationExceptionIsSubtypeOfSyncException(): void
+    public function testValidationExceptionIsInvalidArgumentException(): void
     {
-        // Stellt sicher dass Controller SyncException als Catch-All für DB-Fehler nutzen kann
-        $this->expectException(SyncException::class);
+        // ValidationException ist ein Client-Eingabefehler (4xx) und erbt von \InvalidArgumentException,
+        // nicht von SyncException (5xx). Der Controller fängt beide explizit ab.
+        $this->expectException(\InvalidArgumentException::class);
 
         $this->validator->validate(
             ['initiatives' => [['id' => 1, 'businessValue' => 4]]],
@@ -270,6 +271,86 @@ class PayloadValidatorTest extends TestCase
         $this->validator->validate(
             ['teams' => [['id' => 1, 'businessValue' => 4]]],
             ['teams']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    // --- ID-Typ-Validierung (E-4) ---
+
+    public function testZeroIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/positive ganze Zahl/');
+
+        $this->validator->validate(
+            ['teams' => [['id' => 0, 'name' => 'Test']]],
+            ['teams']
+        );
+    }
+
+    public function testNegativeIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/positive ganze Zahl/');
+
+        $this->validator->validate(
+            ['teams' => [['id' => -1, 'name' => 'Test']]],
+            ['teams']
+        );
+    }
+
+    public function testStringIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/positive ganze Zahl/');
+
+        $this->validator->validate(
+            ['teams' => [['id' => 'foo', 'name' => 'Test']]],
+            ['teams']
+        );
+    }
+
+    public function testValidPositiveIdPasses(): void
+    {
+        $this->validator->validate(
+            ['teams' => [['id' => 1, 'name' => 'Test']]],
+            ['teams']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * REGRESSION S-3:
+     * Beliebige Strings bei risks.roamStatus dürfen die Validierung nicht passieren.
+     * RoamStatusEnum definiert die erlaubten Werte ('report', 'on_track', 'at_risk', 'mitigated').
+     *
+     * Status: ROT bis roamStatus-Validierung in PayloadValidator ergänzt wird.
+     */
+    public function testInvalidRoamStatusInRiskThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/roamStatus/');
+
+        $this->validator->validate(
+            ['risks' => [['id' => 1, 'initiative' => 1, 'roamStatus' => 'invalid_value']]],
+            ['risks']
+        );
+    }
+
+    public function testNullRoamStatusInRiskIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['risks' => [['id' => 1, 'initiative' => 1, 'roamStatus' => null]]],
+            ['risks']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMissingRoamStatusInRiskIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['risks' => [['id' => 1, 'initiative' => 1, 'bezeichnung' => 'Test']]],
+            ['risks']
         );
         $this->addToAssertionCount(1);
     }
