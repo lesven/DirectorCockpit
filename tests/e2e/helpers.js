@@ -17,7 +17,7 @@ const SEED_PAYLOAD = {
       status: 'yellow',
       projektstatus: 'ok',
       schritt: 'Prototyp',
-      frist: '15.04',
+      frist: '2026-04-15',
       notiz: 'Wichtig',
       businessValue: 8,
       timeCriticality: 5,
@@ -31,7 +31,7 @@ const SEED_PAYLOAD = {
       status: 'grey',
       projektstatus: 'kritisch',
       schritt: 'Planung',
-      frist: '01.06',
+      frist: '2026-06-01',
       notiz: '',
       businessValue: null,
       timeCriticality: null,
@@ -77,6 +77,26 @@ const SEED_PAYLOAD = {
       schadensausmass: 3,
       roamStatus: null,
       roamNotiz: '',
+    },
+  ],
+  milestones: [
+    {
+      id: 5001,
+      initiative: 2001,
+      aufgabe: 'Konzept erstellen',
+      beschreibung: 'Architektur und Design dokumentieren',
+      owner: 'Max',
+      status: 'erledigt',
+      frist: '2026-03-01',
+    },
+    {
+      id: 5002,
+      initiative: 2001,
+      aufgabe: 'Implementierung',
+      beschreibung: 'Backend und Frontend umsetzen',
+      owner: 'Anna',
+      status: 'in_bearbeitung',
+      frist: '2026-04-15',
     },
   ],
 };
@@ -173,7 +193,7 @@ export const selectors = {
   dpBack: Selector('#dp-back'),
 
   // Risk-Seite (jetzt Teil der Detail-Seite)
-  riskBtns: Selector('[data-action="openRisks"]'),
+  riskBtns: Selector('[data-action="openDetail"]'),
   riskPage: Selector('#detail-page'),
   riskBack: Selector('#dp-back'),
   riskAddBtn: Selector('#dp-risk-add'),
@@ -187,4 +207,14 @@ export const selectors = {
   riskSchadensausmasSelects: Selector('[data-risk-field="schadensausmass"]'),
   riskDeleteBtns: Selector('[data-action="removeRisk"]'),
   riskScoreBadges: Selector('.risk-badge'),
+
+  // Milestones
+  milestoneCards: Selector('.dp-milestone-row'),
+  milestoneAddBtn: Selector('#dp-milestone-add'),
+  milestoneCopyBtn: Selector('#dp-milestone-copy'),
+  milestoneAufgabeInputs: Selector('[data-milestone-field="aufgabe"]'),
+  milestoneOwnerInputs: Selector('[data-milestone-field="owner"]'),
+  milestoneStatusSelects: Selector('[data-milestone-field="status"]'),
+  milestoneFristInputs: Selector('[data-milestone-field="frist"]'),
+  milestoneDeleteBtns: Selector('[data-action="removeMilestone"]'),
 };

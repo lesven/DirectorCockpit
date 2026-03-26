@@ -2,6 +2,6 @@
 
 namespace App\Service;
 
-class ValidationException extends SyncException
+class ValidationException extends \InvalidArgumentException
 {
 }

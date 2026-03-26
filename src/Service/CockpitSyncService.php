@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Initiative;
+use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\SyncableEntity;
@@ -24,6 +25,7 @@ class CockpitSyncService
         'initiatives'     => Initiative::class,
         'nicht_vergessen' => NichtVergessen::class,
         'risks'           => Risk::class,
+        'milestones'      => Milestone::class,
     ];
 
     public function __construct(
@@ -34,6 +36,7 @@ class CockpitSyncService
         private LoggerInterface $logger = new NullLogger(),
     ) {}
 
+    /** @return array<string, mixed> */
     public function loadAll(): array
     {
         $meta = $this->metaRepo->getOrCreate();
@@ -47,6 +50,7 @@ class CockpitSyncService
         return $result;
     }
 
+    /** @param array<string, mixed> $payload */
     public function syncAll(array $payload): void
     {
         $this->validator->validate($payload, array_keys(self::ENTITY_REGISTRY));

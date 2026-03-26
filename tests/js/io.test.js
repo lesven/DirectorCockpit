@@ -44,6 +44,7 @@ describe('migrateData()', () => {
     expect(result.teams).toEqual([]);
     expect(result.initiatives).toEqual([]);
     expect(result.nicht_vergessen).toEqual([]);
+    expect(result.milestones).toEqual([]);
   });
 
   it('defaults kw to empty string', () => {
@@ -83,7 +84,7 @@ describe('migrateData()', () => {
     expect(ini.status).toBe('grey');
     expect(ini.projektstatus).toBe('ok');
     expect(ini.schritt).toBe('');
-    expect(ini.frist).toBe('');
+    expect(ini.frist).toBeNull();
     expect(ini.notiz).toBe('');
     expect(ini.businessValue).toBeNull();
     expect(ini.timeCriticality).toBeNull();
@@ -138,6 +139,34 @@ describe('migrateData()', () => {
     expect(nv.body).toBe('');
   });
 
+  // ── Risk-Normalisierung ──────────────────────────────────
+
+  it('normalizes risk fields with defaults', () => {
+    const result = migrateData({ risks: [{ id: 10, initiative: 2 }] });
+    const r = result.risks[0];
+    expect(r.id).toBe(10);
+    expect(r.initiative).toBe(2);
+    expect(r.bezeichnung).toBe('');
+    expect(r.beschreibung).toBe('');
+    expect(r.eintrittswahrscheinlichkeit).toBe(1);
+    expect(r.schadensausmass).toBe(1);
+    expect(r.roamStatus).toBeNull();
+    expect(r.roamNotiz).toBe('');
+  });
+
+  it('preserves existing risk values including roamStatus and roamNotiz', () => {
+    const result = migrateData({
+      risks: [{ id: 1, initiative: 3, bezeichnung: 'Kosten', beschreibung: 'Details', eintrittswahrscheinlichkeit: 3, schadensausmass: 4, roamStatus: 'mitigate', roamNotiz: 'Plan vorhanden' }],
+    });
+    const r = result.risks[0];
+    expect(r.bezeichnung).toBe('Kosten');
+    expect(r.beschreibung).toBe('Details');
+    expect(r.eintrittswahrscheinlichkeit).toBe(3);
+    expect(r.schadensausmass).toBe(4);
+    expect(r.roamStatus).toBe('mitigate');
+    expect(r.roamNotiz).toBe('Plan vorhanden');
+  });
+
   // ── Vollständiger Roundtrip ──────────────────────────────
 
   it('handles a complete data object without changes', () => {
@@ -152,7 +181,7 @@ describe('migrateData()', () => {
           status: 'yellow',
           projektstatus: 'kritisch',
           schritt: 's',
-          frist: '01.04',
+          frist: '2026-04-01',
           notiz: 'n',
           businessValue: 3,
           timeCriticality: 5,
@@ -167,5 +196,97 @@ describe('migrateData()', () => {
     expect(result.teams[0].name).toBe('T1');
     expect(result.initiatives[0].name).toBe('I1');
     expect(result.nicht_vergessen[0].title).toBe('NV1');
+  });
+
+  // ── Milestone-Normalisierung ─────────────────────────────
+
+  it('normalizes milestone fields with defaults', () => {
+    const result = migrateData({ milestones: [{ id: 50, initiative: 1 }] });
+    const ms = result.milestones[0];
+    expect(ms.id).toBe(50);
+    expect(ms.initiative).toBe(1);
+    expect(ms.aufgabe).toBe('');
+    expect(ms.beschreibung).toBe('');
+    expect(ms.owner).toBe('');
+    expect(ms.status).toBe('offen');
+    expect(ms.frist).toBeNull();
+    expect(ms.bemerkung).toBe('');
+  });
+
+  it('preserves existing milestone values', () => {
+    const result = migrateData({
+      milestones: [{ id: 1, initiative: 2, aufgabe: 'Design', owner: 'Max', status: 'erledigt', frist: '2026-04-01', bemerkung: 'Wichtig' }],
+    });
+    const ms = result.milestones[0];
+    expect(ms.aufgabe).toBe('Design');
+    expect(ms.owner).toBe('Max');
+    expect(ms.status).toBe('erledigt');
+    expect(ms.frist).toBe('2026-04-01');
+    expect(ms.bemerkung).toBe('Wichtig');
+  });
+
+  it('validates milestone status and falls back to "offen" for invalid values', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, status: 'done' }] });
+    expect(result.milestones[0].status).toBe('offen');
+  });
+
+  it('accepts valid milestone status values', () => {
+    ['offen', 'in_bearbeitung', 'erledigt', 'blockiert'].forEach((s) => {
+      const result = migrateData({ milestones: [{ id: 1, initiative: 1, status: s }] });
+      expect(result.milestones[0].status).toBe(s);
+    });
+  });
+
+  // ── Regression En-2: deprecated "green" Status ───────────
+
+  // REGRESSION En-2:
+  // StatusEnum::Green existiert im PHP-Backend, wurde aber im Frontend nie unterstützt.
+  // Ein exportierter Datensatz mit status:'green' wurde bisher stillschweigend zu 'grey'
+  // normalisiert (silent data loss). Der Wert soll stattdessen explizit auf 'fertig'
+  // gemappt werden, bis die DB-Migration alle 'green'-Einträge bereinigt hat.
+  //
+  // Status: ROT bis legacy-Mapping 'green' → 'fertig' in migrateData() ergänzt wird.
+  it('maps deprecated "green" initiative status to "fertig" instead of silently dropping to "grey"', () => {
+    const result = migrateData({
+      initiatives: [{ id: 1, name: 'Legacy', status: 'green' }],
+    });
+    expect(result.initiatives[0].status).toBe('fertig');
+  });
+
+  // ── frist-Konvertierung ──────────────────────────────────
+
+  it('konvertiert initiative.frist von DD.MM.YYYY nach YYYY-MM-DD', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '25.04.2026' }] });
+    expect(result.initiatives[0].frist).toBe('2026-04-25');
+  });
+
+  it('behält initiative.frist im Format YYYY-MM-DD unverändert', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '2026-04-25' }] });
+    expect(result.initiatives[0].frist).toBe('2026-04-25');
+  });
+
+  it('setzt initiative.frist auf null bei unbekanntem Format', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: 'Q2 2026' }] });
+    expect(result.initiatives[0].frist).toBeNull();
+  });
+
+  it('setzt initiative.frist auf null bei leerem String', () => {
+    const result = migrateData({ initiatives: [{ id: 1, frist: '' }] });
+    expect(result.initiatives[0].frist).toBeNull();
+  });
+
+  it('konvertiert milestone.frist von DD.MM.YYYY nach YYYY-MM-DD', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: '01.12.2026' }] });
+    expect(result.milestones[0].frist).toBe('2026-12-01');
+  });
+
+  it('behält milestone.frist im Format YYYY-MM-DD unverändert', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: '2026-12-01' }] });
+    expect(result.milestones[0].frist).toBe('2026-12-01');
+  });
+
+  it('setzt milestone.frist auf null bei unbekanntem Format', () => {
+    const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: 'Ende Q4' }] });
+    expect(result.milestones[0].frist).toBeNull();
   });
 });

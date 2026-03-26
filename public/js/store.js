@@ -2,7 +2,7 @@ import { CONFIG } from './config.js';
 import { debounce } from './utils.js';
 import { dom } from './dom.js';
 
-export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] };
+export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] };
 
 let indicatorTimer;
 let savePromise = null;
@@ -24,12 +24,27 @@ export async function load() {
     setData(await res.json());
   } catch (e) {
     console.warn('Backend nicht erreichbar, lade Standarddaten:', e);
+    showOfflineBanner();
     try {
       const fallback = await fetch('/default_data.json');
       setData(await fallback.json());
     } catch {
-      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [] });
+      setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] });
     }
+  }
+}
+
+function showOfflineBanner() {
+  let banner = document.getElementById('offline-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'offline-banner';
+    banner.setAttribute('role', 'alert');
+    banner.style.cssText =
+      'position:fixed;top:0;left:0;right:0;z-index:9999;padding:8px 16px;' +
+      'background:#b91c1c;color:#fff;text-align:center;font-size:14px;';
+    banner.textContent = '⚠ Backend nicht erreichbar – Offline-Standarddaten werden angezeigt.';
+    document.body.prepend(banner);
   }
 }
 

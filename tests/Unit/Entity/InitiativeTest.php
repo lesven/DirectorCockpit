@@ -16,7 +16,7 @@ class InitiativeTest extends TestCase
             'status' => 'yellow',
             'projektstatus' => 'kritisch',
             'schritt' => 'Review durchführen',
-            'frist' => '15.04',
+            'frist' => '2026-04-15',
             'notiz' => 'Wichtig!',
             'businessValue' => 8,
             'timeCriticality' => 5,
@@ -36,7 +36,7 @@ class InitiativeTest extends TestCase
         $this->assertSame('yellow', $arr['status']);
         $this->assertSame('kritisch', $arr['projektstatus']);
         $this->assertSame('Review durchführen', $arr['schritt']);
-        $this->assertSame('15.04', $arr['frist']);
+        $this->assertSame('2026-04-15', $arr['frist']);
         $this->assertSame('Wichtig!', $arr['notiz']);
         $this->assertSame(8, $arr['businessValue']);
         $this->assertSame(5, $arr['timeCriticality']);
@@ -55,7 +55,7 @@ class InitiativeTest extends TestCase
         $this->assertSame('grey', $arr['status']);
         $this->assertSame('ok', $arr['projektstatus']);
         $this->assertSame('', $arr['schritt']);
-        $this->assertSame('', $arr['frist']);
+        $this->assertNull($arr['frist']);
         $this->assertSame('', $arr['notiz']);
         $this->assertNull($arr['businessValue']);
         $this->assertNull($arr['timeCriticality']);
@@ -84,7 +84,7 @@ class InitiativeTest extends TestCase
             'status' => 'fertig',
             'projektstatus' => 'kritisch',
             'schritt' => 'Neuer Schritt',
-            'frist' => '01.05',
+            'frist' => '2026-05-01',
             'notiz' => 'Neue Notiz',
             'businessValue' => 13,
             'timeCriticality' => 8,
@@ -98,7 +98,7 @@ class InitiativeTest extends TestCase
         $this->assertSame('fertig', $arr['status']);
         $this->assertSame('kritisch', $arr['projektstatus']);
         $this->assertSame('Neuer Schritt', $arr['schritt']);
-        $this->assertSame('01.05', $arr['frist']);
+        $this->assertSame('2026-05-01', $arr['frist']);
         $this->assertSame('Neue Notiz', $arr['notiz']);
         $this->assertSame(13, $arr['businessValue']);
         $this->assertSame(8, $arr['timeCriticality']);
@@ -144,6 +144,37 @@ class InitiativeTest extends TestCase
         $ini->updateFromArray(['team' => null]);
 
         $this->assertNull($ini->toArray()['team']);
+    }
+
+    public function testFristEmptyStringBecomesNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'frist' => '']);
+        $this->assertNull($ini->toArray()['frist']);
+    }
+
+    public function testFristNullStaysNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'frist' => null]);
+        $this->assertNull($ini->toArray()['frist']);
+    }
+
+    public function testFristLegacyDdMmYyyyConverted(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'frist' => '25.04.2026']);
+        $this->assertSame('2026-04-25', $ini->toArray()['frist']);
+    }
+
+    public function testFristUnknownFormatBecomesNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'frist' => 'Q1 2026']);
+        $this->assertNull($ini->toArray()['frist']);
+    }
+
+    public function testUpdateFromArrayFristCanBeSetToNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'frist' => '2026-04-15']);
+        $ini->updateFromArray(['frist' => null]);
+        $this->assertNull($ini->toArray()['frist']);
     }
 
     public function testGetIdReturnsCorrectValue(): void

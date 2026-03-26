@@ -1,6 +1,21 @@
 import { data, save, setData } from './store.js';
 import { renderAll } from './render.js';
 import { generateId } from './utils.js';
+import { MILESTONE_STATUSES } from './config.js';
+
+/**
+ * Konvertiert ein frist-Wert aus einem importierten JSON auf YYYY-MM-DD.
+ * Akzeptiert: null, '', YYYY-MM-DD → unveränderter Rückgabe (null → null, '' → null).
+ * DD.MM.YYYY → wird auf YYYY-MM-DD umgestellt.
+ * Sonstige Formate → null (ungültig, API würde 400 zurückgeben).
+ */
+function convertFrist(val) {
+  if (!val) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  const m = val.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  return null;
+}
 
 /**
  * Normalisiert importierte JSON-Daten auf das aktuelle Format.
@@ -30,6 +45,9 @@ export function migrateData(parsed) {
   // Risks-Array sicherstellen
   if (!Array.isArray(parsed.risks)) parsed.risks = [];
 
+  // Milestones-Array sicherstellen
+  if (!Array.isArray(parsed.milestones)) parsed.milestones = [];
+
   parsed.teams = parsed.teams.map((t) => ({
     id: t.id ?? generateId(),
     name: t.name ?? '',
@@ -39,14 +57,17 @@ export function migrateData(parsed) {
   }));
 
   const validStatus = ['fertig', 'yellow', 'grey', 'ungeplant'];
+  // Legacy-Mapping: 'green' war in StatusEnum::Green definiert, wird aber im
+  // Frontend nicht unterstützt. Explizit auf 'fertig' mappen statt still zu 'grey'.
+  const legacyStatusMap = { green: 'fertig' };
   parsed.initiatives = parsed.initiatives.map((i) => ({
     id: i.id ?? generateId(),
     name: i.name ?? '',
     team: i.team ?? null,
-    status: validStatus.includes(i.status) ? i.status : 'grey',
+    status: validStatus.includes(i.status) ? i.status : (legacyStatusMap[i.status] ?? 'grey'),
     projektstatus: i.projektstatus ?? 'ok',
     schritt: i.schritt ?? '',
-    frist: i.frist ?? '',
+    frist: convertFrist(i.frist),
     notiz: i.notiz ?? '',
     businessValue: i.businessValue ?? null,
     timeCriticality: i.timeCriticality ?? null,
@@ -68,6 +89,19 @@ export function migrateData(parsed) {
     beschreibung: r.beschreibung ?? '',
     eintrittswahrscheinlichkeit: r.eintrittswahrscheinlichkeit ?? 1,
     schadensausmass: r.schadensausmass ?? 1,
+    roamStatus: r.roamStatus ?? null,
+    roamNotiz: r.roamNotiz ?? '',
+  }));
+
+  parsed.milestones = parsed.milestones.map((m) => ({
+    id: m.id ?? generateId(),
+    initiative: m.initiative,
+    aufgabe: m.aufgabe ?? '',
+    beschreibung: m.beschreibung ?? '',
+    owner: m.owner ?? '',
+    status: MILESTONE_STATUSES.includes(m.status) ? m.status : 'offen',
+    frist: convertFrist(m.frist),
+    bemerkung: m.bemerkung ?? '',
   }));
 
   return parsed;
@@ -97,7 +131,7 @@ export function importJSON() {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
         const migrated = migrateData(parsed);
-        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken`;
+        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken, ${migrated.milestones.length} Meilensteine`;
         if (
           !confirm(
             `Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`,

@@ -13,7 +13,7 @@ class DefaultDataFixture extends Fixture
     {
         /** @var array{teams: list<array<string,mixed>>, initiatives: list<array<string,mixed>>} $data */
         $data = json_decode(
-            file_get_contents(__DIR__ . '/../../../public/default_data.json'),
+            file_get_contents(__DIR__ . '/../../public/default_data.json'),
             true,
             flags: JSON_THROW_ON_ERROR,
         );

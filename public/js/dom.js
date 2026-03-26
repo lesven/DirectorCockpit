@@ -40,8 +40,20 @@ export const dom = {
   dpRiskList: document.getElementById('dp-risk-list'),
   dpRiskAdd: document.getElementById('dp-risk-add'),
 
+  // Milestone-Detail
+  dpMilestoneCount: document.getElementById('dp-milestone-count'),
+  dpMilestoneList: document.getElementById('dp-milestone-list'),
+  dpMilestoneAdd: document.getElementById('dp-milestone-add'),
+  dpMilestoneCopy: document.getElementById('dp-milestone-copy'),
+
   // Save-Indicators (NodeList → Array)
   saveIndicators: [...document.querySelectorAll('.save-indicator')],
+
+  // Toast
+  toast: document.getElementById('toast'),
+
+  // Deep-Link copy button
+  dpCopyLink: document.getElementById('dp-copy-link'),
 
   // Sortable Headers
   sortableHeaders: [...document.querySelectorAll('.ini-table th.sortable')],
@@ -50,4 +62,9 @@ export const dom = {
   header: document.querySelector('header'),
   main: document.querySelector('main'),
   footer: document.querySelector('footer'),
+
+  // Überfällige Meilensteine
+  overdueMilestonesSection: document.getElementById('overdue-milestones-section'),
+  overdueMilestonesBody: document.getElementById('overdue-milestones-body'),
+  overdueMilestonesCount: document.getElementById('overdue-milestones-count'),
 };

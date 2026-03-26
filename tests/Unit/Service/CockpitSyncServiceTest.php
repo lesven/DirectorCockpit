@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Entity\Initiative;
 use App\Entity\Metadata;
+use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\Team;
@@ -12,6 +13,7 @@ use App\Service\CockpitSyncService;
 use App\Service\EntitySyncer;
 use App\Service\PayloadValidator;
 use App\Service\SyncException;
+use App\Service\ValidationException;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -60,7 +62,7 @@ class CockpitSyncServiceTest extends TestCase
         );
     }
 
-    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = []): void
+    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = [], array $milestones = []): void
     {
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
@@ -78,12 +80,17 @@ class CockpitSyncServiceTest extends TestCase
         $riskRepo->method('findAll')->willReturn($risks);
         $riskRepo->method('findBy')->willReturn($risks);
 
+        $milestoneRepo = $this->createMock(EntityRepository::class);
+        $milestoneRepo->method('findAll')->willReturn($milestones);
+        $milestoneRepo->method('findBy')->willReturn($milestones);
+
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
                 Team::class           => $teamRepo,
                 Initiative::class     => $initiativeRepo,
                 NichtVergessen::class => $nichtVergessenRepo,
                 Risk::class           => $riskRepo,
+                Milestone::class      => $milestoneRepo,
                 default => throw new \LogicException("Unexpected class: $class"),
             }
         );
@@ -168,7 +175,7 @@ class CockpitSyncServiceTest extends TestCase
 
     public function testInvalidPayloadStructureThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Array sein/");
 
         $this->service->syncAll(['teams' => 'not-array']);
@@ -176,7 +183,7 @@ class CockpitSyncServiceTest extends TestCase
 
     public function testPayloadWithMissingIdThrows(): void
     {
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->expectExceptionMessageMatches("/muss ein Objekt mit 'id' sein/");
 
         $this->service->syncAll(['teams' => [['name' => 'no id']]]);
@@ -196,6 +203,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->assertCount(1, $result['teams']);
         $this->assertCount(1, $result['initiatives']);
         $this->assertCount(1, $result['nicht_vergessen']);
+        $this->assertArrayHasKey('milestones', $result);
         $this->assertSame(1, $result['teams'][0]['id']);
     }
 
@@ -223,7 +231,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->connection->expects($this->never())->method('beginTransaction');
         $this->connection->expects($this->never())->method('rollBack');
 
-        $this->expectException(SyncException::class);
+        $this->expectException(ValidationException::class);
         $this->service->syncAll(['teams' => 'ungültige-nicht-array-eingabe']);
     }
 
@@ -260,5 +268,40 @@ class CockpitSyncServiceTest extends TestCase
         // Beide Einträge werden gepersistet, weil biId aus leerer DB-Liste gebaut wird.
         // Dieses Verhalten ist ein bekannter Bug (PK-Verletzung beim Flush).
         $this->assertCount(2, $this->persisted);
+    }
+
+    // -------------------------------------------------------------------------
+    // Milestone-Sync
+    // -------------------------------------------------------------------------
+
+    public function testNewMilestonesArePersisted(): void
+    {
+        $this->stubRepositories();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+            'milestones' => [
+                ['id' => 1, 'initiative' => 100, 'aufgabe' => 'Design', 'status' => 'offen'],
+            ],
+        ];
+
+        $this->service->syncAll($payload);
+
+        $milestones = array_filter($this->persisted, fn($e) => $e instanceof Milestone);
+        $this->assertCount(1, $milestones);
+    }
+
+    public function testLoadAllIncludesMilestones(): void
+    {
+        $ms = Milestone::fromArray(['id' => 10, 'initiative' => 1, 'aufgabe' => 'Test']);
+        $this->stubRepositories(milestones: [$ms]);
+
+        $result = $this->service->loadAll();
+
+        $this->assertCount(1, $result['milestones']);
+        $this->assertSame('Test', $result['milestones'][0]['aufgabe']);
     }
 }

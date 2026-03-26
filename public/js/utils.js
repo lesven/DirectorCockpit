@@ -87,3 +87,50 @@ let idCounter = 0;
 export function generateId() {
   return Date.now() * 1000 + (idCounter++ % 1000);
 }
+
+/**
+ * Gibt alle Meilensteine zurück die fällig (frist <= today) und noch nicht erledigt sind.
+ * Meilensteine von abgeschlossenen Initiativen (status = 'fertig') werden ausgeschlossen.
+ * Sortierung: frist aufsteigend (älteste zuerst).
+ *
+ * @param {Array} milestones - Array von Milestone-Objekten mit frist (String 'YYYY-MM-DD') und status
+ * @param {Array} initiatives - Array von Initiative-Objekten (für Status- und Namens-Lookup)
+ * @param {Date} [today] - Referenzdatum (Standard: aktuelles Datum)
+ * @returns {Array<{milestone: Object, initiative: Object}>}
+ */
+export function getOverdueMilestones(milestones, initiatives, today = new Date()) {
+  try {
+    if (!Array.isArray(milestones) || !Array.isArray(initiatives)) return [];
+
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    const activeInisById = new Map(
+      initiatives
+        .filter((ini) => ini.status !== 'fertig')
+        .map((ini) => [ini.id, ini]),
+    );
+
+    const result = [];
+    for (const ms of milestones) {
+      if (ms.status === 'erledigt') continue;
+      if (!ms.frist) continue;
+
+      const fristDate = new Date(ms.frist);
+      if (isNaN(fristDate.getTime())) continue;
+
+      const fristStart = new Date(fristDate.getFullYear(), fristDate.getMonth(), fristDate.getDate());
+      if (fristStart > todayStart) continue;
+
+      const ini = activeInisById.get(ms.initiative);
+      if (!ini) continue;
+
+      result.push({ milestone: ms, initiative: ini });
+    }
+
+    result.sort((a, b) => new Date(a.milestone.frist) - new Date(b.milestone.frist));
+    return result;
+  } catch (e) {
+    console.error('[getOverdueMilestones] Fehler:', e);
+    return [];
+  }
+}

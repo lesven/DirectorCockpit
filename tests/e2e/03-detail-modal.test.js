@@ -36,7 +36,7 @@ test('AC-3.1: Klick auf ✎ öffnet Detail-Seite mit allen Feldern', async (t) =
 
   // Werte prüfen (Projekt Gamma)
   await t.expect(nameInput.value).eql('Projekt Gamma');
-  await t.expect(fristInput.value).eql('15.04');
+  await t.expect(fristInput.value).eql('2026-04-15');
 
   // WSJF-Felder prüfen
   const bvSelect = Selector('#dp-bv');

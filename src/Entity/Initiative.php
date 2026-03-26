@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Enum\ProjectStatusEnum;
 use App\Enum\StatusEnum;
 use App\Repository\InitiativeRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: InitiativeRepository::class)]
@@ -28,8 +29,8 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(length: 550)]
     private string $schritt = '';
 
-    #[ORM\Column(length: 20)]
-    private string $frist = '';
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $frist = null;
 
     #[ORM\Column(type: 'text')]
     private string $notiz = '';
@@ -60,6 +61,7 @@ final class Initiative implements SyncableEntity
         return round(($this->businessValue + $this->timeCriticality + $this->riskReduction) / $this->jobSize, 1);
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
@@ -69,7 +71,7 @@ final class Initiative implements SyncableEntity
             'status' => $this->status->value,
             'projektstatus' => $this->projektstatus->value,
             'schritt' => $this->schritt,
-            'frist' => $this->frist,
+            'frist' => $this->frist?->format('Y-m-d'),
             'notiz' => $this->notiz,
             'businessValue' => $this->businessValue,
             'timeCriticality' => $this->timeCriticality,
@@ -79,6 +81,7 @@ final class Initiative implements SyncableEntity
         ];
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         $entity = new self();
@@ -88,7 +91,7 @@ final class Initiative implements SyncableEntity
         $entity->status = StatusEnum::tryFrom($data['status'] ?? '') ?? StatusEnum::Grey;
         $entity->projektstatus = ProjectStatusEnum::tryFrom($data['projektstatus'] ?? '') ?? ProjectStatusEnum::Ok;
         $entity->schritt = $data['schritt'] ?? '';
-        $entity->frist = $data['frist'] ?? '';
+        $entity->frist = self::parseFrist($data['frist'] ?? null);
         $entity->notiz = $data['notiz'] ?? '';
         $entity->businessValue = $data['businessValue'] ?? null;
         $entity->timeCriticality = $data['timeCriticality'] ?? null;
@@ -98,6 +101,7 @@ final class Initiative implements SyncableEntity
         return $entity;
     }
 
+    /** @param array<string, mixed> $data */
     public function updateFromArray(array $data): void
     {
         $this->name = $data['name'] ?? $this->name;
@@ -109,19 +113,33 @@ final class Initiative implements SyncableEntity
             ? (ProjectStatusEnum::tryFrom($data['projektstatus']) ?? $this->projektstatus)
             : $this->projektstatus;
         $this->schritt = $data['schritt'] ?? $this->schritt;
-        $this->frist = $data['frist'] ?? $this->frist;
+        $this->frist = array_key_exists('frist', $data) ? self::parseFrist($data['frist']) : $this->frist;
         $this->notiz = $data['notiz'] ?? $this->notiz;
-        if (array_key_exists('businessValue', $data)) {
-            $this->businessValue = $data['businessValue'];
+
+        foreach (['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $this->$field = $data[$field];
+            }
         }
-        if (array_key_exists('timeCriticality', $data)) {
-            $this->timeCriticality = $data['timeCriticality'];
+    }
+
+    private static function parseFrist(mixed $value): ?\DateTimeImmutable
+    {
+        if ($value === null || $value === '') {
+            return null;
         }
-        if (array_key_exists('riskReduction', $data)) {
-            $this->riskReduction = $data['riskReduction'];
+        if (!is_string($value)) {
+            return null;
         }
-        if (array_key_exists('jobSize', $data)) {
-            $this->jobSize = $data['jobSize'];
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        if ($date !== false && $date->format('Y-m-d') === $value) {
+            return $date;
         }
+        $date = \DateTimeImmutable::createFromFormat('d.m.Y', $value);
+        if ($date !== false) {
+            return $date;
+        }
+
+        return null;
     }
 }

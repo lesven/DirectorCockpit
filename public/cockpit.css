@@ -72,17 +72,16 @@ body {
 }
 
 header {
-  padding: 24px 32px 0;
+  padding: 24px 32px 16px;
   display: flex;
   align-items: baseline;
   gap: 16px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
 }
 
 header h1 {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.08em;
@@ -91,11 +90,11 @@ header h1 {
 
 .kw-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--accent);
   background: rgba(122,169,255,0.1);
   border: 1px solid rgba(122,169,255,0.2);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 2px 8px;
   cursor: pointer;
 }
@@ -105,7 +104,7 @@ header h1 {
 .save-indicator {
   margin-left: auto;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   opacity: 0;
   transition: opacity 0.3s;
@@ -143,7 +142,7 @@ main {
   color: var(--accent);
   background: rgba(122,169,255,0.1);
   border: 1px solid rgba(122,169,255,0.18);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 1px 7px;
   min-width: 22px;
   text-align: center;
@@ -156,7 +155,8 @@ main {
   background: var(--border);
 }
 
-.add-btn {
+.add-btn,
+.copy-btn {
   font-family: var(--mono);
   font-size: var(--text-sm);
   color: var(--text2);
@@ -168,10 +168,18 @@ main {
   transition: all 0.15s;
 }
 
-.add-btn:hover {
+.add-btn:hover,
+.copy-btn:hover {
   color: var(--accent);
   border-color: rgba(122,169,255,0.4);
   background: rgba(122,169,255,0.07);
+}
+
+.copy-btn:disabled {
+  color: var(--green);
+  border-color: rgba(74,222,128,0.4);
+  background: rgba(74,222,128,0.07);
+  cursor: default;
 }
 
 /* ── Teams grid ──────────────────────────────────────────── */
@@ -184,7 +192,7 @@ main {
 .team-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 16px;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.25);
@@ -220,7 +228,7 @@ main {
 .status-grey { background: var(--grey); }
 
 .team-name {
-  font-size: 14px;
+  font-size: var(--text-md);
   font-weight: 500;
   color: var(--text);
   outline: none;
@@ -238,7 +246,7 @@ main {
 
 .field-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.06em;
   margin-bottom: 3px;
@@ -252,7 +260,7 @@ main {
   padding: 5px 8px;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   transition: border-color 0.15s, color 0.15s;
@@ -283,7 +291,7 @@ main {
   cursor: pointer;
   font-size: 12px;
   padding: 2px 5px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: color 0.15s, background 0.15s;
 }
 
@@ -299,7 +307,7 @@ main {
   padding: 8px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   flex-wrap: wrap;
 }
 
@@ -311,7 +319,7 @@ main {
   border-radius: 5px;
   padding: 4px 8px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   outline: none;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -347,7 +355,7 @@ main {
   border-radius: 5px;
   padding: 4px 24px 4px 8px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
@@ -366,7 +374,7 @@ main {
   border-radius: 5px;
   color: var(--text3);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   padding: 4px 8px;
   cursor: default;
   opacity: 0.3;
@@ -396,12 +404,12 @@ main {
 
 .ini-table th {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 400;
-  padding: 6px 12px;
+  padding: 6px 12px 8px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   user-select: none;
@@ -416,6 +424,59 @@ main {
 .ini-table th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
 .ini-table th.sort-desc::after { content: ' ↓'; color: var(--accent); }
 
+/* ── Überfällige Meilensteine ───────────────────────────── */
+.overdue-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.overdue-table th {
+  font-family: var(--mono);
+  font-size: var(--text-xs);
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  padding: 6px 12px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.overdue-row td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+
+.overdue-row:last-child td {
+  border-bottom: none;
+}
+
+.overdue-frist {
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  color: var(--danger, #f87171);
+  font-weight: 500;
+}
+
+.overdue-ini-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.overdue-ini-btn:hover {
+  color: var(--text1);
+}
+
 /* ── Initiatives pagination ─────────────────────────────── */
 .ini-pagination {
   display: flex;
@@ -427,7 +488,7 @@ main {
 
 .pagination-info {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   letter-spacing: 0.04em;
 }
@@ -443,10 +504,10 @@ main {
   height: 26px;
   padding: 0 6px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text2);
-  font-size: 13px;
+  font-size: var(--text-base);
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
 }
@@ -470,7 +531,7 @@ main {
 }
 
 .pagination-dots {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text3);
   padding: 0 3px;
   user-select: none;
@@ -495,13 +556,22 @@ main {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   transition: color 0.15s;
 }
 
 .ini-cell:focus { color: var(--text); }
 .ini-cell::placeholder { color: var(--text3); }
+
+input[type="date"].ini-frist-date {
+  color-scheme: dark;
+  cursor: pointer;
+}
+input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
 
 .ini-name { font-weight: 500; color: var(--text); }
 .ini-name:focus { color: var(--accent); }
@@ -539,7 +609,7 @@ main {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text3);
-  font-size: 10px;
+  font-size: var(--text-xs);
   pointer-events: none;
 }
 
@@ -549,7 +619,7 @@ main {
   gap: 5px;
   padding: 3px 9px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-family: var(--mono);
   white-space: nowrap;
   border: 1px solid transparent;
@@ -580,7 +650,7 @@ main {
   outline: none;
   cursor: pointer;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   padding: 3px 22px 3px 9px;
   border-radius: 20px;
   border: 1px solid transparent;
@@ -606,20 +676,20 @@ main {
   pointer-events: none;
 }
 
-.status-select-wrap.s-fertig::after { color: var(--green); }
-.status-select-wrap.s-yellow::after { color: var(--yellow); }
-.status-select-wrap.s-red::after { color: var(--red); }
-.status-select-wrap.s-grey::after { color: var(--text3); }
-.status-select-wrap.s-ungeplant::after { color: var(--red); }
+.status-select-wrap.s-fertig::after,
 .status-select-wrap.ps-ok::after { color: var(--green); }
+.status-select-wrap.s-yellow::after { color: var(--yellow); }
+.status-select-wrap.s-grey::after { color: var(--text3); }
+.status-select-wrap.s-red::after,
+.status-select-wrap.s-ungeplant::after,
 .status-select-wrap.ps-kritisch::after { color: var(--red); }
 
 .team-tag {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: rgba(122,169,255,0.08);
   color: var(--accent);
   border: 1px solid rgba(122,169,255,0.15);
@@ -629,13 +699,7 @@ main {
   max-width: 100%;
 }
 
-.ini-notiz {
-  resize: none;
-  overflow: hidden;
-  line-height: 1.45;
-  min-height: 36px;
-}
-
+.ini-notiz,
 .ini-schritt {
   resize: none;
   overflow: hidden;
@@ -649,7 +713,7 @@ main {
   color: var(--red);
   opacity: 0.35;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-md);
   padding: 4px 8px;
   transition: opacity 0.15s;
 }
@@ -667,7 +731,7 @@ main {
   background: var(--surface);
   border: 1px solid var(--border);
   border-left: 3px solid var(--yellow);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 12px;
   position: relative;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -681,7 +745,7 @@ main {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
   margin-bottom: 6px;
@@ -708,7 +772,7 @@ main {
 /* ── Status cycle tooltip ────────────────────────────────── */
 .status-hint {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   margin-top: 10px;
   text-align: right;
@@ -735,7 +799,7 @@ footer {
 
 .footer-left {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -748,11 +812,11 @@ footer {
 
 .footer-btn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 5px 12px;
   cursor: pointer;
   transition: all 0.15s;
@@ -781,7 +845,7 @@ footer {
 .modal {
   background: var(--surface);
   border: 1px solid var(--border2);
-  border-radius: 14px;
+  border-radius: var(--radius-xl);
   width: 560px;
   max-width: calc(100vw - 32px);
   max-height: calc(100vh - 64px);
@@ -798,7 +862,7 @@ footer {
 
 .modal-title {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.08em;
@@ -810,7 +874,7 @@ footer {
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--text3);
-  font-size: 14px;
+  font-size: var(--text-md);
   padding: 4px 10px;
   cursor: pointer;
   transition: all 0.15s;
@@ -837,7 +901,7 @@ footer {
 
 .detail-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -847,11 +911,11 @@ footer {
   width: 100%;
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 9px 12px;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   outline: none;
   transition: border-color 0.15s;
 }
@@ -880,6 +944,15 @@ select.detail-input option {
   color: var(--text);
 }
 
+input[type="date"].detail-input {
+  color-scheme: dark;
+  cursor: pointer;
+}
+input[type="date"].detail-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
 .detail-select-wrap {
   position: relative;
 }
@@ -889,7 +962,7 @@ select.detail-input option {
   position: absolute;
   right: 12px;
   bottom: 12px;
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   pointer-events: none;
 }
@@ -906,21 +979,26 @@ select.detail-input option {
 }
 
 /* ── Detail-Button in Tabellenzeile ───────────────────────── */
-.detail-btn {
+.detail-btn,
+.risk-btn {
   background: none;
   border: none;
   color: var(--text3);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-base);
   padding: 4px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   opacity: 0.4;
   transition: all 0.15s;
 }
 
-.ini-row:hover .detail-btn { opacity: 1; }
+.risk-btn { position: relative; }
 
-.detail-btn:hover {
+.ini-row:hover .detail-btn,
+.ini-row:hover .risk-btn { opacity: 1; }
+
+.detail-btn:hover,
+.risk-btn:hover {
   color: var(--accent);
   background: rgba(122,169,255,0.1);
 }
@@ -928,7 +1006,7 @@ select.detail-input option {
 /* ── WSJF ─────────────────────────────────────────────────── */
 .wsjf-value {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--text2);
   text-align: right;
@@ -947,23 +1025,11 @@ select.detail-input option {
 
 .detail-section-title {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text2);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-/* ── Team Stats Badge ───────────────────────────────────── */
-.team-stats-badge {
-  margin-top: 10px;
-  padding: 4px 0;
-  font-size: 0.85rem;
-  color: var(--text2);
-  font-family: var(--sans);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* ── Risiko-Detailseite ───────────────────────────────────── */
@@ -986,9 +1052,10 @@ select.detail-input option {
   z-index: 10;
 }
 
-.risk-back-btn {
+.risk-back-btn,
+.dp-back-btn {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   background: none;
   border: none;
@@ -1000,7 +1067,8 @@ select.detail-input option {
   flex-shrink: 0;
 }
 
-.risk-back-btn:hover { color: var(--accent); }
+.risk-back-btn:hover,
+.dp-back-btn:hover { color: var(--accent); }
 
 .risk-breadcrumb {
   display: flex;
@@ -1013,7 +1081,7 @@ select.detail-input option {
 
 .risk-breadcrumb-sep {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text3);
   opacity: 0.5;
   flex-shrink: 0;
@@ -1021,7 +1089,7 @@ select.detail-input option {
 
 .risk-breadcrumb-ini {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text2);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1031,7 +1099,7 @@ select.detail-input option {
 
 .risk-breadcrumb-cur {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--accent);
   letter-spacing: 0.04em;
@@ -1075,7 +1143,7 @@ select.detail-input option {
 
 .risk-ini-value {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text2);
 }
 
@@ -1086,7 +1154,7 @@ select.detail-input option {
 }
 
 .risk-ini-notiz p {
-  font-size: 13px;
+  font-size: var(--text-base);
   color: var(--text2);
   margin-top: 4px;
   line-height: 1.5;
@@ -1103,7 +1171,7 @@ select.detail-input option {
 .risk-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
@@ -1123,7 +1191,7 @@ select.detail-input option {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   font-weight: 500;
   outline: none;
 }
@@ -1137,7 +1205,7 @@ select.detail-input option {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   line-height: 1.5;
@@ -1160,7 +1228,7 @@ select.detail-input option {
 
 .risk-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 2px 10px;
   border-radius: 12px;
@@ -1196,8 +1264,8 @@ select.detail-input option {
 
 .risk-card:hover .risk-delete { opacity: 1; }
 
-.risk-delete:hover {
-  color: var(--red) !important;
+.risk-card .risk-delete:hover {
+  color: var(--red);
 }
 
 /* ── ROAM-Section ─────────────────────────────────────────── */
@@ -1216,7 +1284,7 @@ select.detail-input option {
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-base);
   outline: none;
   resize: none;
   overflow: hidden;
@@ -1229,7 +1297,7 @@ select.detail-input option {
 
 .roam-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 2px 10px;
   border-radius: 12px;
@@ -1261,31 +1329,10 @@ select.detail-input option {
 
 .risk-empty {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--text3);
   text-align: center;
   padding: 24px 0;
-}
-
-/* Risk button in initiative table */
-.risk-btn {
-  background: none;
-  border: none;
-  color: var(--text3);
-  cursor: pointer;
-  font-size: 13px;
-  padding: 4px 6px;
-  border-radius: 4px;
-  opacity: 0.4;
-  transition: all 0.15s;
-  position: relative;
-}
-
-.ini-row:hover .risk-btn { opacity: 1; }
-
-.risk-btn:hover {
-  color: var(--accent);
-  background: rgba(122,169,255,0.1);
 }
 
 .risk-badge-mini {
@@ -1293,7 +1340,7 @@ select.detail-input option {
   font-size: 9px;
   font-weight: 500;
   padding: 1px 5px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-left: 2px;
   vertical-align: top;
   background: var(--border);
@@ -1367,10 +1414,6 @@ select.detail-input option {
 
 .ini-table thead tr {
   border-bottom: 2px solid var(--border2);
-}
-
-.ini-table th {
-  padding-bottom: 8px;
 }
 
 /* ── Team-Stats Badge Verbesserung ────────────────────────── */
@@ -1452,22 +1495,6 @@ select.detail-input option {
   flex-shrink: 0;
 }
 
-.dp-back-btn {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.15s;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.dp-back-btn:hover { color: var(--accent); }
-
 .dp-title-input {
   flex: 1;
   background: transparent;
@@ -1492,7 +1519,7 @@ select.detail-input option {
 
 .dp-wsjf-header-badge {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   color: var(--text2);
   background: rgba(122,169,255,0.08);
   border: 1px solid rgba(122,169,255,0.18);
@@ -1525,13 +1552,6 @@ select.detail-input option {
   min-width: 0;
 }
 
-/* ── Zwei-Spalten-Grid (alte Klasse, nicht mehr im Einsatz) ── */
-.dp-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .dp-section {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -1541,7 +1561,7 @@ select.detail-input option {
 
 .dp-section-title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text3);
   letter-spacing: 0.10em;
@@ -1578,7 +1598,7 @@ select.detail-input option {
 
 .dp-wsjf-score-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1595,20 +1615,20 @@ select.detail-input option {
   padding: 8px 16px;
   background: rgba(122,169,255,0.06);
   border: 1px solid rgba(122,169,255,0.12);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-bottom: 18px;
 }
 
 .dp-wsjf-formula-part {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--text3);
   letter-spacing: 0.02em;
 }
 
 .dp-wsjf-formula-op {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--accent);
   font-weight: 600;
 }
@@ -1637,7 +1657,7 @@ select.detail-input option {
 
 .dp-risk-seg {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-sm);
   font-weight: 500;
   padding: 3px 12px;
   border-radius: 12px;
@@ -1667,18 +1687,18 @@ select.detail-input option {
 #dp-risk-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dp-risk-card {
   background: var(--surface2);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 20px;
+  border-radius: 6px;
+  padding: 7px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  gap: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   transition: border-color 0.15s;
 }
 
@@ -1694,7 +1714,7 @@ select.detail-input option {
 .dp-risk-card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dp-risk-bezeichnung {
@@ -1703,7 +1723,7 @@ select.detail-input option {
   border: none;
   color: var(--text);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 500;
   outline: none;
 }
@@ -1711,67 +1731,71 @@ select.detail-input option {
 .dp-risk-bezeichnung:focus { color: var(--accent); }
 .dp-risk-bezeichnung::placeholder { color: var(--text3); }
 
-.dp-risk-body {
+.dp-risk-dropdowns {
   display: grid;
-  grid-template-columns: 1fr 210px;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
 }
 
-.dp-risk-body-left {
+.dp-risk-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.dp-risk-notes-left,
+.dp-risk-notes-right {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
-.dp-risk-body-right {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.dp-risk-beschreibung {
-  width: 100%;
-  background: transparent;
-  border: none;
-  color: var(--text2);
-  font-family: var(--sans);
-  font-size: 13px;
-  outline: none;
-  resize: none;
-  line-height: 1.5;
-  flex: 1;
-  min-height: 70px;
-}
 
-.dp-risk-beschreibung:focus { color: var(--text); }
-.dp-risk-beschreibung::placeholder { color: var(--text3); }
 
-.dp-risk-roam {
-  display: grid;
-  grid-template-columns: 190px 1fr;
-  gap: 16px;
-  align-items: start;
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-}
 
+.dp-risk-beschreibung,
 .dp-risk-roam-notiz {
   width: 100%;
   background: transparent;
   border: none;
   color: var(--text2);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
   resize: none;
   overflow: hidden;
-  min-height: 2.4em;
-  line-height: 1.5;
+  line-height: 1.4;
+  min-height: 2em;
 }
 
+.dp-risk-beschreibung:focus,
 .dp-risk-roam-notiz:focus { color: var(--text); }
+.dp-risk-beschreibung::placeholder,
 .dp-risk-roam-notiz::placeholder { color: var(--text3); }
+
+.dp-risk-card .detail-input {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+.dp-risk-card .detail-select-wrap::after {
+  bottom: 7px;
+  right: 8px;
+}
+
+.dp-risk-card select.detail-input {
+  padding-right: 22px;
+}
+
+.dp-risk-card .detail-label {
+  font-size: 9px;
+}
+
+.dp-risk-card .detail-field {
+  gap: 2px;
+}
 
 .dp-risk-delete {
   opacity: 0.35;
@@ -1780,14 +1804,15 @@ select.detail-input option {
 
 .dp-risk-card:hover .dp-risk-delete { opacity: 1; }
 
-.dp-risk-delete:hover {
-  color: var(--red) !important;
-  background: rgba(248,113,113,0.1) !important;
-  opacity: 1 !important;
+.dp-risk-card .dp-risk-delete:hover {
+  color: var(--red);
+  background: rgba(248,113,113,0.1);
+  opacity: 1;
 }
 
-/* ── Leerer Risiko-Zustand ────────────────────────────────── */
-.dp-risk-empty {
+/* ── Leerer Zustand (Risiken / Meilensteine) ─────────────── */
+.dp-risk-empty,
+.dp-milestone-empty {
   text-align: center;
   padding: 40px 0 24px;
   display: flex;
@@ -1796,15 +1821,144 @@ select.detail-input option {
   gap: 12px;
 }
 
-.dp-risk-empty-icon {
+.dp-risk-empty-icon,
+.dp-milestone-empty-icon {
   font-size: 28px;
   opacity: 0.25;
 }
 
-.dp-risk-empty p {
+.dp-risk-empty p,
+.dp-milestone-empty p {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-md);
   color: var(--text3);
+}
+
+/* ── Meilensteine ─────────────────────────────────────────── */
+.dp-milestones-wrap {
+  margin-top: 32px;
+}
+
+#dp-milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Table header row ─────────────────────────────────────── */
+.dp-ms-header-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 1fr 28px;
+  gap: 8px;
+  padding: 4px 10px;
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Compact milestone row ────────────────────────────────── */
+.dp-milestone-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 130px 130px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  transition: background 0.12s;
+}
+
+.dp-milestone-row:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.dp-milestone-row[data-ms-status="offen"]           { border-left-color: var(--text3); }
+.dp-milestone-row[data-ms-status="in_bearbeitung"]  { border-left-color: var(--accent); }
+.dp-milestone-row[data-ms-status="erledigt"]        { border-left-color: var(--green); }
+.dp-milestone-row[data-ms-status="blockiert"]       { border-left-color: var(--red); }
+
+/* ── Row field inputs ─────────────────────────────────────── */
+.dp-ms-aufgabe,
+.dp-ms-owner,
+.dp-ms-bemerkung {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: var(--text-base);
+  outline: none;
+  padding: 4px 2px;
+  min-width: 0;
+}
+
+.dp-ms-aufgabe { font-weight: 500; }
+.dp-ms-aufgabe:focus,
+.dp-ms-owner:focus,
+.dp-ms-bemerkung:focus { color: var(--accent); }
+.dp-ms-aufgabe::placeholder,
+.dp-ms-owner::placeholder,
+.dp-ms-bemerkung::placeholder { color: var(--text3); }
+
+.dp-ms-frist {
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-family: var(--sans);
+  font-size: 12px;
+  outline: none;
+  padding: 4px 2px;
+  min-width: 0;
+}
+
+.dp-ms-frist:focus { color: var(--accent); }
+
+.dp-ms-status-wrap {
+  position: relative;
+}
+
+.dp-ms-status {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  font-family: var(--sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.dp-ms-status.ms-status-offen          { color: var(--text3); background: rgba(148,163,184,0.12); }
+.dp-ms-status.ms-status-in-bearbeitung { color: var(--accent); background: rgba(96,165,250,0.12); }
+.dp-ms-status.ms-status-erledigt       { color: var(--green); background: rgba(74,222,128,0.12); }
+.dp-ms-status.ms-status-blockiert      { color: var(--red); background: rgba(248,113,113,0.12); }
+
+/* Options must always be readable regardless of the select's status color */
+.dp-ms-status option {
+  color: var(--text);
+  background: var(--surface2);
+  font-weight: 500;
+}
+
+.dp-ms-delete {
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  font-size: 12px;
+  padding: 2px;
+}
+
+.dp-milestone-row:hover .dp-ms-delete { opacity: 0.5; }
+
+.dp-milestone-row .dp-ms-delete:hover {
+  color: var(--red);
+  opacity: 1;
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
@@ -1822,8 +1976,10 @@ select.detail-input option {
 }
 
 @media (max-width: 960px) {
-  .dp-risk-body { grid-template-columns: 1fr; }
-  .dp-risk-roam { grid-template-columns: 1fr; }
+  .dp-risk-dropdowns { grid-template-columns: 1fr; }
+  .dp-risk-notes { grid-template-columns: 1fr; }
+  .dp-milestone-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; font-size: 12px; }
+  .dp-ms-header-row { grid-template-columns: 1fr 100px 110px 110px 120px 28px; }
 }
 
 @media (max-width: 700px) {
@@ -1832,5 +1988,47 @@ select.detail-input option {
   .dp-header-badges { display: none; }
   .dp-section { padding: 16px; }
   .dp-risks-wrap { padding: 16px; }
+  .dp-milestones-wrap { padding: 16px; }
   .dp-left-col { flex-direction: column; }
+}
+
+/* ── Toast ─────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--red);
+  color: #fff;
+  font-family: var(--sans);
+  font-size: var(--text-base);
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  z-index: 9999;
+  pointer-events: none;
+  animation: toast-fade 4s ease-in-out forwards;
+}
+
+@keyframes toast-fade {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  8%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Deep-Link copy button ─────────────────────────────── */
+.dp-copy-link-btn {
+  font-size: var(--text-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dp-copy-link-btn:hover {
+  background: var(--surface2);
 }
