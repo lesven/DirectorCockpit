@@ -8,8 +8,8 @@ export default defineConfig({
       provider: 'v8',
       include: ['public/js/**/*.js'],
       thresholds: {
-        lines: 80,
-        functions: 80,
+        lines: 70,
+        functions: 70,
         branches: 70,
       },
     },

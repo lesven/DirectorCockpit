@@ -1,0 +1,170 @@
+name: CI Integration
+
+on:
+  push:
+    branches:
+      - develop
+      - 'release/**'
+      - 'hotfix/**'
+      - main
+
+jobs:
+  analyse:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, intl
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: PHPStan
+        run: php -d memory_limit=512M vendor/bin/phpstan analyse --level=6 src/
+
+      - name: PHPMD
+        run: php vendor/bin/phpmd src/ text phpmd.xml
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: cockpit
+          POSTGRES_PASSWORD: cockpit
+          POSTGRES_DB: cockpit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U cockpit"
+          --health-interval=3s
+          --health-timeout=3s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgresql://cockpit:cockpit@localhost:5432/cockpit?serverVersion=15
+      APP_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, intl
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction
+
+      - name: PHPUnit Integration Suite
+        run: php vendor/bin/phpunit --testsuite Integration
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: cockpit
+          POSTGRES_PASSWORD: cockpit
+          POSTGRES_DB: cockpit
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U cockpit"
+          --health-interval=3s
+          --health-timeout=3s
+          --health-retries=10
+    env:
+      DATABASE_URL: postgresql://cockpit:cockpit@localhost:5432/cockpit?serverVersion=15
+      APP_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, intl
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction
+
+      - name: PHP Coverage
+        run: |
+          mkdir -p var/coverage
+          php vendor/bin/phpunit --coverage-clover var/coverage/clover.xml
+
+      - name: Check PHP coverage threshold (70%)
+        run: |
+          php -r '
+          $xml = simplexml_load_file("var/coverage/clover.xml");
+          $metrics = $xml->project->metrics;
+          $covered = (int)$metrics["coveredstatements"];
+          $total = (int)$metrics["statements"];
+          if ($total === 0) { echo "No statements found\n"; exit(0); }
+          $rate = round($covered / $total * 100, 1);
+          echo "PHP Coverage: " . $rate . "%\n";
+          if ($rate < 70) { echo "Coverage below 70% threshold!\n"; exit(1); }
+          echo "Coverage OK\n";
+          '
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: JS Coverage
+        run: npx vitest run --coverage
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-reports
+          path: |
+            var/coverage/clover.xml
+            coverage/
+          retention-days: 30
