@@ -91,7 +91,12 @@ function renderIniRow(ini, teamOptsBase) {
   const tr = document.createElement('tr');
   tr.className = 'ini-row';
   tr.innerHTML = `
-      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives"></td>
+      <td>
+        <div class="ini-name-wrap">
+          <button class="detail-btn ini-name-detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details öffnen" aria-label="Initiative-Details öffnen">↗</button>
+          <input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives">
+        </div>
+      </td>
       <td>
         <div class="select-wrap">
           <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="initiatives">
@@ -123,7 +128,6 @@ function renderIniRow(ini, teamOptsBase) {
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
         <button class="risk-btn" data-action="openDetail" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
-        <button class="detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details">✎</button>
         <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
       </td>
     `;
