@@ -85,7 +85,7 @@ jobs:
         run: php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: PHPUnit Integration Suite
-        run: php vendor/bin/phpunit --testsuite Integration
+        run: php vendor/bin/phpunit --testsuite Integration --no-coverage
 
   coverage:
     name: Coverage
