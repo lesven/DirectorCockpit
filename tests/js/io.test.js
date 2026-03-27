@@ -206,7 +206,6 @@ describe('migrateData()', () => {
     expect(ms.id).toBe(50);
     expect(ms.initiative).toBe(1);
     expect(ms.aufgabe).toBe('');
-    expect(ms.beschreibung).toBe('');
     expect(ms.owner).toBe('');
     expect(ms.status).toBe('offen');
     expect(ms.frist).toBeNull();

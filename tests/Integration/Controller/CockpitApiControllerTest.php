@@ -213,7 +213,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
             'milestones' => [
-                ['id' => 500, 'initiative' => 200, 'aufgabe' => 'Design Review', 'beschreibung' => 'Architektur prüfen', 'owner' => 'Max', 'status' => 'in_bearbeitung', 'frist' => '2026-04-15'],
+                ['id' => 500, 'initiative' => 200, 'aufgabe' => 'Design Review', 'owner' => 'Max', 'status' => 'in_bearbeitung', 'frist' => '2026-04-15'],
             ],
         ];
 
@@ -228,7 +228,6 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertSame(500, $ms['id']);
         $this->assertSame(200, $ms['initiative']);
         $this->assertSame('Design Review', $ms['aufgabe']);
-        $this->assertSame('Architektur prüfen', $ms['beschreibung']);
         $this->assertSame('Max', $ms['owner']);
         $this->assertSame('in_bearbeitung', $ms['status']);
         $this->assertSame('2026-04-15', $ms['frist']);
@@ -258,7 +257,6 @@ class CockpitApiControllerTest extends WebTestCase
 
         $ms = $data['milestones'][0];
         $this->assertSame('', $ms['aufgabe']);
-        $this->assertSame('', $ms['beschreibung']);
         $this->assertSame('', $ms['owner']);
         $this->assertSame('offen', $ms['status']);
         $this->assertNull($ms['frist']);

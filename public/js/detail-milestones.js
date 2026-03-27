@@ -92,7 +92,6 @@ export function addMilestone(currentId) {
     id: generateId(),
     initiative: currentId,
     aufgabe: '',
-    beschreibung: '',
     owner: '',
     status: 'offen',
     frist: null,

@@ -97,7 +97,6 @@ export function migrateData(parsed) {
     id: m.id ?? generateId(),
     initiative: m.initiative,
     aufgabe: m.aufgabe ?? '',
-    beschreibung: m.beschreibung ?? '',
     owner: m.owner ?? '',
     status: MILESTONE_STATUSES.includes(m.status) ? m.status : 'offen',
     frist: convertFrist(m.frist),
