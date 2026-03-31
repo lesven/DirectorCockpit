@@ -1912,7 +1912,12 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
-.dp-ms-aufgabe { font-weight: 500; }
+.dp-ms-aufgabe {
+  font-weight: 500;
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
 .dp-ms-aufgabe:focus,
 .dp-ms-owner:focus,
 .dp-ms-bemerkung:focus { color: var(--accent); }

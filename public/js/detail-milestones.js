@@ -16,10 +16,9 @@ function milestoneCardHtml(ms) {
 
   return `
     <div class="dp-milestone-row" data-milestone-id="${ms.id}" data-ms-status="${ms.status}">
-      <input class="dp-ms-aufgabe"
-             value="${esc(ms.aufgabe)}"
-             placeholder="Aufgabe…"
-             data-milestone-id="${ms.id}" data-milestone-field="aufgabe">
+      <textarea class="dp-ms-aufgabe"
+                placeholder="Aufgabe…"
+                data-milestone-id="${ms.id}" data-milestone-field="aufgabe">${esc(ms.aufgabe)}</textarea>
       <input class="dp-ms-owner"
              value="${esc(ms.owner)}"
              placeholder="Owner…"
