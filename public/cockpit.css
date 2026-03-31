@@ -1918,6 +1918,11 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   field-sizing: content;
   overflow: hidden;
 }
+.dp-ms-bemerkung {
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
 .dp-ms-aufgabe:focus,
 .dp-ms-owner:focus,
 .dp-ms-bemerkung:focus { color: var(--accent); }

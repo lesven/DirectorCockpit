@@ -32,10 +32,9 @@ function milestoneCardHtml(ms) {
           ${selectHtml(MILESTONE_STATUS_OPTIONS, ms.status)}
         </select>
       </div>
-      <input class="dp-ms-bemerkung"
-             value="${esc(ms.bemerkung || '')}"
-             placeholder="Bemerkung…"
-             data-milestone-id="${ms.id}" data-milestone-field="bemerkung">
+      <textarea class="dp-ms-bemerkung"
+                placeholder="Bemerkung…"
+                data-milestone-id="${ms.id}" data-milestone-field="bemerkung">${esc(ms.bemerkung || '')}</textarea>
       <button class="icon-btn dp-ms-delete"
               data-action="removeMilestone" data-milestone-id="${ms.id}"
               title="Meilenstein löschen">✕</button>
