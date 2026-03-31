@@ -573,7 +573,13 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-.ini-name { font-weight: 500; color: var(--text); }
+.ini-name {
+  font-weight: 500;
+  color: var(--text);
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
 .ini-name:focus { color: var(--accent); }
 .ini-name-wrap {
   display: flex;

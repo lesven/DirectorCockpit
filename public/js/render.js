@@ -94,7 +94,7 @@ function renderIniRow(ini, teamOptsBase) {
       <td>
         <div class="ini-name-wrap">
           <button class="detail-btn ini-name-detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details öffnen" aria-label="Initiative-Details öffnen">↗</button>
-          <input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives">
+          <textarea class="ini-cell ini-name" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives">${esc(ini.name)}</textarea>
         </div>
       </td>
       <td>
