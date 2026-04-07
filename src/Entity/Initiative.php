@@ -47,6 +47,9 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $jobSize = null;
 
+    #[ORM\Column(name: 'customer_id', type: 'bigint', nullable: true)]
+    private ?int $customer = null;
+
     public function getWsjf(): ?float
     {
         if ($this->businessValue === null
@@ -77,7 +80,8 @@ final class Initiative implements SyncableEntity
             'timeCriticality' => $this->timeCriticality,
             'riskReduction' => $this->riskReduction,
             'jobSize' => $this->jobSize,
-            'wsjf' => $this->getWsjf(),
+            'wsjf'     => $this->getWsjf(),
+            'customer' => $this->customer,
         ];
     }
 
@@ -96,7 +100,8 @@ final class Initiative implements SyncableEntity
         $entity->businessValue = $data['businessValue'] ?? null;
         $entity->timeCriticality = $data['timeCriticality'] ?? null;
         $entity->riskReduction = $data['riskReduction'] ?? null;
-        $entity->jobSize = $data['jobSize'] ?? null;
+        $entity->jobSize    = $data['jobSize'] ?? null;
+        $entity->customer   = isset($data['customer']) ? (int) $data['customer'] : null;
 
         return $entity;
     }
@@ -120,6 +125,15 @@ final class Initiative implements SyncableEntity
             if (array_key_exists($field, $data)) {
                 $this->$field = $data[$field];
             }
+        }
+        $this->updateNullableInt('customer', $data);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function updateNullableInt(string $field, array $data): void
+    {
+        if (array_key_exists($field, $data)) {
+            $this->$field = $data[$field] !== null ? (int) $data[$field] : null;
         }
     }
 

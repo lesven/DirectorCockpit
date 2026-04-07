@@ -12,6 +12,7 @@ export const dom = {
   // Filter
   filterName: document.getElementById('filter-name'),
   filterTeam: document.getElementById('filter-team'),
+  filterKunde: document.getElementById('filter-kunde'),
   filterStatus: document.getElementById('filter-status'),
   filterProjektstatus: document.getElementById('filter-projektstatus'),
   filterReset: document.getElementById('filter-reset'),

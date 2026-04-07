@@ -2,6 +2,7 @@
 
 namespace App\Tests\Unit\Service;
 
+use App\Entity\Customer;
 use App\Entity\Initiative;
 use App\Entity\Metadata;
 use App\Entity\Milestone;
@@ -62,8 +63,12 @@ class CockpitSyncServiceTest extends TestCase
         );
     }
 
-    private function stubRepositories(array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = [], array $milestones = []): void
+    private function stubRepositories(array $kunden = [], array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = [], array $milestones = []): void
     {
+        $kundeRepo = $this->createMock(EntityRepository::class);
+        $kundeRepo->method('findAll')->willReturn($kunden);
+        $kundeRepo->method('findBy')->willReturn($kunden);
+
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
         $teamRepo->method('findBy')->willReturn($teams);
@@ -86,6 +91,7 @@ class CockpitSyncServiceTest extends TestCase
 
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
+                Customer::class       => $kundeRepo,
                 Team::class           => $teamRepo,
                 Initiative::class     => $initiativeRepo,
                 NichtVergessen::class => $nichtVergessenRepo,

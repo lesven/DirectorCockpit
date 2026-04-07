@@ -366,4 +366,133 @@ class CockpitApiControllerTest extends WebTestCase
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
+
+    // -------------------------------------------------------------------------
+    // Kunden-Tests
+    // -------------------------------------------------------------------------
+
+    public function testLoadResponseIncludesKundenArray(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/cockpit');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('kunden', $data);
+        $this->assertIsArray($data['kunden']);
+    }
+
+    public function testSyncKundenRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'kunden' => [
+                ['id' => 10, 'name' => 'Acme GmbH'],
+                ['id' => 11, 'name' => 'Beta AG'],
+            ],
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertCount(2, $data['kunden']);
+        $names = array_column($data['kunden'], 'name');
+        $this->assertContains('Acme GmbH', $names);
+        $this->assertContains('Beta AG', $names);
+    }
+
+    public function testSyncInitiativeWithCustomerRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'kunden' => [['id' => 20, 'name' => 'Kunde Eins']],
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 700, 'name' => 'Kundenprojekt', 'team' => null, 'customer' => 20,
+                 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $ini = $data['initiatives'][0];
+        $this->assertSame(20, $ini['customer']);
+    }
+
+    public function testSyncInitiativeWithoutCustomerHasNullCustomer(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'kunden' => [],
+            'teams' => [],
+            'initiatives' => [
+                ['id' => 800, 'name' => 'Ohne Kunde', 'team' => null, 'status' => 'grey',
+                 'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertNull($data['initiatives'][0]['customer']);
+    }
+
+    public function testSyncKundeWithEmptyNameReturnsBadRequest(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'kunden' => [['id' => 30, 'name' => '']],
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testPayloadWithoutKundenKeyIsBackwardsCompatible(): void
+    {
+        $client = static::createClient();
+
+        // Payload ohne kunden-Schlüssel – kein Breaking Change
+        $payload = [
+            'kw' => 'compat',
+            'teams' => [['id' => 99, 'name' => 'Compat-Team', 'status' => 'grey', 'fokus' => '', 'schritt' => '']],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('compat', $data['kw']);
+        $this->assertIsArray($data['kunden']); // kunden-Array vorhanden, aber leer
+    }
 }
+

@@ -65,6 +65,11 @@
         </select>
       </div>
       <div class="filter-select-wrap">
+        <select id="filter-kunde">
+          <option value="">Alle Kunden</option>
+        </select>
+      </div>
+      <div class="filter-select-wrap">
         <select id="filter-status">
           <option value="">Alle Status</option>
           <option value="fertig">Fertig</option>
@@ -86,7 +91,8 @@
       <thead>
         <tr>
           <th style="width:18%" class="sortable" data-action="sortInis" data-sort="name">Initiative / Projekt</th>
-          <th style="width:12%" class="sortable" data-action="sortInis" data-sort="team">Team</th>
+          <th style="width:10%" class="sortable" data-action="sortInis" data-sort="kunde">Kunde</th>
+          <th style="width:10%" class="sortable" data-action="sortInis" data-sort="team">Team</th>
           <th style="width:11%" class="sortable" data-action="sortInis" data-sort="status">Status</th>
           <th style="width:10%" class="sortable" data-action="sortInis" data-sort="projektstatus">Projektstatus</th>
           <th style="width:5%" class="sortable" data-action="sortInis" data-sort="wsjf">WSJF</th>
@@ -169,6 +175,7 @@
 <footer>
   <span class="footer-left">Director's Cockpit</span>
   <div class="footer-actions">
+    <a class="footer-btn" href="kunden.html">&#128101; Kunden</a>
     <button class="footer-btn" data-action="importJSON">&#8599; Import JSON</button>
     <button class="footer-btn" data-action="exportJSON">&#8600; Export JSON</button>
   </div>

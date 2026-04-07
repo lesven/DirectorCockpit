@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Customer;
 use App\Entity\Initiative;
 use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
@@ -21,6 +22,7 @@ class CockpitSyncService
 {
     /** @var array<string, class-string<SyncableEntity>> */
     private const ENTITY_REGISTRY = [
+        'kunden'          => Customer::class,
         'teams'           => Team::class,
         'initiatives'     => Initiative::class,
         'nicht_vergessen' => NichtVergessen::class,

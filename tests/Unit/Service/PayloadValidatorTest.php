@@ -542,4 +542,66 @@ class PayloadValidatorTest extends TestCase
             ['milestones']
         );
     }
+
+    // --- kunden validation ---
+
+    public function testValidKundeArrayPasses(): void
+    {
+        $this->validator->validate(
+            ['kunden' => [['id' => 1, 'name' => 'Acme GmbH']]],
+            ['kunden']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testMissingKundenKeyIsAllowed(): void
+    {
+        $this->validator->validate(['kw' => '10'], ['kunden']);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testKundeWithEmptyNameThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/nicht-leerer String/u');
+
+        $this->validator->validate(
+            ['kunden' => [['id' => 1, 'name' => '']]],
+            ['kunden']
+        );
+    }
+
+    public function testKundeWithWhitespaceOnlyNameThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/nicht-leerer String/u');
+
+        $this->validator->validate(
+            ['kunden' => [['id' => 1, 'name' => '   ']]],
+            ['kunden']
+        );
+    }
+
+    public function testKundeWithMissingNameThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/nicht-leerer String/u');
+
+        $this->validator->validate(
+            ['kunden' => [['id' => 1]]],
+            ['kunden']
+        );
+    }
+
+    public function testKundeWithNonStringNameThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/nicht-leerer String/u');
+
+        $this->validator->validate(
+            ['kunden' => [['id' => 1, 'name' => 42]]],
+            ['kunden']
+        );
+    }
 }
+
