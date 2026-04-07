@@ -5,6 +5,10 @@ export const BASE_URL = 'http://localhost:8089/cockpit.html';
 
 const SEED_PAYLOAD = {
   kw: '12',
+  kunden: [
+    { id: 9001, name: 'Acme GmbH' },
+    { id: 9002, name: 'Beta AG' },
+  ],
   teams: [
     { id: 1001, name: 'Alpha Team', sub: 'Frontend', status: 'grey', fokus: 'Sprint 42', schritt: 'Review' },
     { id: 1002, name: 'Beta Team', sub: 'Backend', status: 'yellow', fokus: 'API rebuild', schritt: 'Design' },
@@ -14,6 +18,7 @@ const SEED_PAYLOAD = {
       id: 2001,
       name: 'Projekt Gamma',
       team: 1001,
+      customer: 9001,
       status: 'yellow',
       projektstatus: 'ok',
       schritt: 'Prototyp',
@@ -28,6 +33,7 @@ const SEED_PAYLOAD = {
       id: 2002,
       name: 'Projekt Delta',
       team: 1002,
+      customer: 9002,
       status: 'grey',
       projektstatus: 'kritisch',
       schritt: 'Planung',
@@ -42,6 +48,7 @@ const SEED_PAYLOAD = {
       id: 2003,
       name: 'Projekt Epsilon',
       team: null,
+      customer: null,
       status: 'fertig',
       projektstatus: 'ok',
       schritt: '',
@@ -162,6 +169,7 @@ export const selectors = {
   // Filters
   filterName: Selector('#filter-name'),
   filterTeam: Selector('#filter-team'),
+  filterKunde: Selector('#filter-kunde'),
   filterStatus: Selector('#filter-status'),
   filterProjektstatus: Selector('#filter-projektstatus'),
   filterReset: Selector('#filter-reset'),
