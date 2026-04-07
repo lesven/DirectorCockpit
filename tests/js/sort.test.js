@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // vi.mock wird gehoisted — daher vi.hoisted() für die geteilte Referenz
-const mockData = vi.hoisted(() => ({ teams: [], initiatives: [] }));
+const mockData = vi.hoisted(() => ({ teams: [], initiatives: [], kunden: [] }));
 
 vi.mock('../../public/js/store.js', () => ({ data: mockData }));
 vi.mock('../../public/js/cookie.js', () => ({ saveViewState: vi.fn() }));
@@ -13,6 +13,7 @@ function resetState() {
   filterState.team = '';
   filterState.status = '';
   filterState.projektstatus = '';
+  filterState.kunde = '';
   sortState.field = null;
   sortState.dir = 'asc';
   pageState.current = 1;
@@ -25,10 +26,13 @@ function setInis(inis) {
 function setTeams(teams) {
   mockData.teams = teams;
 }
+function setKunden(kunden) {
+  mockData.kunden = kunden;
+}
 
-const INI_A = { id: 1, name: 'Alpha', team: 10, status: 'yellow', projektstatus: 'ok', frist: '2026-04-01', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 };
-const INI_B = { id: 2, name: 'Beta', team: 20, status: 'fertig', projektstatus: 'kritisch', frist: '2026-03-15', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21, wsjf: 0.1 };
-const INI_C = { id: 3, name: 'Charlie', team: null, status: 'grey', projektstatus: 'ok', frist: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null, wsjf: null };
+const INI_A = { id: 1, name: 'Alpha', team: 10, customer: 100, status: 'yellow', projektstatus: 'ok', frist: '2026-04-01', businessValue: 8, timeCriticality: 5, riskReduction: 3, jobSize: 5, wsjf: 3.2 };
+const INI_B = { id: 2, name: 'Beta', team: 20, customer: 200, status: 'fertig', projektstatus: 'kritisch', frist: '2026-03-15', businessValue: 1, timeCriticality: 1, riskReduction: 1, jobSize: 21, wsjf: 0.1 };
+const INI_C = { id: 3, name: 'Charlie', team: null, customer: null, status: 'grey', projektstatus: 'ok', frist: '', businessValue: null, timeCriticality: null, riskReduction: null, jobSize: null, wsjf: null };
 
 const TEAM_A = { id: 10, name: 'Frontend' };
 const TEAM_B = { id: 20, name: 'Backend' };
@@ -77,6 +81,23 @@ describe('getSortedInis() — Filtering', () => {
   it('filters by projektstatus', () => {
     filterState.projektstatus = 'kritisch';
     expect(getSortedInis().map((i) => i.id)).toEqual([2]);
+  });
+
+  it('filters by kunde id', () => {
+    filterState.kunde = '100';
+    expect(getSortedInis().map((i) => i.id)).toEqual([1]);
+  });
+
+  it('excludes initiatives with null customer when kunde filter is set', () => {
+    filterState.kunde = '200';
+    const result = getSortedInis();
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(2);
+  });
+
+  it('returns all initiatives when kunde filter is empty', () => {
+    filterState.kunde = '';
+    expect(getSortedInis()).toHaveLength(3);
   });
 
   it('combines multiple filters (AND)', () => {

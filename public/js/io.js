@@ -48,6 +48,9 @@ export function migrateData(parsed) {
   // Milestones-Array sicherstellen
   if (!Array.isArray(parsed.milestones)) parsed.milestones = [];
 
+  // Kunden-Array sicherstellen (Legacy-Daten ohne kunden-Schlüssel → leeres Array)
+  if (!Array.isArray(parsed.kunden)) parsed.kunden = [];
+
   parsed.teams = parsed.teams.map((t) => ({
     id: t.id ?? generateId(),
     name: t.name ?? '',
@@ -64,6 +67,7 @@ export function migrateData(parsed) {
     id: i.id ?? generateId(),
     name: i.name ?? '',
     team: i.team ?? null,
+    customer: i.customer ?? null,
     status: validStatus.includes(i.status) ? i.status : (legacyStatusMap[i.status] ?? 'grey'),
     projektstatus: i.projektstatus ?? 'ok',
     schritt: i.schritt ?? '',
@@ -103,6 +107,11 @@ export function migrateData(parsed) {
     bemerkung: m.bemerkung ?? '',
   }));
 
+  parsed.kunden = parsed.kunden.map((k) => ({
+    id: k.id ?? generateId(),
+    name: k.name ?? '',
+  }));
+
   return parsed;
 }
 
@@ -130,7 +139,7 @@ export function importJSON() {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
         const migrated = migrateData(parsed);
-        const summary = `${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken, ${migrated.milestones.length} Meilensteine`;
+        const summary = `${migrated.kunden.length} Kunden, ${migrated.teams.length} Teams, ${migrated.initiatives.length} Initiativen, ${migrated.nicht_vergessen.length} Nicht-vergessen-Einträge, ${migrated.risks.length} Risiken, ${migrated.milestones.length} Meilensteine`;
         if (
           !confirm(
             `Daten aus \u201E${file.name}\u201C importieren?\n(${summary})\n\nAktuelle Daten werden überschrieben.`,

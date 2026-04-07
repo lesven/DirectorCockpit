@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kunden – Director's Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="cockpit.css">
+</head>
+<body>
+
+<header>
+  <h1>Kunden</h1>
+  <span class="save-indicator" id="save-ind" role="status" aria-live="polite">gespeichert</span>
+</header>
+
+<main>
+  <section>
+    <div class="section-header">
+      <span class="section-label">Kundenliste</span>
+      <span class="section-count" id="kunden-count"></span>
+      <div class="section-line"></div>
+      <button class="add-btn" id="add-kunde-btn">+ Kunde</button>
+    </div>
+    <table class="ini-table" id="kunden-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="kunden-body"></tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+  <span class="footer-left"><a class="footer-back-link" href="cockpit.html">← Cockpit</a></span>
+  <div class="footer-actions"></div>
+</footer>
+
+<script type="module" src="js/kunden.js"></script>
+</body>
+</html>

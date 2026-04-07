@@ -38,6 +38,14 @@ export function teamSelectHtml(selectedId) {
   return none + opts;
 }
 
+export function kundeSelectHtml(selectedId) {
+  const none = `<option value=""${!selectedId ? ' selected' : ''}>— Kein Kunde —</option>`;
+  const opts = (data.kunden || [])
+    .map((k) => `<option value="${k.id}"${k.id === selectedId ? ' selected' : ''}>${esc(k.name)}</option>`)
+    .join('');
+  return none + opts;
+}
+
 // ─── WSJF Score Display ─────────────────────────────────────
 
 export function wsjfScoreClass(score) {
@@ -81,6 +89,16 @@ export function renderStammdaten(ini) {
           </select>
         </div>
       </div>
+      <div class="detail-field">
+        <label class="detail-label" for="dp-kunde">Kunde</label>
+        <div class="detail-select-wrap">
+          <select class="detail-input" id="dp-kunde" data-dp-field="customer">
+            ${kundeSelectHtml(ini.customer)}
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="detail-row">
       <div class="detail-field">
         <label class="detail-label" for="dp-frist">Frist</label>
         <input type="date" class="detail-input" id="dp-frist" data-dp-field="frist"
