@@ -128,6 +128,8 @@ export async function setupTest() {
   await reloadPage();
   // Wait for page to re-render with seeded data
   await Selector('#teams-grid .team-card', { timeout: 5000 })();
+  // Also wait for initiative rows to be rendered (avoids race condition)
+  await Selector('#ini-body .ini-row', { timeout: 5000 })();
 }
 
 /**
