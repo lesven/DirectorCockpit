@@ -16,6 +16,7 @@ export const dom = {
   filterStatus: document.getElementById('filter-status'),
   filterProjektstatus: document.getElementById('filter-projektstatus'),
   filterReset: document.getElementById('filter-reset'),
+  toggleFertig: document.getElementById('toggle-fertig'),
   iniFilters: document.getElementById('ini-filters'),
 
   // Grids & Container

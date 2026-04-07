@@ -494,5 +494,86 @@ class CockpitApiControllerTest extends WebTestCase
         $this->assertSame('compat', $data['kw']);
         $this->assertIsArray($data['kunden']); // kunden-Array vorhanden, aber leer
     }
+
+    // -------------------------------------------------------------------------
+    // hideFertig-Tests
+    // -------------------------------------------------------------------------
+
+    private function seedMixedInitiatives(): void
+    {
+        $client = static::createClient();
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'kunden' => [],
+            'initiatives' => [
+                ['id' => 901, 'name' => 'Aktiv',     'team' => null, 'status' => 'yellow',   'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+                ['id' => 902, 'name' => 'Geplant',   'team' => null, 'status' => 'grey',     'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+                ['id' => 903, 'name' => 'Fertig',    'team' => null, 'status' => 'fertig',   'projektstatus' => 'ok', 'schritt' => '', 'frist' => '', 'notiz' => ''],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+    }
+
+    /** GET ohne hideFertig gibt alle Initiativen zurück (kein Breaking Change). */
+    public function testLoadWithoutHideFertigReturnsAllInitiatives(): void
+    {
+        $this->seedMixedInitiatives();
+
+        $client = static::createClient();
+        $client->request('GET', '/api/cockpit');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $statuses = array_column($data['initiatives'], 'status');
+        $this->assertContains('fertig', $statuses, 'Ohne hideFertig müssen Fertige enthalten sein');
+    }
+
+    /** GET ?hideFertig=1 filtert Initiativen mit status=fertig heraus. */
+    public function testLoadWithHideFertigExcludesFinishedInitiatives(): void
+    {
+        $this->seedMixedInitiatives();
+
+        $client = static::createClient();
+        $client->request('GET', '/api/cockpit?hideFertig=1');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $statuses = array_column($data['initiatives'], 'status');
+        $this->assertNotContains('fertig', $statuses, 'hideFertig=1 darf keine Fertigen zurückgeben');
+        $this->assertContains('yellow', $statuses);
+        $this->assertContains('grey', $statuses);
+    }
+
+    /** GET ?hideFertig=0 verhält sich wie kein Parameter. */
+    public function testLoadWithHideFertigFalseReturnsAllInitiatives(): void
+    {
+        $this->seedMixedInitiatives();
+
+        $client = static::createClient();
+        $client->request('GET', '/api/cockpit?hideFertig=0');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $statuses = array_column($data['initiatives'], 'status');
+        $this->assertContains('fertig', $statuses, 'hideFertig=0 muss Fertige enthalten');
+    }
+
+    /** GET ?hideFertig=1 bei leerer DB gibt leeres initiatives-Array zurück. */
+    public function testLoadWithHideFertigOnEmptyDatabaseReturnsEmptyArray(): void
+    {
+        // DB leeren
+        $client = static::createClient();
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []])
+        );
+
+        $client->request('GET', '/api/cockpit?hideFertig=1');
+
+        $this->assertResponseIsSuccessful();
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame([], $data['initiatives']);
+    }
 }
 

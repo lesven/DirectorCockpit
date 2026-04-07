@@ -9,6 +9,16 @@ export const filterState = { name: '', team: '', status: '', projektstatus: '', 
 
 export const pageState = { current: 1, pageSize: 20 };
 
+let hideFertig = true;
+
+export function setHideFertig(val) {
+  hideFertig = !!val;
+}
+
+export function isHideFertig() {
+  return hideFertig;
+}
+
 export function resetPage() {
   pageState.current = 1;
 }
@@ -30,6 +40,8 @@ export function applyViewState(saved) {
     if (VALID_SORT_FIELDS.includes(s.field)) sortState.field = s.field;
     if (s.dir === 'asc' || s.dir === 'desc') sortState.dir = s.dir;
   }
+  // hideFertig: Default true wenn nicht gespeichert
+  hideFertig = typeof saved.hideFertig === 'boolean' ? saved.hideFertig : true;
 }
 
 export function sortInis(field) {
@@ -39,11 +51,12 @@ export function sortInis(field) {
     sortState.field = field;
     sortState.dir = field === 'wsjf' ? 'desc' : 'asc';
   }
-  saveViewState(filterState, sortState);
+  saveViewState(filterState, sortState, hideFertig);
 }
 
 export function getSortedInis() {
   const filtered = data.initiatives.filter((ini) => {
+    if (hideFertig && ini.status === 'fertig') return false;
     if (filterState.name && !ini.name.toLowerCase().includes(filterState.name.toLowerCase())) return false;
     if (filterState.team && String(ini.team) !== filterState.team) return false;
     if (filterState.status && ini.status !== filterState.status) return false;

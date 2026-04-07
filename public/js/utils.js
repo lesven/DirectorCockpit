@@ -38,7 +38,8 @@ export function calculateTeamStats(teamId, initiatives) {
   const total = teamInis.length;
   const critical = teamInis.filter((ini) => ini.projektstatus === 'kritisch').length;
   const inProgress = teamInis.filter((ini) => ini.status === 'yellow').length;
-  return { total, critical, inProgress };
+  const fertig = teamInis.filter((ini) => ini.status === 'fertig').length;
+  return { total, critical, inProgress, fertig };
 }
 
 /**
@@ -47,8 +48,9 @@ export function calculateTeamStats(teamId, initiatives) {
  * @returns {string} Formatierte Statistics wie "📊 5 • ⚠️ 2 • 🚀 3"
  */
 export function formatTeamStats(stats) {
-  const { total, critical, inProgress } = stats;
-  return `📊 ${total} • ⚠️ ${critical} • 🚀 ${inProgress}`;
+  const { total, critical, inProgress, fertig } = stats;
+  const base = `📊 ${total} • ⚠️ ${critical} • 🚀 ${inProgress}`;
+  return fertig > 0 ? `${base} • ✅ ${fertig} fertig` : base;
 }
 
 /**

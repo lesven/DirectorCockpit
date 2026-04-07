@@ -1,13 +1,13 @@
 import { Selector, ClientFunction } from 'testcafe';
 import { BASE_URL, selectors } from './helpers.js';
 
-// Seed mit 25 Initiativen (21x status='grey', 4x status='fertig')
+// Seed mit 25 Initiativen (alle status='grey', keine 'fertig')
 const PAGINATION_SEED = (() => {
   const initiatives = Array.from({ length: 25 }, (_, i) => ({
     id: 3000 + i + 1,
     name: `Pagination Ini ${String(i + 1).padStart(2, '0')}`,
     team: i < 5 ? 5001 : null,
-    status: i < 4 ? 'fertig' : 'grey',
+    status: 'grey',
     projektstatus: 'ok',
     schritt: '',
     frist: '',
@@ -39,8 +39,9 @@ async function setupPaginationTest(t) {
   await seedViaAPI(JSON.stringify(PAGINATION_SEED));
   await reloadPage();
   await Selector('.ini-row', { timeout: 5000 })();
-  // Clear stale view-state cookie
+  // Clear stale view-state aus localStorage und Cookie
   await t.eval(() => {
+    localStorage.removeItem('cockpit_view');
     document.cookie = 'cockpit_view=; max-age=0; path=/';
   });
   await reloadPage();
@@ -101,16 +102,18 @@ test('AC-P.8: Filter wirkt über alle Seiten, setzt Seite auf 1 zurück', async 
   await t.click(nextBtn);
   await t.expect(selectors.iniRows.count).eql(5);
 
-  // Setze Filter: nur "fertig" (4 Einträge) → Seite springt auf 1
-  await t.click(selectors.filterStatus).click(selectors.filterStatus.find('option[value="fertig"]'));
-  await t.expect(selectors.iniRows.count).eql(4);
-  // Bei 4 Einträgen keine Paginierung sichtbar
+  // Setze Filter: nur "yellow" (0 Einträge) → Seite springt auf 1
+  await t.click(selectors.filterStatus).click(selectors.filterStatus.find('option[value="yellow"]'));
+  await t.expect(selectors.iniRows.count).eql(0);
+  // Bei 0 Einträgen keine Paginierung sichtbar
   await t.expect(paginationInfo.exists).notOk();
 });
 
 test('AC-P.9: Paginierung verschwindet wenn gefiltertes Ergebnis ≤20 Einträge', async (t) => {
-  await t.click(selectors.filterStatus).click(selectors.filterStatus.find('option[value="fertig"]'));
-  await t.expect(selectors.iniRows.count).eql(4);
+  // Filter nach Team (nur 5 Einträge → kein Paging)
+  const teamOption = selectors.filterTeam.find('option[value="5001"]');
+  await t.click(selectors.filterTeam).click(teamOption);
+  await t.expect(selectors.iniRows.count).eql(5);
   await t.expect(paginationEl.find('.pagination-nav').exists).notOk();
 });
 

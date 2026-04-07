@@ -1,6 +1,6 @@
 import { load, data } from './js/store.js';
 import { renderAll } from './js/render.js';
-import { bindEvents } from './js/events.js';
+import { bindEvents, initToggleFertig } from './js/events.js';
 import { loadViewState } from './js/cookie.js';
 import { applyViewState, filterState } from './js/sort.js';
 import { dom } from './js/dom.js';
@@ -54,6 +54,7 @@ load().then(() => {
   }
   renderAll();
   bindEvents();
+  initToggleFertig();
   // Loading-Banner ausblenden nach erfolgreichem Laden
   if (dom.loadingBanner) dom.loadingBanner.hidden = true;
 

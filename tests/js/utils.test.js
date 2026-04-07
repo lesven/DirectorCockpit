@@ -181,9 +181,14 @@ describe('calculateTeamStats()', () => {
     expect(stats.inProgress).toBe(2);
   });
 
+  it('counts fertig (finished) initiatives', () => {
+    const stats = calculateTeamStats(1, initiatives);
+    expect(stats.fertig).toBe(1);
+  });
+
   it('returns zeros for team with no initiatives', () => {
     const stats = calculateTeamStats(999, initiatives);
-    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0 });
+    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0, fertig: 0 });
   });
 
   it('handles different team with correct counts', () => {
@@ -191,35 +196,42 @@ describe('calculateTeamStats()', () => {
     expect(stats.total).toBe(2);
     expect(stats.critical).toBe(0);
     expect(stats.inProgress).toBe(1);
+    expect(stats.fertig).toBe(0);
   });
 
   it('returns zeros on empty initiatives array', () => {
     const stats = calculateTeamStats(1, []);
-    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0 });
+    expect(stats).toEqual({ total: 0, critical: 0, inProgress: 0, fertig: 0 });
   });
 });
 
 describe('formatTeamStats()', () => {
-  it('formats stats with icons', () => {
-    const stats = { total: 5, critical: 2, inProgress: 3 };
+  it('formats stats without fertig (fertig=0 not shown)', () => {
+    const stats = { total: 5, critical: 2, inProgress: 3, fertig: 0 };
     const result = formatTeamStats(stats);
     expect(result).toBe('📊 5 • ⚠️ 2 • 🚀 3');
   });
 
-  it('formats zeros correctly', () => {
-    const stats = { total: 0, critical: 0, inProgress: 0 };
+  it('formats stats with fertig > 0 (appends fertig badge)', () => {
+    const stats = { total: 5, critical: 1, inProgress: 2, fertig: 2 };
+    const result = formatTeamStats(stats);
+    expect(result).toBe('📊 5 • ⚠️ 1 • 🚀 2 • ✅ 2 fertig');
+  });
+
+  it('formats zeros correctly (no fertig badge when 0)', () => {
+    const stats = { total: 0, critical: 0, inProgress: 0, fertig: 0 };
     const result = formatTeamStats(stats);
     expect(result).toBe('📊 0 • ⚠️ 0 • 🚀 0');
   });
 
   it('formats large numbers', () => {
-    const stats = { total: 100, critical: 45, inProgress: 67 };
+    const stats = { total: 100, critical: 45, inProgress: 67, fertig: 0 };
     const result = formatTeamStats(stats);
     expect(result).toBe('📊 100 • ⚠️ 45 • 🚀 67');
   });
 
   it('maintains icon order: total, critical, inProgress', () => {
-    const stats = { total: 1, critical: 2, inProgress: 3 };
+    const stats = { total: 1, critical: 2, inProgress: 3, fertig: 0 };
     const result = formatTeamStats(stats);
     expect(result).toMatch(/📊.*⚠️.*🚀/);
   });
