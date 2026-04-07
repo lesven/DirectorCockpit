@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Customer;
 use App\Entity\Initiative;
 use App\Entity\Team;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -11,12 +12,16 @@ class DefaultDataFixture extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        /** @var array{teams: list<array<string,mixed>>, initiatives: list<array<string,mixed>>} $data */
+        /** @var array{kunden?: list<array<string,mixed>>, teams: list<array<string,mixed>>, initiatives: list<array<string,mixed>>} $data */
         $data = json_decode(
             file_get_contents(__DIR__ . '/../../public/default_data.json'),
             true,
             flags: JSON_THROW_ON_ERROR,
         );
+
+        foreach ($data['kunden'] ?? [] as $row) {
+            $manager->persist(Customer::fromArray($row));
+        }
 
         foreach ($data['teams'] as $row) {
             $manager->persist(Team::fromArray($row));

@@ -26,6 +26,7 @@ class PayloadValidator
     {
         /** @var array<string, callable(array<string, mixed>, int): void> */
         $itemValidators = [
+            'kunden'      => fn(array $item, int $i) => $this->validateKunde($item, $i),
             'initiatives' => fn(array $item, int $i) => $this->validateWsjfFields($item, $i),
             'milestones'  => fn(array $item, int $i) => $this->validateMilestoneStatus($item, $i),
             'risks'       => fn(array $item, int $i) => $this->validateRoamStatus($item, $i),
@@ -147,6 +148,18 @@ class PayloadValidator
             throw new ValidationException(
                 "risks[{$index}].roamStatus muss einer der Werte " . implode(', ', $valid) . " sein, '{$item['roamStatus']}' ist ungültig"
             );
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @throws ValidationException
+     */
+    private function validateKunde(array $item, int $index): void
+    {
+        if (!isset($item['name']) || !is_string($item['name']) || trim($item['name']) === '') {
+            throw new ValidationException("kunden[{$index}].name muss ein nicht-leerer String sein");
         }
     }
 }

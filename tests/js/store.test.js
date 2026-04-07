@@ -27,7 +27,7 @@ import { dom } from '../../public/js/dom.js';
 
 beforeEach(() => {
   // Reset data to defaults
-  setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [] });
+  setData({ kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [], kunden: [] });
 
   // Setup minimal DOM for save indicator
   document.body.innerHTML = '<span id="save-ind" class="save-indicator"></span>';
@@ -56,6 +56,10 @@ describe('setData()', () => {
 
   it('initializes milestones array', () => {
     expect(data.milestones).toEqual([]);
+  });
+
+  it('initializes kunden array', () => {
+    expect(data.kunden).toEqual([]);
   });
 });
 

@@ -19,7 +19,6 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
   const header = `
     <tr>
       <th style="${thBase}">Aufgabe</th>
-      <th style="${thBase}">Beschreibung</th>
       <th style="${thBase}">Owner</th>
       <th style="${thBase}">Frist</th>
       <th style="${thBase}">Status</th>
@@ -27,7 +26,7 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
     </tr>`;
 
   if (!milestones || milestones.length === 0) {
-    const emptyTd = `style="${tdBase}color:#6b7280;font-style:italic;" colspan="6"`;
+    const emptyTd = `style="${tdBase}color:#6b7280;font-style:italic;" colspan="5"`;
     return `<table style="border-collapse:collapse;width:100%;font-family:Arial,Helvetica,sans-serif;">
       <caption style="font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;text-align:left;padding-bottom:8px;">${title}</caption>
       <thead>${header}</thead>
@@ -46,11 +45,9 @@ export function buildMilestoneTableHtml(milestones, initiativeName) {
     const colors = MILESTONE_STATUS_COLORS[ms.status] || MILESTONE_STATUS_COLORS.offen;
     const statusLabel = MILESTONE_STATUS_LABELS[ms.status] || esc(ms.status);
     const statusTd = `style="${tdBase}background-color:${colors.bg};color:${colors.text};white-space:nowrap;font-weight:600;"`;
-    const beschreibung = ms.beschreibung ? esc(ms.beschreibung) : '<span style="color:#9ca3af;">—</span>';
 
     return `<tr>
       <td style="${tdBase}">${esc(ms.aufgabe) || '—'}</td>
-      <td style="${tdBase}">${beschreibung}</td>
       <td style="${tdBase}">${esc(ms.owner) || '—'}</td>
       <td style="${tdBase};white-space:nowrap;">${formatFrist(ms.frist)}</td>
       <td ${statusTd}>${statusLabel}</td>

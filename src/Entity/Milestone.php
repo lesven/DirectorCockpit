@@ -19,9 +19,6 @@ final class Milestone implements SyncableEntity
     #[ORM\Column(length: 255)]
     private string $aufgabe = '';
 
-    #[ORM\Column(type: 'text')]
-    private string $beschreibung = '';
-
     #[ORM\Column(length: 255)]
     private string $owner = '';
 
@@ -41,7 +38,6 @@ final class Milestone implements SyncableEntity
             'id' => $this->id,
             'initiative' => $this->initiative,
             'aufgabe' => $this->aufgabe,
-            'beschreibung' => $this->beschreibung,
             'owner' => $this->owner,
             'status' => $this->status->value,
             'frist' => $this->frist?->format('Y-m-d'),
@@ -56,7 +52,6 @@ final class Milestone implements SyncableEntity
         $entity->id = $data['id'];
         $entity->initiative = $data['initiative'];
         $entity->aufgabe = $data['aufgabe'] ?? '';
-        $entity->beschreibung = $data['beschreibung'] ?? '';
         $entity->owner = $data['owner'] ?? '';
         $entity->status = MilestoneStatusEnum::tryFrom($data['status'] ?? '') ?? MilestoneStatusEnum::Offen;
         $entity->frist = self::parseFrist($data['frist'] ?? null);
@@ -72,7 +67,6 @@ final class Milestone implements SyncableEntity
             $this->initiative = $data['initiative'];
         }
         $this->aufgabe = $data['aufgabe'] ?? $this->aufgabe;
-        $this->beschreibung = $data['beschreibung'] ?? $this->beschreibung;
         $this->owner = $data['owner'] ?? $this->owner;
         if (array_key_exists('status', $data)) {
             $this->status = MilestoneStatusEnum::tryFrom($data['status'] ?? '') ?? $this->status;

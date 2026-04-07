@@ -206,7 +206,6 @@ describe('migrateData()', () => {
     expect(ms.id).toBe(50);
     expect(ms.initiative).toBe(1);
     expect(ms.aufgabe).toBe('');
-    expect(ms.beschreibung).toBe('');
     expect(ms.owner).toBe('');
     expect(ms.status).toBe('offen');
     expect(ms.frist).toBeNull();
@@ -288,5 +287,33 @@ describe('migrateData()', () => {
   it('setzt milestone.frist auf null bei unbekanntem Format', () => {
     const result = migrateData({ milestones: [{ id: 1, initiative: 1, frist: 'Ende Q4' }] });
     expect(result.milestones[0].frist).toBeNull();
+  });
+
+  // ── Kunden ──────────────────────────────────────────────────
+
+  it('setzt kunden auf leeres Array wenn fehlend (Legacy-Kompatibilität)', () => {
+    const result = migrateData({});
+    expect(result.kunden).toEqual([]);
+  });
+
+  it('behält vorhandenes kunden-Array', () => {
+    const result = migrateData({ kunden: [{ id: 1, name: 'Acme' }] });
+    expect(result.kunden).toHaveLength(1);
+    expect(result.kunden[0].name).toBe('Acme');
+  });
+
+  it('normalisiert kunden: fehlender name wird zu leerem String', () => {
+    const result = migrateData({ kunden: [{ id: 1 }] });
+    expect(result.kunden[0].name).toBe('');
+  });
+
+  it('setzt customer in initiatives auf null wenn fehlend', () => {
+    const result = migrateData({ initiatives: [{ id: 1, name: 'Ini' }] });
+    expect(result.initiatives[0].customer).toBeNull();
+  });
+
+  it('behält customer-id in initiatives', () => {
+    const result = migrateData({ initiatives: [{ id: 1, name: 'Ini', customer: 42 }] });
+    expect(result.initiatives[0].customer).toBe(42);
   });
 });

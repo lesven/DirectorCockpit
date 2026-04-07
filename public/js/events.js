@@ -18,7 +18,7 @@ function parseDataset(el) {
 }
 
 function updateResetBtn() {
-  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || pageState.current > 1;
+  const active = filterState.name || filterState.team || filterState.status || filterState.projektstatus || filterState.kunde || pageState.current > 1;
   dom.filterReset.classList.toggle('active', !!active);
   dom.iniFilters.classList.toggle('has-active-filters', !!active);
 }
@@ -97,8 +97,10 @@ function handleFilterReset() {
   filterState.team = '';
   filterState.status = '';
   filterState.projektstatus = '';
+  filterState.kunde = '';
   dom.filterName.value = '';
   dom.filterTeam.value = '';
+  if (dom.filterKunde) dom.filterKunde.value = '';
   dom.filterStatus.value = '';
   dom.filterProjektstatus.value = '';
   applyFilter();
@@ -128,7 +130,7 @@ function handleInlineChange(e) {
 
   const item = findById(data[source], id);
   if (!item) return;
-  item[field] = field === 'team' ? (el.value ? +el.value : null) : el.value;
+  item[field] = (field === 'team' || field === 'customer') ? (el.value ? +el.value : null) : el.value;
 
   if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
     renderEntity('initiatives');
@@ -139,7 +141,7 @@ function handleInlineChange(e) {
 export function bindEvents() {
   document.addEventListener('click', handleActionClick);
   dom.filterName.addEventListener('input', handleFilterInput);
-  [dom.filterTeam, dom.filterStatus, dom.filterProjektstatus].forEach((el) => {
+  [dom.filterTeam, dom.filterKunde, dom.filterStatus, dom.filterProjektstatus].filter(Boolean).forEach((el) => {
     el.addEventListener('change', handleFilterChange);
   });
   dom.filterReset.addEventListener('click', handleFilterReset);

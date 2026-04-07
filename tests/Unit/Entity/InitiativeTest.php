@@ -281,4 +281,45 @@ class InitiativeTest extends TestCase
         $this->assertArrayHasKey('wsjf', $arr);
         $this->assertNull($arr['wsjf']);
     }
+
+    // --- customer field ---
+
+    public function testFromArrayWithCustomerIdStoresIt(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'customer' => 7]);
+        $this->assertSame(7, $ini->toArray()['customer']);
+    }
+
+    public function testFromArrayWithoutCustomerDefaultsToNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1]);
+        $this->assertNull($ini->toArray()['customer']);
+    }
+
+    public function testFromArrayWithNullCustomerStoresNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'customer' => null]);
+        $this->assertNull($ini->toArray()['customer']);
+    }
+
+    public function testUpdateFromArraySetsCustomer(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1]);
+        $ini->updateFromArray(['customer' => 3]);
+        $this->assertSame(3, $ini->toArray()['customer']);
+    }
+
+    public function testUpdateFromArrayCanClearCustomerToNull(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'customer' => 5]);
+        $ini->updateFromArray(['customer' => null]);
+        $this->assertNull($ini->toArray()['customer']);
+    }
+
+    public function testUpdateFromArrayKeepsCustomerWhenKeyAbsent(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1, 'customer' => 9]);
+        $ini->updateFromArray([]);
+        $this->assertSame(9, $ini->toArray()['customer']);
+    }
 }

@@ -34,6 +34,21 @@ function populateTeamFilter() {
   filterState.team = sel.value; // sync if previously-filtered team was deleted
 }
 
+function populateKundeFilter() {
+  const sel = dom.filterKunde;
+  if (!sel) return;
+  const currentVal = sel.value || filterState.kunde;
+  while (sel.options.length > 1) sel.remove(1);
+  (data.kunden || []).forEach((k) => {
+    const opt = document.createElement('option');
+    opt.value = String(k.id);
+    opt.textContent = k.name;
+    sel.appendChild(opt);
+  });
+  sel.value = currentVal;
+  filterState.kunde = sel.value; // sync if previously-filtered kunde was deleted
+}
+
 function renderTeamCard(t) {
   const card = document.createElement('div');
   card.className = 'team-card';
@@ -62,7 +77,9 @@ function renderTeamCard(t) {
 
 function renderTeams() {
   populateTeamFilter();
+  populateKundeFilter();
   teamOptsCacheKey = ''; // Cache invalidieren, Teams haben sich ggf. geändert
+  kundeOptsCacheKey = ''; // Cache invalidieren, Kunden haben sich ggf. geändert
   dom.teamsGrid.innerHTML = '';
   data.teams.forEach((t) => dom.teamsGrid.appendChild(renderTeamCard(t)));
   dom.teamsCount.textContent = data.teams.length || '';
@@ -78,7 +95,7 @@ function updateSortHeaders() {
   });
 }
 
-function renderIniRow(ini, teamOptsBase) {
+function renderIniRow(ini, teamOptsBase, kundeOptsBase) {
   const s = ini.status || 'grey';
   const ps = ini.projektstatus || 'ok';
   const wsjf = ini.wsjf;
@@ -91,7 +108,19 @@ function renderIniRow(ini, teamOptsBase) {
   const tr = document.createElement('tr');
   tr.className = 'ini-row';
   tr.innerHTML = `
-      <td><input class="ini-cell ini-name" value="${esc(ini.name)}" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives"></td>
+      <td>
+        <div class="ini-name-wrap">
+          <button class="detail-btn ini-name-detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details öffnen" aria-label="Initiative-Details öffnen">↗</button>
+          <textarea class="ini-cell ini-name" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives">${esc(ini.name)}</textarea>
+        </div>
+      </td>
+      <td>
+        <div class="select-wrap">
+          <select class="ini-select" data-id="${ini.id}" data-field="customer" data-source="initiatives">
+            ${kundeOptsBase}
+          </select>
+        </div>
+      </td>
       <td>
         <div class="select-wrap">
           <select class="ini-select" data-id="${ini.id}" data-field="team" data-source="initiatives">
@@ -123,10 +152,10 @@ function renderIniRow(ini, teamOptsBase) {
       <td><textarea class="ini-cell ini-notiz" placeholder="Notiz" data-id="${ini.id}" data-field="notiz" data-source="initiatives" rows="1">${esc(ini.notiz)}</textarea></td>
       <td>
         <button class="risk-btn" data-action="openDetail" data-id="${ini.id}" title="Risiken">🛡${riskBadgeHtml}</button>
-        <button class="detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details">✎</button>
         <button class="del-row-btn" data-action="removeEntity" data-type="initiatives" data-id="${ini.id}" title="Löschen">✕</button>
       </td>
     `;
+  tr.querySelector('[data-field="customer"]').value = ini.customer ?? '';
   tr.querySelector('[data-field="team"]').value = ini.team ?? '';
   return tr;
 }
@@ -215,6 +244,8 @@ function renderPagination(total, page, pageSize, totalPages) {
 
 let teamOptsCache = null;
 let teamOptsCacheKey = '';
+let kundeOptsCache = null;
+let kundeOptsCacheKey = '';
 
 function getTeamOptsBase() {
   const key = data.teams.map((t) => `${t.id}:${t.name}`).join('|');
@@ -227,14 +258,28 @@ function getTeamOptsBase() {
   return teamOptsCache;
 }
 
+function getKundeOptsBase() {
+  const kunden = data.kunden || [];
+  const key = kunden.map((k) => `${k.id}:${k.name}`).join('|');
+  if (key !== kundeOptsCacheKey) {
+    kundeOptsCacheKey = key;
+    kundeOptsCache =
+      '<option value="">\u2014</option>' +
+      kunden.map((k) => `<option value="${k.id}">${esc(k.name)}</option>`).join('');
+  }
+  return kundeOptsCache;
+}
+
 function renderInis() {
   dom.iniBody.innerHTML = '';
   updateSortHeaders();
+  populateKundeFilter();
 
-  const teamOptsBase = getTeamOptsBase();
+  const teamOptsBase  = getTeamOptsBase();
+  const kundeOptsBase = getKundeOptsBase();
 
   const { items, total, page, pageSize, totalPages } = getPaginatedInis();
-  items.forEach((ini) => dom.iniBody.appendChild(renderIniRow(ini, teamOptsBase)));
+  items.forEach((ini) => dom.iniBody.appendChild(renderIniRow(ini, teamOptsBase, kundeOptsBase)));
   dom.iniBody.querySelectorAll('.ini-notiz, .ini-schritt').forEach(autoGrow);
   renderPagination(total, page, pageSize, totalPages);
   dom.inisCount.textContent = total || '';
@@ -292,6 +337,7 @@ function renderOverdueMilestones() {
 
 const RENDER_MAP = {
   teams: renderTeams,
+  kunden: renderInis,
   initiatives: renderInis,
   nicht_vergessen: renderNVs,
 };

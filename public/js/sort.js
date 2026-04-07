@@ -5,7 +5,7 @@ import { saveViewState } from './cookie.js';
 
 export const sortState = { field: null, dir: 'asc' };
 
-export const filterState = { name: '', team: '', status: '', projektstatus: '' };
+export const filterState = { name: '', team: '', status: '', projektstatus: '', kunde: '' };
 
 export const pageState = { current: 1, pageSize: 20 };
 
@@ -23,6 +23,7 @@ export function applyViewState(saved) {
     if (typeof f.team === 'string') filterState.team = f.team;
     if (typeof f.status === 'string') filterState.status = f.status;
     if (typeof f.projektstatus === 'string') filterState.projektstatus = f.projektstatus;
+    if (typeof f.kunde === 'string') filterState.kunde = f.kunde;
   }
   const s = saved.sort;
   if (s && typeof s === 'object') {
@@ -47,6 +48,7 @@ export function getSortedInis() {
     if (filterState.team && String(ini.team) !== filterState.team) return false;
     if (filterState.status && ini.status !== filterState.status) return false;
     if (filterState.projektstatus && ini.projektstatus !== filterState.projektstatus) return false;
+    if (filterState.kunde && String(ini.customer ?? '') !== filterState.kunde) return false;
     return true;
   });
   if (!sortState.field) return filtered;

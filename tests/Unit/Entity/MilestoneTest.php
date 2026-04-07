@@ -13,7 +13,6 @@ class MilestoneTest extends TestCase
             'id' => 42,
             'initiative' => 7,
             'aufgabe' => 'API Design erstellen',
-            'beschreibung' => 'REST-Endpunkte definieren und dokumentieren',
             'owner' => 'Max Mustermann',
             'status' => 'in_bearbeitung',
             'frist' => '2026-04-15',
@@ -28,7 +27,6 @@ class MilestoneTest extends TestCase
         $this->assertSame(42, $arr['id']);
         $this->assertSame(7, $arr['initiative']);
         $this->assertSame('API Design erstellen', $arr['aufgabe']);
-        $this->assertSame('REST-Endpunkte definieren und dokumentieren', $arr['beschreibung']);
         $this->assertSame('Max Mustermann', $arr['owner']);
         $this->assertSame('in_bearbeitung', $arr['status']);
         $this->assertSame('2026-04-15', $arr['frist']);
@@ -40,7 +38,6 @@ class MilestoneTest extends TestCase
         $arr = $ms->toArray();
 
         $this->assertSame('', $arr['aufgabe']);
-        $this->assertSame('', $arr['beschreibung']);
         $this->assertSame('', $arr['owner']);
         $this->assertSame('offen', $arr['status']);
         $this->assertNull($arr['frist']);
@@ -92,7 +89,6 @@ class MilestoneTest extends TestCase
         $ms->updateFromArray([
             'initiative' => 9,
             'aufgabe' => 'Neu',
-            'beschreibung' => 'Neuer Text',
             'owner' => 'Anna',
             'status' => 'erledigt',
             'frist' => '2026-05-01',
@@ -101,7 +97,6 @@ class MilestoneTest extends TestCase
         $arr = $ms->toArray();
         $this->assertSame(9, $arr['initiative']);
         $this->assertSame('Neu', $arr['aufgabe']);
-        $this->assertSame('Neuer Text', $arr['beschreibung']);
         $this->assertSame('Anna', $arr['owner']);
         $this->assertSame('erledigt', $arr['status']);
         $this->assertSame('2026-05-01', $arr['frist']);

@@ -8,7 +8,6 @@ function makeMilestone(overrides = {}) {
     id: 1,
     initiative: 100,
     aufgabe: 'Testaufgabe',
-    beschreibung: 'Eine Beschreibung',
     owner: 'Max Mustermann',
     frist: '2026-06-30',
     status: 'offen',
@@ -19,10 +18,9 @@ function makeMilestone(overrides = {}) {
 // ─── buildMilestoneTableHtml ────────────────────────────────
 
 describe('buildMilestoneTableHtml()', () => {
-  it('enthält alle 5 Spaltenköpfe', () => {
+  it('enthält alle 4 Spaltenköpfe', () => {
     const html = buildMilestoneTableHtml([makeMilestone()]);
     expect(html).toContain('Aufgabe');
-    expect(html).toContain('Beschreibung');
     expect(html).toContain('Owner');
     expect(html).toContain('Frist');
     expect(html).toContain('Status');
@@ -36,11 +34,6 @@ describe('buildMilestoneTableHtml()', () => {
   it('rendert Wert der aufgabe', () => {
     const html = buildMilestoneTableHtml([makeMilestone({ aufgabe: 'Kick-off planen' })]);
     expect(html).toContain('Kick-off planen');
-  });
-
-  it('rendert Wert der beschreibung', () => {
-    const html = buildMilestoneTableHtml([makeMilestone({ beschreibung: 'Details zum Kick-off' })]);
-    expect(html).toContain('Details zum Kick-off');
   });
 
   it('rendert Wert des owner', () => {
@@ -159,11 +152,6 @@ describe('buildMilestoneTableHtml()', () => {
     const html = buildMilestoneTableHtml([makeMilestone({ aufgabe: '<script>alert(1)</script>' })]);
     expect(html).not.toContain('<script>');
     expect(html).toContain('&lt;script&gt;');
-  });
-
-  it('escaped & in beschreibung', () => {
-    const html = buildMilestoneTableHtml([makeMilestone({ beschreibung: 'A & B' })]);
-    expect(html).toContain('A &amp; B');
   });
 
   it('escaped " in owner', () => {

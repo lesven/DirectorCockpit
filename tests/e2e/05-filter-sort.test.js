@@ -162,3 +162,42 @@ test('AC-5.6d: WSJF-Sortierung passt sich nach Bearbeitung einer Initiative an',
   await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma'); // 3.2
   await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Epsilon'); // 3.0
 });
+
+test('AC-5.7: Kunden-Dropdown filtert nach Kunde', async (t) => {
+  // Seed: Gamma → Acme GmbH (9001), Delta → Beta AG (9002), Epsilon → kein Kunde
+  await t.expect(selectors.iniRows.count).eql(3);
+
+  const kundeOption = selectors.filterKunde.find('option[value="9001"]');
+  await t.click(selectors.filterKunde).click(kundeOption);
+
+  await t.expect(selectors.iniRows.count).eql(1);
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
+});
+
+test('AC-5.7: Kunden-Filter auf zweiten Kunden zeigt korrekte Initiative', async (t) => {
+  const kundeOption = selectors.filterKunde.find('option[value="9002"]');
+  await t.click(selectors.filterKunde).click(kundeOption);
+
+  await t.expect(selectors.iniRows.count).eql(1);
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Delta');
+});
+
+test('AC-5.7: Reset-Button setzt auch Kunden-Filter zurück', async (t) => {
+  const kundeOption = selectors.filterKunde.find('option[value="9001"]');
+  await t.click(selectors.filterKunde).click(kundeOption);
+  await t.expect(selectors.iniRows.count).eql(1);
+
+  await t.click(selectors.filterReset);
+  await t.expect(selectors.iniRows.count).eql(3);
+  await t.expect(selectors.filterKunde.value).eql('');
+});
+
+test('AC-5.7: Kunden-Filter und Textsuche kombinierbar', async (t) => {
+  // Filter: Acme GmbH (9001) + Name "Gamma" → genau eine Zeile
+  const kundeOption = selectors.filterKunde.find('option[value="9001"]');
+  await t.click(selectors.filterKunde).click(kundeOption);
+  await t.typeText(selectors.filterName, 'Gamma');
+
+  await t.expect(selectors.iniRows.count).eql(1);
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
+});

@@ -573,8 +573,31 @@ input[type="date"].ini-frist-date::-webkit-calendar-picker-indicator {
   cursor: pointer;
 }
 
-.ini-name { font-weight: 500; color: var(--text); }
+.ini-name {
+  font-weight: 500;
+  color: var(--text);
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
 .ini-name:focus { color: var(--accent); }
+.ini-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 6px;
+}
+
+.ini-name-wrap .ini-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.ini-name-detail-btn {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
 
 .ini-select {
   display: block;
@@ -1895,7 +1918,17 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
-.dp-ms-aufgabe { font-weight: 500; }
+.dp-ms-aufgabe {
+  font-weight: 500;
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
+.dp-ms-bemerkung {
+  resize: none;
+  field-sizing: content;
+  overflow: hidden;
+}
 .dp-ms-aufgabe:focus,
 .dp-ms-owner:focus,
 .dp-ms-bemerkung:focus { color: var(--accent); }
