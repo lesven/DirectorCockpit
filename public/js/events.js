@@ -1,7 +1,7 @@
 import { data, save, dSave } from './store.js';
 import { addEntity, removeEntity, cycleStatus } from './crud.js';
 import { findById } from './utils.js';
-import { sortInis, sortState, filterState, resetPage, pageState } from './sort.js';
+import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, isHideFertig } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
@@ -27,7 +27,7 @@ function applyFilter() {
   updateResetBtn();
   resetPage();
   renderEntity('initiatives');
-  saveViewState(filterState, sortState);
+  saveViewState(filterState, sortState, isHideFertig());
 }
 
 function handleActionClick(e) {
@@ -92,6 +92,21 @@ function handleFilterChange(e) {
   applyFilter();
 }
 
+function updateToggleFertigBtn() {
+  if (!dom.toggleFertig) return;
+  const hiding = isHideFertig();
+  dom.toggleFertig.classList.toggle('active', hiding);
+  dom.toggleFertig.textContent = hiding ? 'Fertige ausblenden' : 'Fertige einblenden';
+}
+
+function handleToggleFertig() {
+  setHideFertig(!isHideFertig());
+  updateToggleFertigBtn();
+  resetPage();
+  renderEntity('initiatives');
+  saveViewState(filterState, sortState, isHideFertig());
+}
+
 function handleFilterReset() {
   filterState.name = '';
   filterState.team = '';
@@ -104,6 +119,10 @@ function handleFilterReset() {
   dom.filterStatus.value = '';
   dom.filterProjektstatus.value = '';
   applyFilter();
+}
+
+export function initToggleFertig() {
+  updateToggleFertigBtn();
 }
 
 function handleInlineInput(e) {
@@ -145,6 +164,7 @@ export function bindEvents() {
     el.addEventListener('change', handleFilterChange);
   });
   dom.filterReset.addEventListener('click', handleFilterReset);
+  if (dom.toggleFertig) dom.toggleFertig.addEventListener('click', handleToggleFertig);
   document.addEventListener('input', handleInlineInput);
   document.addEventListener('change', handleInlineChange);
   bindDetailEvents();

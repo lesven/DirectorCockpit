@@ -6,7 +6,7 @@ const mockData = vi.hoisted(() => ({ teams: [], initiatives: [], kunden: [] }));
 vi.mock('../../public/js/store.js', () => ({ data: mockData }));
 vi.mock('../../public/js/cookie.js', () => ({ saveViewState: vi.fn() }));
 
-import { getSortedInis, sortState, filterState, applyViewState, sortInis, getPaginatedInis, pageState, resetPage } from '../../public/js/sort.js';
+import { getSortedInis, sortState, filterState, applyViewState, sortInis, getPaginatedInis, pageState, resetPage, setHideFertig, isHideFertig } from '../../public/js/sort.js';
 
 function resetState() {
   filterState.name = '';
@@ -18,6 +18,7 @@ function resetState() {
   sortState.dir = 'asc';
   pageState.current = 1;
   pageState.pageSize = 20;
+  setHideFertig(false); // Default: Fertige sichtbar für Tests
 }
 
 function setInis(inis) {
@@ -342,5 +343,57 @@ describe('resetPage()', () => {
     pageState.current = 5;
     resetPage();
     expect(pageState.current).toBe(1);
+  });
+});
+
+// ── hideFertig ────────────────────────────────────────────
+
+describe('hideFertig', () => {
+  it('isHideFertig() defaults to false after resetState()', () => {
+    expect(isHideFertig()).toBe(false);
+  });
+
+  it('setHideFertig(true) hides finished initiatives from getSortedInis()', () => {
+    setHideFertig(true);
+    const result = getSortedInis();
+    result.forEach((ini) => expect(ini.status).not.toBe('fertig'));
+  });
+
+  it('setHideFertig(true) keeps non-fertig initiatives', () => {
+    setHideFertig(true);
+    const ids = getSortedInis().map((i) => i.id);
+    expect(ids).toContain(1); // yellow
+    expect(ids).toContain(3); // grey
+    expect(ids).not.toContain(2); // fertig
+  });
+
+  it('setHideFertig(false) shows all initiatives including fertig', () => {
+    setHideFertig(false);
+    const ids = getSortedInis().map((i) => i.id);
+    expect(ids).toContain(2); // fertig sichtbar
+  });
+
+  it('hideFertig combined with status filter: status=fertig + hideFertig=true returns empty', () => {
+    setHideFertig(true);
+    filterState.status = 'fertig';
+    expect(getSortedInis()).toHaveLength(0);
+  });
+
+  it('hideFertig combined with name filter still hides fertig', () => {
+    setHideFertig(true);
+    filterState.name = 'Beta'; // matches INI_B which is fertig
+    expect(getSortedInis()).toHaveLength(0);
+  });
+
+  it('applyViewState sets hideFertig from saved state', () => {
+    applyViewState({ hideFertig: false });
+    expect(isHideFertig()).toBe(false);
+    applyViewState({ hideFertig: true });
+    expect(isHideFertig()).toBe(true);
+  });
+
+  it('applyViewState uses true as default when hideFertig is missing', () => {
+    applyViewState({ filter: { name: 'test' } }); // no hideFertig key
+    expect(isHideFertig()).toBe(true);
   });
 });

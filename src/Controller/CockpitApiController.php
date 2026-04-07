@@ -7,6 +7,7 @@ use App\Application\Handler\SyncCockpitDataHandler;
 use App\Service\CockpitSyncService;
 use App\Service\SyncException;
 use App\Service\ValidationException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,14 +20,26 @@ class CockpitApiController extends AbstractController
     public function __construct(
         private readonly CockpitSyncService $syncService,
         private readonly SyncCockpitDataHandler $syncHandler,
+        private readonly LoggerInterface $logger,
         #[Autowire('%env(bool:USE_DDD_SYNC)%')]
         private readonly bool $useDddSync,
     ) {}
 
     #[Route('/api/cockpit', methods: ['GET'])]
-    public function load(): JsonResponse
+    public function load(Request $request): JsonResponse
     {
-        return $this->json($this->syncService->loadAll());
+        $result = $this->syncService->loadAll();
+
+        if ($request->query->getBoolean('hideFertig', false)) {
+            $before = count($result['initiatives'] ?? []);
+            $result['initiatives'] = array_values(
+                array_filter($result['initiatives'] ?? [], fn(array $ini) => ($ini['status'] ?? '') !== 'fertig')
+            );
+            $filtered = $before - count($result['initiatives']);
+            $this->logger->info('hideFertig angewendet', ['gefiltert' => $filtered, 'verbleibend' => count($result['initiatives'])]);
+        }
+
+        return $this->json($result);
     }
 
     #[Route('/api/cockpit', methods: ['PUT'])]

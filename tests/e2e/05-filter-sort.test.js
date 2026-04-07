@@ -8,8 +8,8 @@ fixture('US-5: Filtern & Sortieren von Initiativen')
   });
 
 test('AC-5.1: Textsuche filtert Initiativen nach Name', async (t) => {
-  // Seed hat 3 Initiativen: Gamma, Delta, Epsilon
-  await t.expect(selectors.iniRows.count).eql(3);
+  // Standard: Fertige ausgeblendet → 2 Initiativen sichtbar (Gamma, Delta)
+  await t.expect(selectors.iniRows.count).eql(2);
 
   await t.typeText(selectors.filterName, 'Gamma');
   await t.expect(selectors.iniRows.count).eql(1);
@@ -30,7 +30,12 @@ test('AC-5.2: Team-Dropdown filtert nach Team', async (t) => {
 });
 
 test('AC-5.3: Status-Dropdown filtert korrekt', async (t) => {
-  // Filter: Fertig → nur Projekt Epsilon
+  // Filter: Fertig einblenden (Toggle), dann Status-Filter auf Fertig setzen
+  const toggleFertig = Selector('#toggle-fertig');
+  // Zuerst Fertige einblenden
+  await t.click(toggleFertig);
+  await t.expect(selectors.iniRows.count).eql(3);
+  // Dann Status-Filter auf Fertig
   await t.click(selectors.filterStatus).click(selectors.filterStatus.find('option[value="fertig"]'));
   await t.expect(selectors.iniRows.count).eql(1);
   await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Epsilon');
@@ -68,8 +73,8 @@ test('AC-5.5: Reset-Button setzt alle Filter zurück', async (t) => {
   // Reset klicken
   await t.click(selectors.filterReset);
 
-  // Alle Initiativen sollten wieder sichtbar sein
-  await t.expect(selectors.iniRows.count).eql(3);
+  // Fertige bleiben ausgeblendet (hideFertig bleibt erhalten), daher 2 Zeilen
+  await t.expect(selectors.iniRows.count).eql(2);
   await t.expect(selectors.filterName.value).eql('');
 });
 
@@ -79,13 +84,13 @@ test('AC-5.6: Sortierung per Spaltenklick mit visuellem Feedback', async (t) => 
   await t.click(nameHeader);
 
   await t.expect(nameHeader.hasClass('sort-asc')).ok();
-  // Alphabetisch: Delta, Epsilon, Gamma
+  // Alphabetisch (ohne Epsilon, da fertig ausgeblendet): Delta, Gamma
   await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Delta');
 
   // Erneuter Klick → DESC
   await t.click(nameHeader);
   await t.expect(nameHeader.hasClass('sort-desc')).ok();
-  // Umgekehrt: Gamma, Epsilon, Delta
+  // Umgekehrt: Gamma, Delta
   await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
 });
 
@@ -97,14 +102,13 @@ test('AC-5.6: WSJF-Sortierung default DESC', async (t) => {
 });
 
 test('AC-5.6b: WSJF-Sortierung DESC zeigt höchsten Wert zuerst', async (t) => {
-  // Seed: Gamma=3.2, Epsilon=(3+2+1)/2=3.0, Delta=null
+  // Seed (ohne Epsilon, da fertig ausgeblendet): Gamma=3.2, Delta=null
   const wsjfHeader = selectors.sortHeaders.withText('WSJF');
   await t.click(wsjfHeader); // erster Klick → DESC
 
-  // Gamma (3.2) vor Epsilon (3.0) vor Delta (null)
+  // Gamma (3.2) vor Delta (null)
   await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
-  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Epsilon');
-  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Delta');
 });
 
 test('AC-5.6c: WSJF-Sortierung ASC zeigt niedrigsten Wert zuerst, null zuletzt', async (t) => {
@@ -114,10 +118,9 @@ test('AC-5.6c: WSJF-Sortierung ASC zeigt niedrigsten Wert zuerst, null zuletzt',
 
   await t.expect(wsjfHeader.hasClass('sort-asc')).ok();
 
-  // Epsilon (3.0) vor Gamma (3.2) vor Delta (null)
-  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Epsilon');
-  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma');
-  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Delta');
+  // Gamma (3.2) vor Delta (null) — Epsilon ausgeblendet
+  await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Gamma');
+  await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Delta');
 });
 
 test('AC-5.7: Filter und Sortierung überleben Page-Reload', async (t) => {
@@ -136,7 +139,7 @@ test('AC-5.7: Filter und Sortierung überleben Page-Reload', async (t) => {
 
 test('AC-5.6d: WSJF-Sortierung passt sich nach Bearbeitung einer Initiative an', async (t) => {
   // Projekt Delta bekommt WSJF = (21+21+21)/3 = 21.0 → wird zum höchsten Wert
-  await t.click(selectors.detailBtns.nth(1)); // Projekt Delta
+  await t.click(selectors.detailBtns.nth(1)); // Projekt Delta (2. sichtbare Zeile)
 
   const bvSelect = Selector('#dp-bv');
   const tcSelect = Selector('#dp-tc');
@@ -160,12 +163,11 @@ test('AC-5.6d: WSJF-Sortierung passt sich nach Bearbeitung einer Initiative an',
 
   await t.expect(selectors.iniRows.nth(0).find('.ini-name').value).eql('Projekt Delta');
   await t.expect(selectors.iniRows.nth(1).find('.ini-name').value).eql('Projekt Gamma'); // 3.2
-  await t.expect(selectors.iniRows.nth(2).find('.ini-name').value).eql('Projekt Epsilon'); // 3.0
 });
 
 test('AC-5.7: Kunden-Dropdown filtert nach Kunde', async (t) => {
-  // Seed: Gamma → Acme GmbH (9001), Delta → Beta AG (9002), Epsilon → kein Kunde
-  await t.expect(selectors.iniRows.count).eql(3);
+  // Seed: Gamma → Acme GmbH (9001), Delta → Beta AG (9002), Epsilon → kein Kunde (ausgeblendet)
+  await t.expect(selectors.iniRows.count).eql(2);
 
   const kundeOption = selectors.filterKunde.find('option[value="9001"]');
   await t.click(selectors.filterKunde).click(kundeOption);
@@ -188,7 +190,8 @@ test('AC-5.7: Reset-Button setzt auch Kunden-Filter zurück', async (t) => {
   await t.expect(selectors.iniRows.count).eql(1);
 
   await t.click(selectors.filterReset);
-  await t.expect(selectors.iniRows.count).eql(3);
+  // hideFertig bleibt erhalten → 2 sichtbare Initiativen
+  await t.expect(selectors.iniRows.count).eql(2);
   await t.expect(selectors.filterKunde.value).eql('');
 });
 
