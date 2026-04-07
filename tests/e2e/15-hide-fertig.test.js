@@ -60,7 +60,10 @@ test('AC-15.5: Erneut eingeblendet zeigt Projekt Epsilon', async (t) => {
   const btn = Selector('#toggle-fertig');
   await t.click(btn);
 
-  const epsilonRow = selectors.iniRows.withText('Projekt Epsilon');
+  // Textarea-Values sind kein DOM-Text – direkt über den Value suchen
+  const epsilonRow = selectors.iniRows.filter((node) =>
+    node.querySelector('.ini-name') && node.querySelector('.ini-name').value === 'Projekt Epsilon'
+  );
   await t.expect(epsilonRow.exists).ok();
 });
 
@@ -117,9 +120,9 @@ test('AC-15.10: Status-Filter "fertig" + hideFertig=true → keine Ergebnisse', 
 // ── Team-Stats-Badge ─────────────────────────────────────
 
 test('AC-15.11: Team-Badge zeigt fertig-Anzahl bei Initiativen mit Team', async (t) => {
-  // Projekt Epsilon hat kein Team, daher kein fertig-Badge sichtbar in Team-Stats
-  // Gamma hat team=1001 (Alpha Team), Delta hat team=1002 (Beta Team)
-  // Beide sind nicht fertig → kein ✅ im Badge erwartet
-  const alphaBadge = Selector('.team-card').withText('Alpha Team').find('.team-stats-badge');
+  // Projekt Epsilon hat kein Team → das fertig-Badge taucht in keiner Team-Karte auf
+  // Direkt Badge über Index: Alpha Team ist 1. Team-Karte im Seed
+  const alphaBadge = Selector('.team-card').nth(0).find('.team-stats-badge');
+  await t.expect(alphaBadge.exists).ok();
   await t.expect(alphaBadge.textContent).notContains('fertig');
 });
