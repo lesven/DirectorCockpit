@@ -76,3 +76,13 @@ test('AC-14.7: Zweite Initiative hat eigenen Hash', async (t) => {
   const hash = await getLocationHash();
   await t.expect(hash).eql('#initiative/2002');
 });
+
+test('AC-14.8: Deeplink auf fertige Initiative öffnet Modal (auch wenn Fertige ausgeblendet)', async (t) => {
+  // Projekt Epsilon (2003) ist fertig und standardmäßig ausgeblendet
+  await t.navigateTo(BASE_URL + '#initiative/2003');
+  // Detail-Modal soll trotzdem geöffnet werden
+  await t.expect(selectors.detailPage.hasAttribute('hidden')).notOk({ timeout: 5000 });
+
+  const nameInput = Selector('#dp-name');
+  await t.expect(nameInput.value).eql('Projekt Epsilon');
+});

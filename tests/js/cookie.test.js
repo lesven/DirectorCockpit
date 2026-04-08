@@ -114,3 +114,61 @@ describe('Legacy-Cookie-Migration', () => {
     expect(loadViewState()).toBeNull();
   });
 });
+
+// ── hideFertig im ViewState ───────────────────────────────
+
+describe('saveViewState() — hideFertig', () => {
+  it('speichert hideFertig=true', () => {
+    const filter = { name: '', team: '', status: '', projektstatus: '' };
+    const sort = { field: null, dir: 'asc' };
+    saveViewState(filter, sort, true);
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.hideFertig).toBe(true);
+  });
+
+  it('speichert hideFertig=false', () => {
+    const filter = { name: '', team: '', status: '', projektstatus: '' };
+    const sort = { field: null, dir: 'asc' };
+    saveViewState(filter, sort, false);
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.hideFertig).toBe(false);
+  });
+
+  it('verwendet true als Default wenn hideFertig-Parameter fehlt', () => {
+    const filter = { name: '', team: '', status: '', projektstatus: '' };
+    const sort = { field: null, dir: 'asc' };
+    saveViewState(filter, sort); // kein 3. Parameter
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.hideFertig).toBe(true);
+  });
+});
+
+describe('loadViewState() — hideFertig', () => {
+  it('liest hideFertig=true aus localStorage', () => {
+    const payload = { filter: {}, sort: {}, hideFertig: true };
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    expect(result.hideFertig).toBe(true);
+  });
+
+  it('liest hideFertig=false aus localStorage', () => {
+    const payload = { filter: {}, sort: {}, hideFertig: false };
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    expect(result.hideFertig).toBe(false);
+  });
+
+  it('gibt null zurück wenn hideFertig-Key fehlt (Migration vorgesehen durch applyViewState)', () => {
+    const payload = { filter: {}, sort: {} }; // kein hideFertig
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    // hideFertig fehlt – applyViewState setzt dann Default
+    expect(Object.prototype.hasOwnProperty.call(result, 'hideFertig')).toBe(false);
+  });
+});
