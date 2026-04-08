@@ -63,32 +63,30 @@ class EntitySyncer
     public function syncBlockedByRelations(array $initiativePayload): void
     {
         foreach ($initiativePayload as $item) {
-            $ids = $item['blockedBy'] ?? [];
-            if (!is_array($ids) || $ids === []) {
-                $initiative = $this->em->find(Initiative::class, $item['id']);
-                if ($initiative !== null) {
-                    $initiative->clearBlockedBy();
-                }
-                continue;
-            }
-
             $initiative = $this->em->find(Initiative::class, $item['id']);
             if ($initiative === null) {
                 continue;
             }
-
             $initiative->clearBlockedBy();
-            foreach ($ids as $blockerId) {
-                $blocker = $this->em->find(Initiative::class, $blockerId);
-                if ($blocker === null) {
-                    $this->logger->warning('blockedBy: Blocker-Initiative nicht gefunden', [
-                        'initiative_id' => $item['id'],
-                        'blocker_id'    => $blockerId,
-                    ]);
-                    continue;
-                }
-                $initiative->addBlockedBy($blocker);
+            $this->applyBlockers($initiative, $item['blockedBy'] ?? []);
+        }
+    }
+
+    /**
+     * @param array<int> $blockerIds
+     */
+    private function applyBlockers(Initiative $initiative, array $blockerIds): void
+    {
+        foreach ($blockerIds as $blockerId) {
+            $blocker = $this->em->find(Initiative::class, $blockerId);
+            if ($blocker === null) {
+                $this->logger->warning('blockedBy: Blocker-Initiative nicht gefunden', [
+                    'initiative_id' => $initiative->getId(),
+                    'blocker_id'    => $blockerId,
+                ]);
+                continue;
             }
+            $initiative->addBlockedBy($blocker);
         }
     }
 }
