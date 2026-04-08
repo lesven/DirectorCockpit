@@ -115,7 +115,7 @@ class SyncCockpitDataHandlerTest extends TestCase
             'nicht_vergessen' => [['id' => 3, 'title' => 'NV A']],
         ]);
 
-        $this->em->expects($this->once())->method('flush');
+        $this->em->expects($this->exactly(2))->method('flush');
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('commit');
 
@@ -202,7 +202,7 @@ class SyncCockpitDataHandlerTest extends TestCase
     public function testEmptyPayloadRunsWithoutError(): void
     {
         $this->stubRepositories();
-        $this->em->expects($this->once())->method('flush');
+        $this->em->expects($this->exactly(2))->method('flush');
 
         $this->handler->handle(new SyncCockpitDataCommand([]));
     }

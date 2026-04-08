@@ -1,12 +1,18 @@
 import { data, save, dSave } from './store.js';
 import { addEntity, removeEntity, cycleStatus } from './crud.js';
 import { findById } from './utils.js';
-import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, isHideFertig } from './sort.js';
+import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, isHideFertig, setShowOnlyBlocked, isShowOnlyBlocked } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
 import { saveViewState } from './cookie.js';
 import { dom } from './dom.js';
+
+let teamsCollapsed = false;
+
+export function isTeamsCollapsed() {
+  return teamsCollapsed;
+}
 
 /** Liest id, field, source aus data-Attributen eines Elements. */
 function parseDataset(el) {
@@ -27,7 +33,7 @@ function applyFilter() {
   updateResetBtn();
   resetPage();
   renderEntity('initiatives');
-  saveViewState(filterState, sortState, isHideFertig());
+  saveViewState(filterState, sortState, isHideFertig(), teamsCollapsed, isShowOnlyBlocked());
 }
 
 function handleActionClick(e) {
@@ -56,7 +62,7 @@ function handleActionClick(e) {
       cycleStatus(id, target.dataset.team === 'true');
       break;
     case 'sortInis':
-      sortInis(target.dataset.sort);
+      sortInis(target.dataset.sort, teamsCollapsed);
       resetPage();
       renderEntity('initiatives');
       break;
@@ -104,7 +110,34 @@ function handleToggleFertig() {
   updateToggleFertigBtn();
   resetPage();
   renderEntity('initiatives');
-  saveViewState(filterState, sortState, isHideFertig());
+  saveViewState(filterState, sortState, isHideFertig(), teamsCollapsed, isShowOnlyBlocked());
+}
+
+function updateToggleBlockedBtn() {
+  if (!dom.toggleBlocked) return;
+  const active = isShowOnlyBlocked();
+  dom.toggleBlocked.classList.toggle('active', active);
+}
+
+function handleToggleBlocked() {
+  setShowOnlyBlocked(!isShowOnlyBlocked());
+  updateToggleBlockedBtn();
+  resetPage();
+  renderEntity('initiatives');
+  saveViewState(filterState, sortState, isHideFertig(), teamsCollapsed, isShowOnlyBlocked());
+}
+
+function updateToggleTeamsBtn() {
+  if (!dom.toggleTeams) return;
+  dom.toggleTeams.classList.toggle('collapsed', teamsCollapsed);
+  dom.toggleTeams.title = teamsCollapsed ? 'Teams ausklappen' : 'Teams einklappen';
+}
+
+function handleToggleTeams() {
+  teamsCollapsed = !teamsCollapsed;
+  dom.teamsGrid.classList.toggle('collapsed', teamsCollapsed);
+  updateToggleTeamsBtn();
+  saveViewState(filterState, sortState, isHideFertig(), teamsCollapsed, isShowOnlyBlocked());
 }
 
 function handleFilterReset() {
@@ -123,6 +156,20 @@ function handleFilterReset() {
 
 export function initToggleFertig() {
   updateToggleFertigBtn();
+  updateToggleBlockedBtn();
+}
+
+export function initToggleTeams(collapsed = false) {
+  teamsCollapsed = collapsed;
+  if (collapsed && dom.teamsGrid) {
+    // Zustand ohne Animation beim Start setzen
+    dom.teamsGrid.style.transition = 'none';
+    dom.teamsGrid.classList.add('collapsed');
+    requestAnimationFrame(() => {
+      dom.teamsGrid.style.transition = '';
+    });
+  }
+  updateToggleTeamsBtn();
 }
 
 function handleInlineInput(e) {
@@ -165,6 +212,8 @@ export function bindEvents() {
   });
   dom.filterReset.addEventListener('click', handleFilterReset);
   if (dom.toggleFertig) dom.toggleFertig.addEventListener('click', handleToggleFertig);
+  if (dom.toggleBlocked) dom.toggleBlocked.addEventListener('click', handleToggleBlocked);
+  if (dom.toggleTeams) dom.toggleTeams.addEventListener('click', handleToggleTeams);
   document.addEventListener('input', handleInlineInput);
   document.addEventListener('change', handleInlineChange);
   bindDetailEvents();

@@ -172,3 +172,58 @@ describe('loadViewState() — hideFertig', () => {
     expect(Object.prototype.hasOwnProperty.call(result, 'hideFertig')).toBe(false);
   });
 });
+
+// ── teamsCollapsed im ViewState ───────────────────────────
+
+describe('saveViewState() — teamsCollapsed', () => {
+  const filter = { name: '', team: '', status: '', projektstatus: '' };
+  const sort = { field: null, dir: 'asc' };
+
+  it('speichert teamsCollapsed=true', () => {
+    saveViewState(filter, sort, true, true);
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.teamsCollapsed).toBe(true);
+  });
+
+  it('speichert teamsCollapsed=false', () => {
+    saveViewState(filter, sort, true, false);
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.teamsCollapsed).toBe(false);
+  });
+
+  it('verwendet false als Default wenn teamsCollapsed-Parameter fehlt', () => {
+    saveViewState(filter, sort); // kein 4. Parameter
+
+    const stored = JSON.parse(localStorage.getItem('cockpit_view'));
+    expect(stored.teamsCollapsed).toBe(false);
+  });
+});
+
+describe('loadViewState() — teamsCollapsed', () => {
+  it('liest teamsCollapsed=true aus localStorage', () => {
+    const payload = { filter: {}, sort: {}, hideFertig: true, teamsCollapsed: true };
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    expect(result.teamsCollapsed).toBe(true);
+  });
+
+  it('liest teamsCollapsed=false aus localStorage', () => {
+    const payload = { filter: {}, sort: {}, hideFertig: true, teamsCollapsed: false };
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    expect(result.teamsCollapsed).toBe(false);
+  });
+
+  it('teamsCollapsed fehlt in altem State — applyViewState setzt Default false', () => {
+    const payload = { filter: {}, sort: {}, hideFertig: true }; // kein teamsCollapsed
+    localStorage.setItem('cockpit_view', JSON.stringify(payload));
+
+    const result = loadViewState();
+    // Feld fehlt – cockpit.js setzt Default false via saved?.teamsCollapsed === true
+    expect(Object.prototype.hasOwnProperty.call(result, 'teamsCollapsed')).toBe(false);
+  });
+});

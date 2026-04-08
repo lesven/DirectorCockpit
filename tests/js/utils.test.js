@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore, generateId, getOverdueMilestones } from '../../public/js/utils.js';
+import { esc, calcWsjf, findById, debounce, calculateTeamStats, formatTeamStats, calcRiskScore, getRiskLevel, maxRiskScore, generateId, getOverdueMilestones, isCurrentlyBlocked } from '../../public/js/utils.js';
 
 describe('esc()', () => {
   it('escapes &, <, >, "', () => {
@@ -410,5 +410,45 @@ describe('getOverdueMilestones()', () => {
     expect(result).toEqual([]);
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
+  });
+});
+
+// ── isCurrentlyBlocked() ───────────────────────────────────
+
+describe('isCurrentlyBlocked()', () => {
+  const makeIni = (id, status, blockedBy = []) => ({ id, status, blockedBy });
+
+  it('returns false when blockedBy is empty', () => {
+    const ini = makeIni(1, 'yellow', []);
+    expect(isCurrentlyBlocked(ini, [ini])).toBe(false);
+  });
+
+  it('returns false when blockedBy is missing/undefined', () => {
+    const ini = { id: 1, status: 'yellow' };
+    expect(isCurrentlyBlocked(ini, [ini])).toBe(false);
+  });
+
+  it('returns true when blocker is not fertig', () => {
+    const blocker = makeIni(2, 'yellow');
+    const ini = makeIni(1, 'grey', [2]);
+    expect(isCurrentlyBlocked(ini, [ini, blocker])).toBe(true);
+  });
+
+  it('returns false when blocker status is fertig', () => {
+    const blocker = makeIni(2, 'fertig');
+    const ini = makeIni(1, 'grey', [2]);
+    expect(isCurrentlyBlocked(ini, [ini, blocker])).toBe(false);
+  });
+
+  it('returns true when at least one blocker is not fertig', () => {
+    const b1 = makeIni(2, 'fertig');
+    const b2 = makeIni(3, 'yellow');
+    const ini = makeIni(1, 'grey', [2, 3]);
+    expect(isCurrentlyBlocked(ini, [ini, b1, b2])).toBe(true);
+  });
+
+  it('returns false when blocker id does not exist in allInis', () => {
+    const ini = makeIni(1, 'grey', [999]);
+    expect(isCurrentlyBlocked(ini, [ini])).toBe(false);
   });
 });

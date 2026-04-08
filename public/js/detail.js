@@ -15,7 +15,11 @@ import {
   renderHeaderBadges,
   renderStammdaten,
   renderWsjf,
+  renderBlockedBy,
   handleIniField,
+  addBlocker,
+  removeBlocker,
+  handleBlockerSearch,
 } from './detail-initiatives.js';
 import {
   refreshRisks,
@@ -43,6 +47,7 @@ export function openDetail(id, { pushState = true } = {}) {
   dom.dpName.value = ini.name || '';
   renderHeaderBadges(ini);
   renderStammdaten(ini);
+  renderBlockedBy(ini);
   renderWsjf(ini);
   refreshRisks(currentId);
   refreshMilestones(currentId);
@@ -166,6 +171,30 @@ export function bindDetailEvents() {
 
     const msTarget = e.target.closest('[data-action="removeMilestone"]');
     if (msTarget) removeMilestone(+msTarget.dataset.milestoneId, currentId);
+
+    const addTarget = e.target.closest('[data-action="addBlocker"]');
+    if (addTarget) {
+      const ini = findById(data.initiatives, currentId);
+      if (ini) {
+        addBlocker(ini, +addTarget.dataset.blockerId);
+        const searchInput = document.getElementById('dp-blocker-search');
+        if (searchInput) { searchInput.value = ''; }
+        const suggestEl = document.getElementById('bb-suggestions');
+        if (suggestEl) { suggestEl.hidden = true; suggestEl.innerHTML = ''; }
+      }
+    }
+
+    const removeTarget = e.target.closest('[data-action="removeBlocker"]');
+    if (removeTarget) {
+      const ini = findById(data.initiatives, currentId);
+      if (ini) removeBlocker(ini, +removeTarget.dataset.blockerId);
+    }
+  });
+
+  dom.detailPage.addEventListener('input', (e) => {
+    if (e.target.id === 'dp-blocker-search') {
+      handleBlockerSearch(e.target);
+    }
   });
 }
 

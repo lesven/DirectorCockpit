@@ -68,6 +68,11 @@ class CockpitSyncService
             $meta->setKw($payload['kw'] ?? '');
 
             $this->em->flush();
+
+            // Zweiter Pass: blockedBy-Relations setzen (benötigt persistierte Initiative-IDs)
+            $this->entitySyncer->syncBlockedByRelations($payload['initiatives'] ?? []);
+            $this->em->flush();
+
             $this->em->getConnection()->commit();
         } catch (\Throwable $e) {
             $this->em->getConnection()->rollBack();
