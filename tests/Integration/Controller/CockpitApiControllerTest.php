@@ -499,7 +499,7 @@ class CockpitApiControllerTest extends WebTestCase
     // hideFertig-Tests
     // -------------------------------------------------------------------------
 
-    private function seedMixedInitiatives(): void
+    private function seedMixedInitiatives(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
         $client = static::createClient();
         $payload = [
@@ -514,14 +514,13 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
         $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        return $client;
     }
 
     /** GET ohne hideFertig gibt alle Initiativen zurück (kein Breaking Change). */
     public function testLoadWithoutHideFertigReturnsAllInitiatives(): void
     {
-        $this->seedMixedInitiatives();
-
-        $client = static::createClient();
+        $client = $this->seedMixedInitiatives();
         $client->request('GET', '/api/cockpit');
 
         $this->assertResponseIsSuccessful();
@@ -533,9 +532,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** GET ?hideFertig=1 filtert Initiativen mit status=fertig heraus. */
     public function testLoadWithHideFertigExcludesFinishedInitiatives(): void
     {
-        $this->seedMixedInitiatives();
-
-        $client = static::createClient();
+        $client = $this->seedMixedInitiatives();
         $client->request('GET', '/api/cockpit?hideFertig=1');
 
         $this->assertResponseIsSuccessful();
@@ -549,9 +546,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** GET ?hideFertig=0 verhält sich wie kein Parameter. */
     public function testLoadWithHideFertigFalseReturnsAllInitiatives(): void
     {
-        $this->seedMixedInitiatives();
-
-        $client = static::createClient();
+        $client = $this->seedMixedInitiatives();
         $client->request('GET', '/api/cockpit?hideFertig=0');
 
         $this->assertResponseIsSuccessful();
