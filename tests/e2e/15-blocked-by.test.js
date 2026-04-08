@@ -65,6 +65,15 @@ const SEED = {
   milestones: [],
 };
 
+// Initiative-Zeile anhand des Textarea-Wertes (.ini-name) finden.
+// withText() funktioniert nicht zuverlässig für <textarea>-Inhalte.
+function rowByName(name) {
+  return Selector('.ini-row').filter((node) => {
+    const ta = node.querySelector('.ini-name');
+    return ta !== null && ta.value === name;
+  }, { name });
+}
+
 async function seedAndOpen(t) {
   await seedViaAPI(JSON.stringify(SEED));
   await t.deleteCookies('cockpit_view');
@@ -86,9 +95,8 @@ test('Blockierte Initiative zeigt 🚧-Badge, freie Initiative nicht', async (t)
     await t.click(toggleFertig);
   }
 
-  const rows = Selector('.ini-row');
-  const blockedRow = rows.withText('Blockierte-Initiative');
-  const freeRow    = rows.withText('Freie-Initiative');
+  const blockedRow = rowByName('Blockierte-Initiative');
+  const freeRow    = rowByName('Freie-Initiative');
 
   await t.expect(blockedRow.find('.ini-blocked-badge').exists).ok('Blockierte-Initiative soll Badge haben');
   await t.expect(freeRow.find('.ini-blocked-badge').exists).notOk('Freie-Initiative soll kein Badge haben');
@@ -104,13 +112,13 @@ test('Badge verschwindet wenn Blocker-Initiative auf fertig gesetzt wird', async
   }
 
   // Blocker auf fertig setzen
-  const blockerRow      = Selector('.ini-row').withText('Blocker-Initiative');
-  const blockerStatus   = blockerRow.find('[data-field="status"]');
+  const blockerRow    = rowByName('Blocker-Initiative');
+  const blockerStatus = blockerRow.find('[data-field="status"]');
   await t.click(blockerStatus).click(blockerStatus.find('option[value="fertig"]'));
   await waitForSave();
 
   // Badge soll weg sein
-  const blockedRow = Selector('.ini-row').withText('Blockierte-Initiative');
+  const blockedRow = rowByName('Blockierte-Initiative');
   await t.expect(blockedRow.find('.ini-blocked-badge').exists).notOk('Badge soll nach fertig verschwinden');
 });
 
@@ -131,7 +139,7 @@ test('Toggle Blockierte zeigt nur aktuell blockierte Initiativen', async (t) => 
 
   // Nur Blockierte-Initiative soll sichtbar sein
   await t.expect(Selector('.ini-row').count).eql(1);
-  await t.expect(Selector('.ini-row').withText('Blockierte-Initiative').exists).ok();
+  await t.expect(rowByName('Blockierte-Initiative').exists).ok('Nur blockierte Initiative sichtbar');
 
   // Toggle deaktivieren → alle wieder sichtbar
   await t.click(Selector('#toggle-blocked'));
@@ -148,8 +156,8 @@ test('Detail-Modal zeigt blockedBy-Sektion und Outgoing-Liste', async (t) => {
   }
 
   // Detail der Blockierte-Initiative öffnen
-  const blockedRow   = Selector('.ini-row').withText('Blockierte-Initiative');
-  const detailBtn    = blockedRow.find('[data-action="openDetail"]').nth(0);
+  const blockedRow = rowByName('Blockierte-Initiative');
+  const detailBtn  = blockedRow.find('[data-action="openDetail"]').nth(0);
   await t.click(detailBtn);
 
   const detailPage = Selector('#detail-page');
