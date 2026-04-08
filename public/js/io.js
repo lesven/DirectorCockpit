@@ -78,6 +78,7 @@ export function migrateData(parsed) {
     riskReduction: i.riskReduction ?? null,
     jobSize: i.jobSize ?? null,
     wsjf: i.wsjf ?? null,
+    blockedBy: Array.isArray(i.blockedBy) ? i.blockedBy : [],
   }));
 
   parsed.nicht_vergessen = parsed.nicht_vergessen.map((n) => ({

@@ -570,5 +570,98 @@ class CockpitApiControllerTest extends WebTestCase
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame([], $data['initiatives']);
     }
+
+    // --- blockedBy ---
+
+    private function baseIni(int $id, string $name = 'Test'): array
+    {
+        return ['id' => $id, 'name' => $name, 'team' => null, 'status' => 'grey', 'projektstatus' => 'ok', 'schritt' => '', 'frist' => null, 'notiz' => ''];
+    }
+
+    public function testSyncBlockedByRoundtrip(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                $this->baseIni(10, 'Blocker'),
+                $this->baseIni(20, 'Blocked') + ['blockedBy' => [10]],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $inis = array_column($data['initiatives'], null, 'id');
+        $this->assertSame([], $inis[10]['blockedBy']);
+        $this->assertSame([10], $inis[20]['blockedBy']);
+    }
+
+    public function testSyncBlockedByCanBeCleared(): void
+    {
+        $client = static::createClient();
+
+        // Erst mit Relation
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                $this->baseIni(10),
+                $this->baseIni(20) + ['blockedBy' => [10]],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+
+        // Dann Relation löschen
+        $payload['initiatives'][1]['blockedBy'] = [];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $inis = array_column($data['initiatives'], null, 'id');
+        $this->assertSame([], $inis[20]['blockedBy']);
+    }
+
+    public function testInvalidBlockedByTypeReturns400(): void
+    {
+        $client = static::createClient();
+
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [
+                $this->baseIni(10) + ['blockedBy' => 'not-an-array'],
+            ],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseStatusCodeSame(400);
+    }
+
+    public function testBlockedByMissingKeyDefaultsToEmpty(): void
+    {
+        $client = static::createClient();
+
+        // Kein blockedBy-Key → sollte [] zurückgeben (kein Breaking Change)
+        $payload = [
+            'kw' => '',
+            'teams' => [],
+            'initiatives' => [$this->baseIni(10)],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/api/cockpit');
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame([], $data['initiatives'][0]['blockedBy']);
+    }
 }
 

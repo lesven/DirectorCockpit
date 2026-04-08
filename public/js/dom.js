@@ -17,6 +17,7 @@ export const dom = {
   filterProjektstatus: document.getElementById('filter-projektstatus'),
   filterReset: document.getElementById('filter-reset'),
   toggleFertig: document.getElementById('toggle-fertig'),
+  toggleBlocked: document.getElementById('toggle-blocked'),
   iniFilters: document.getElementById('ini-filters'),
 
   // Grids & Container
@@ -37,6 +38,7 @@ export const dom = {
   dpName: document.getElementById('dp-name'),
   dpHeaderBadges: document.getElementById('dp-header-badges'),
   dpStammdaten: document.getElementById('dp-stammdaten'),
+  dpBlockedBy: document.getElementById('dp-blocked-by'),
   dpWsjf: document.getElementById('dp-wsjf'),
   dpRiskCount: document.getElementById('dp-risk-count'),
   dpRiskSummaryBar: document.getElementById('dp-risk-summary-bar'),

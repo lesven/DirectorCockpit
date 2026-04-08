@@ -113,7 +113,7 @@ class CockpitSyncServiceTest extends TestCase
             'nicht_vergessen' => [['id' => 3, 'title' => 'NV A']],
         ];
 
-        $this->em->expects($this->once())->method('flush');
+        $this->em->expects($this->exactly(2))->method('flush');
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('commit');
 
@@ -223,7 +223,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->stubRepositories();
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('commit');
-        $this->em->expects($this->once())->method('flush');
+        $this->em->expects($this->exactly(2))->method('flush');
 
         $this->service->syncAll(['kw' => '42']);
 

@@ -15,6 +15,7 @@ import {
   renderHeaderBadges,
   renderStammdaten,
   renderWsjf,
+  renderBlockedBy,
   handleIniField,
 } from './detail-initiatives.js';
 import {
@@ -43,6 +44,7 @@ export function openDetail(id, { pushState = true } = {}) {
   dom.dpName.value = ini.name || '';
   renderHeaderBadges(ini);
   renderStammdaten(ini);
+  renderBlockedBy(ini);
   renderWsjf(ini);
   refreshRisks(currentId);
   refreshMilestones(currentId);

@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Enum\ProjectStatusEnum;
 use App\Enum\StatusEnum;
 use App\Repository\InitiativeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -50,6 +52,38 @@ final class Initiative implements SyncableEntity
     #[ORM\Column(name: 'customer_id', type: 'bigint', nullable: true)]
     private ?int $customer = null;
 
+    /** @var Collection<int, Initiative> */
+    #[ORM\ManyToMany(targetEntity: self::class)]
+    #[ORM\JoinTable(
+        name: 'initiative_blocked_by',
+        joinColumns: [new ORM\JoinColumn(name: 'initiative_id', referencedColumnName: 'id', onDelete: 'CASCADE')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'blocked_by_initiative_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    )]
+    private Collection $blockedBy;
+
+    public function __construct()
+    {
+        $this->blockedBy = new ArrayCollection();
+    }
+
+    /** @return Collection<int, Initiative> */
+    public function getBlockedBy(): Collection
+    {
+        return $this->blockedBy;
+    }
+
+    public function addBlockedBy(Initiative $blocker): void
+    {
+        if (!$this->blockedBy->contains($blocker)) {
+            $this->blockedBy->add($blocker);
+        }
+    }
+
+    public function clearBlockedBy(): void
+    {
+        $this->blockedBy->clear();
+    }
+
     public function getWsjf(): ?float
     {
         if ($this->businessValue === null
@@ -82,6 +116,7 @@ final class Initiative implements SyncableEntity
             'jobSize' => $this->jobSize,
             'wsjf'     => $this->getWsjf(),
             'customer' => $this->customer,
+            'blockedBy' => $this->blockedBy->map(fn(Initiative $b) => $b->getId())->getValues(),
         ];
     }
 

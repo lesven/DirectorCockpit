@@ -603,5 +603,78 @@ class PayloadValidatorTest extends TestCase
             ['kunden']
         );
     }
+
+    // --- blockedBy-Validierung ---
+
+    public function testBlockedByMissingKeyIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'name' => 'Test']]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testBlockedByEmptyArrayIsAllowed(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => []]]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testBlockedByValidIdsPass(): void
+    {
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => [2, 3, 5]]]],
+            ['initiatives']
+        );
+        $this->addToAssertionCount(1);
+    }
+
+    public function testBlockedByNonArrayThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/blockedBy.*Array/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => 'invalid']]],
+            ['initiatives']
+        );
+    }
+
+    public function testBlockedByStringElementThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/blockedBy\[0\].*positive ganze Zahl/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => ['not-a-number']]]],
+            ['initiatives']
+        );
+    }
+
+    public function testBlockedByZeroIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/blockedBy\[0\].*positive ganze Zahl/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => [0]]]],
+            ['initiatives']
+        );
+    }
+
+    public function testBlockedByNegativeIdThrows(): void
+    {
+        $this->expectException(ValidationException::class);
+        $this->expectExceptionMessageMatches('/blockedBy\[0\].*positive ganze Zahl/u');
+
+        $this->validator->validate(
+            ['initiatives' => [['id' => 1, 'blockedBy' => [-1]]]],
+            ['initiatives']
+        );
+    }
 }
 

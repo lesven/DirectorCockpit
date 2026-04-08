@@ -2119,3 +2119,14 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-copy-link-btn:hover {
   background: var(--surface2);
 }
+
+/* ── blockiert-Badge ───────────────────────────────────── */
+.ini-blocked-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 4px;
+  cursor: default;
+}

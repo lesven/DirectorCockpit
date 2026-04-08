@@ -136,3 +136,20 @@ export function getOverdueMilestones(milestones, initiatives, today = new Date()
     return [];
   }
 }
+
+/**
+ * Prüft ob eine Initiative aktuell durch mindestens eine andere Initiative blockiert wird.
+ * Eine Blockierung gilt nur, wenn die blockierende Initiative NICHT den Status 'fertig' hat.
+ *
+ * @param {Object} ini        - Die zu prüfende Initiative (mit blockedBy: Array<number>)
+ * @param {Array}  allInis    - Alle Initiativen (für Status-Lookup der Blocker)
+ * @returns {boolean}
+ */
+export function isCurrentlyBlocked(ini, allInis) {
+  if (!Array.isArray(ini.blockedBy) || ini.blockedBy.length === 0) return false;
+  const iniMap = new Map(allInis.map((i) => [i.id, i]));
+  return ini.blockedBy.some((blockerId) => {
+    const blocker = iniMap.get(blockerId);
+    return blocker !== undefined && blocker.status !== 'fertig';
+  });
+}

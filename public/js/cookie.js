@@ -1,7 +1,7 @@
 const STORAGE_KEY = 'cockpit_view';
 const LEGACY_COOKIE = 'cockpit_view';
 
-export function saveViewState(filterState, sortState, hideFertig = true, teamsCollapsed = false) {
+export function saveViewState(filterState, sortState, hideFertig = true, teamsCollapsed = false, showOnlyBlocked = false) {
   const payload = {
     filter: {
       name: filterState.name,
@@ -15,6 +15,7 @@ export function saveViewState(filterState, sortState, hideFertig = true, teamsCo
     },
     hideFertig: !!hideFertig,
     teamsCollapsed: !!teamsCollapsed,
+    showOnlyBlocked: !!showOnlyBlocked,
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
