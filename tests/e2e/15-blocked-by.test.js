@@ -155,13 +155,13 @@ test('Detail-Modal zeigt blockedBy-Sektion und Outgoing-Liste', async (t) => {
   const detailPage = Selector('#detail-page');
   await t.expect(detailPage.hasAttribute('hidden')).notOk('Detail-Page muss offen sein');
 
-  // blockedBy-Sektion vorhanden
-  const blockedBySelect = Selector('#dp-blocked-by-select');
-  await t.expect(blockedBySelect.exists).ok('blockedBy-Multi-Select muss existieren');
+  // Typeahead-Widget vorhanden
+  const searchInput = Selector('#dp-blocker-search');
+  await t.expect(searchInput.exists).ok('blockedBy-Suchfeld muss existieren');
 
-  // Blocker-Initiative muss als selected erscheinen
-  const selectedOption = blockedBySelect.find('option[value="7001"]');
-  await t.expect(selectedOption.exists).ok();
+  // Chip für Blocker-Initiative (ID 7001) muss angezeigt werden
+  const blockerChip = Selector('.bb-chip').withAttribute('data-blocker-id', '7001');
+  await t.expect(blockerChip.exists).ok('Chip für Blocker-Initiative muss existieren');
 
   // Outgoing-Sektion muss vorhanden sein
   const outgoingList = Selector('.blocked-outgoing-list');

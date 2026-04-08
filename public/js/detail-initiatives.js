@@ -200,13 +200,6 @@ export function handleIniField(el, currentId) {
   const field = el.dataset.dpField;
   if (!ini || !field) return;
 
-  if (field === 'blockedBy') {
-    ini.blockedBy = Array.from(el.selectedOptions).map((o) => +o.value);
-    renderBlockedBy(ini);
-    dSave();
-    return;
-  }
-
   if (field === 'team') {
     ini.team = el.value ? +el.value : null;
   } else if (WSJF_FIELDS.includes(field)) {
@@ -231,54 +224,102 @@ export function handleIniField(el, currentId) {
   dSave();
 }
 
+// ─── blockedBy: Blocker hinzufügen / entfernen ──────────────
+
+export function addBlocker(ini, blockerId) {
+  if (!Array.isArray(ini.blockedBy)) ini.blockedBy = [];
+  if (!ini.blockedBy.includes(blockerId)) {
+    ini.blockedBy = [...ini.blockedBy, blockerId];
+    dSave();
+    renderBlockedBy(ini);
+  }
+}
+
+export function removeBlocker(ini, blockerId) {
+  if (!Array.isArray(ini.blockedBy)) return;
+  ini.blockedBy = ini.blockedBy.filter((id) => id !== blockerId);
+  dSave();
+  renderBlockedBy(ini);
+}
+
 // ─── Render: Abhängigkeiten (blockedBy) ─────────────────────
 
 export function renderBlockedBy(ini) {
   if (!dom.dpBlockedBy) return;
 
   const blockedBySet = new Set(Array.isArray(ini.blockedBy) ? ini.blockedBy : []);
+  const existingIds  = new Set(data.initiatives.map((i) => i.id));
 
-  // Alle anderen Initiativen als Optionen, alphabetisch nach Name
-  const others = data.initiatives
-    .filter((i) => i.id !== ini.id)
-    .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-  const optionsHtml = others.map((i) => {
-    const selected = blockedBySet.has(i.id) ? ' selected' : '';
-    const isOrphan = blockedBySet.has(i.id) && !data.initiatives.find((x) => x.id === i.id);
-    return `<option value="${i.id}"${selected}>${esc(i.name || `(ID: ${i.id})`)}</option>`;
+  // Chips für aktuell gesetzte Blocker
+  const chipsHtml = [...blockedBySet].map((id) => {
+    const blocker = data.initiatives.find((i) => i.id === id);
+    const label   = blocker ? esc(blocker.name || `(ID: ${id})`) : `(gelöscht, ID: ${id})`;
+    const isGone  = !existingIds.has(id);
+    return `<span class="bb-chip${isGone ? ' bb-chip-gone' : ''}" data-blocker-id="${id}">
+      ${label}
+      <button class="bb-chip-remove" data-action="removeBlocker" data-blocker-id="${id}" title="Entfernen" aria-label="Blocker entfernen">×</button>
+    </span>`;
   }).join('');
 
-  // Verwaiste IDs (in blockedBy, aber Initiative nicht mehr vorhanden)
-  const existingIds = new Set(data.initiatives.map((i) => i.id));
-  const orphanOptions = [...blockedBySet]
-    .filter((id) => !existingIds.has(id))
-    .map((id) => `<option value="${id}" selected>(gelöscht, ID: ${id})</option>`)
-    .join('');
-
-  // Outgoing-Ansicht: Initiativen die durch DIESE Initiative blockiert werden (computed)
-  const outgoing = data.initiatives.filter(
-    (i) => i.id !== ini.id && Array.isArray(i.blockedBy) && i.blockedBy.includes(ini.id)
+  // Outgoing-Ansicht (read-only)
+  const activeOutgoing = data.initiatives.filter(
+    (i) => i.id !== ini.id && Array.isArray(i.blockedBy) && i.blockedBy.includes(ini.id) && isCurrentlyBlocked(i, data.initiatives)
   );
-  const activeOutgoing = outgoing.filter((i) => isCurrentlyBlocked(i, data.initiatives));
-
   const outgoingHtml = activeOutgoing.length > 0
     ? activeOutgoing.map((i) => `<span class="blocked-outgoing-item">${esc(i.name || `(ID: ${i.id})`)}</span>`).join('')
     : '<span class="blocked-outgoing-empty">–</span>';
 
   dom.dpBlockedBy.innerHTML = `
     <div class="detail-field">
-      <label class="detail-label" for="dp-blocked-by-select">Blockiert durch</label>
-      <select class="detail-input dp-blocked-by-select" id="dp-blocked-by-select"
-              data-dp-field="blockedBy" multiple size="4">
-        ${optionsHtml}${orphanOptions}
-      </select>
-      <span class="detail-hint">Strg/Cmd + Klick für Mehrfachauswahl</span>
+      <label class="detail-label" for="dp-blocker-search">Blockiert durch</label>
+      <div class="bb-widget">
+        <div class="bb-chips" id="bb-chips">${chipsHtml || '<span class="bb-chips-empty">Keine Blocker</span>'}</div>
+        <div class="bb-input-wrap">
+          <input class="detail-input bb-search-input" id="dp-blocker-search"
+                 type="text" placeholder="Initiative suchen…" autocomplete="off"
+                 data-ini-id="${ini.id}">
+          <ul class="bb-suggestions" id="bb-suggestions" hidden></ul>
+        </div>
+      </div>
     </div>
     <div class="detail-field">
       <label class="detail-label">Diese Initiative blockiert</label>
       <div class="blocked-outgoing-list">${outgoingHtml}</div>
     </div>
   `;
+}
+
+// ─── Find-as-you-type Logik ──────────────────────────────────
+
+export function handleBlockerSearch(input) {
+  const iniId       = +input.dataset.iniId;
+  const ini         = findById(data.initiatives, iniId);
+  if (!ini) return;
+
+  const query       = input.value.trim().toLowerCase();
+  const blockedBySet = new Set(Array.isArray(ini.blockedBy) ? ini.blockedBy : []);
+  const suggestEl   = document.getElementById('bb-suggestions');
+  if (!suggestEl) return;
+
+  if (!query) {
+    suggestEl.hidden = true;
+    suggestEl.innerHTML = '';
+    return;
+  }
+
+  const matches = data.initiatives
+    .filter((i) => i.id !== iniId && !blockedBySet.has(i.id) && (i.name || '').toLowerCase().includes(query))
+    .slice(0, 8);
+
+  if (!matches.length) {
+    suggestEl.hidden = true;
+    suggestEl.innerHTML = '';
+    return;
+  }
+
+  suggestEl.innerHTML = matches.map((i) =>
+    `<li class="bb-suggestion-item" data-action="addBlocker" data-blocker-id="${i.id}" data-ini-id="${iniId}">${esc(i.name)}</li>`
+  ).join('');
+  suggestEl.hidden = false;
 }
 
