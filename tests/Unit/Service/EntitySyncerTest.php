@@ -2,11 +2,13 @@
 
 namespace App\Tests\Unit\Service;
 
+use App\Entity\Initiative;
 use App\Entity\Team;
 use App\Service\EntitySyncer;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class EntitySyncerTest extends TestCase
 {
@@ -118,5 +120,87 @@ class EntitySyncerTest extends TestCase
         );
 
         $this->assertCount(3, $this->persisted);
+    }
+
+    // --- syncBlockedByRelations ---
+
+    public function testSyncBlockedByRelationsSetsBlocker(): void
+    {
+        $ini1 = Initiative::fromArray(['id' => 1, 'name' => 'Ini 1']);
+        $ini2 = Initiative::fromArray(['id' => 2, 'name' => 'Ini 2']);
+
+        $this->em->method('find')->willReturnCallback(
+            fn(string $class, int $id) => match ($id) {
+                1 => $ini1,
+                2 => $ini2,
+                default => null,
+            }
+        );
+
+        $this->syncer->syncBlockedByRelations([
+            ['id' => 1, 'blockedBy' => [2]],
+        ]);
+
+        $this->assertSame([2], $ini1->toArray()['blockedBy']);
+    }
+
+    public function testSyncBlockedByRelationsClearsExistingBlockers(): void
+    {
+        $ini1 = Initiative::fromArray(['id' => 1]);
+        $ini2 = Initiative::fromArray(['id' => 2]);
+        $ini1->addBlockedBy($ini2); // Vorher gesetzt
+
+        $this->em->method('find')->willReturnCallback(
+            fn(string $class, int $id) => match ($id) {
+                1 => $ini1,
+                default => null,
+            }
+        );
+
+        // Leeres Array → Collection geleert
+        $this->syncer->syncBlockedByRelations([
+            ['id' => 1, 'blockedBy' => []],
+        ]);
+
+        $this->assertSame([], $ini1->toArray()['blockedBy']);
+    }
+
+    public function testSyncBlockedByRelationsIgnoresMissingBlockerWithWarning(): void
+    {
+        $ini1 = Initiative::fromArray(['id' => 1]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('blockedBy'), $this->arrayHasKey('blocker_id'));
+
+        $syncer = new EntitySyncer($this->em, $logger);
+
+        $this->em->method('find')->willReturnCallback(
+            fn(string $class, int $id) => match ($id) {
+                1 => $ini1,
+                default => null, // 99 existiert nicht
+            }
+        );
+
+        $syncer->syncBlockedByRelations([
+            ['id' => 1, 'blockedBy' => [99]],
+        ]);
+
+        $this->assertSame([], $ini1->toArray()['blockedBy']); // Verwaister Blocker nicht gesetzt
+    }
+
+    public function testSyncBlockedByRelationsMissingBlockedByKeySkipsItem(): void
+    {
+        $ini1 = Initiative::fromArray(['id' => 1]);
+
+        $this->em->method('find')->willReturn($ini1);
+
+        // Kein blockedBy-Key → clearBlockedBy() wird aufgerufen
+        $this->syncer->syncBlockedByRelations([
+            ['id' => 1], // kein blockedBy
+        ]);
+
+        $this->assertSame([], $ini1->toArray()['blockedBy']);
     }
 }

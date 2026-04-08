@@ -36,6 +36,8 @@ vi.mock('../../public/js/sort.js', () => ({
     pageSize: 20,
     totalPages: 1,
   }),
+  setShowOnlyBlocked: vi.fn(),
+  isShowOnlyBlocked: vi.fn(() => false),
 }));
 
 // dom.js mock – Elemente werden in buildDom() gesetzt

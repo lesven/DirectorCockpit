@@ -322,4 +322,44 @@ class InitiativeTest extends TestCase
         $ini->updateFromArray([]);
         $this->assertSame(9, $ini->toArray()['customer']);
     }
+
+    // --- blockedBy ---
+
+    public function testFromArrayBlockedByDefaultsToEmptyArray(): void
+    {
+        $ini = Initiative::fromArray(['id' => 1]);
+        $arr = $ini->toArray();
+
+        $this->assertArrayHasKey('blockedBy', $arr);
+        $this->assertSame([], $arr['blockedBy']);
+    }
+
+    public function testToArrayBlockedByContainsAddedIds(): void
+    {
+        $blocker = Initiative::fromArray(['id' => 99]);
+        $ini     = Initiative::fromArray(['id' => 1]);
+        $ini->addBlockedBy($blocker);
+
+        $this->assertSame([99], $ini->toArray()['blockedBy']);
+    }
+
+    public function testClearBlockedByEmptiesCollection(): void
+    {
+        $blocker = Initiative::fromArray(['id' => 99]);
+        $ini     = Initiative::fromArray(['id' => 1]);
+        $ini->addBlockedBy($blocker);
+        $ini->clearBlockedBy();
+
+        $this->assertSame([], $ini->toArray()['blockedBy']);
+    }
+
+    public function testAddBlockedByIdempotent(): void
+    {
+        $blocker = Initiative::fromArray(['id' => 99]);
+        $ini     = Initiative::fromArray(['id' => 1]);
+        $ini->addBlockedBy($blocker);
+        $ini->addBlockedBy($blocker); // Duplikat ignoriert
+
+        $this->assertCount(1, $ini->toArray()['blockedBy']);
+    }
 }

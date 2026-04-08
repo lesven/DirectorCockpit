@@ -1,7 +1,7 @@
 import { STATUS_LABELS } from './config.js';
 import { data } from './store.js';
 import { getSortedInis, sortState, filterState, getPaginatedInis, pageState } from './sort.js';
-import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel, getOverdueMilestones } from './utils.js';
+import { esc, calculateTeamStats, formatTeamStats, maxRiskScore, getRiskLevel, getOverdueMilestones, isCurrentlyBlocked } from './utils.js';
 import { dom } from './dom.js';
 
 function statusClass(s) {
@@ -105,6 +105,9 @@ function renderIniRow(ini, teamOptsBase, kundeOptsBase) {
   const riskBadgeHtml = riskLevel
     ? `<span class="risk-badge-mini ${riskLevel.css}">${riskCount}</span>`
     : (riskCount ? `<span class="risk-badge-mini">${riskCount}</span>` : '');
+  const blockedBadgeHtml = isCurrentlyBlocked(ini, data.initiatives)
+    ? `<span class="ini-blocked-badge" title="Blockiert durch andere Initiative">🚧</span>`
+    : '';
   const tr = document.createElement('tr');
   tr.className = 'ini-row';
   tr.innerHTML = `
@@ -112,6 +115,7 @@ function renderIniRow(ini, teamOptsBase, kundeOptsBase) {
         <div class="ini-name-wrap">
           <button class="detail-btn ini-name-detail-btn" data-action="openDetail" data-id="${ini.id}" title="Details öffnen" aria-label="Initiative-Details öffnen">↗</button>
           <textarea class="ini-cell ini-name" placeholder="Projektname" data-id="${ini.id}" data-field="name" data-source="initiatives">${esc(ini.name)}</textarea>
+          ${blockedBadgeHtml}
         </div>
       </td>
       <td>

@@ -84,6 +84,7 @@ class PayloadValidator
             }
         }
         $this->validateFrist($item, $index, 'initiatives');
+        $this->validateBlockedBy($item, $index);
     }
 
     /**
@@ -160,6 +161,28 @@ class PayloadValidator
     {
         if (!isset($item['name']) || !is_string($item['name']) || trim($item['name']) === '') {
             throw new ValidationException("kunden[{$index}].name muss ein nicht-leerer String sein");
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @throws ValidationException
+     */
+    private function validateBlockedBy(array $item, int $index): void
+    {
+        if (!array_key_exists('blockedBy', $item)) {
+            return;
+        }
+        if (!is_array($item['blockedBy'])) {
+            throw new ValidationException("initiatives[{$index}].blockedBy muss ein Array sein");
+        }
+        foreach ($item['blockedBy'] as $j => $id) {
+            if (!is_int($id) || $id < 1) {
+                throw new ValidationException(
+                    "initiatives[{$index}].blockedBy[{$j}] muss eine positive ganze Zahl sein, '{$id}' ist ungültig"
+                );
+            }
         }
     }
 }

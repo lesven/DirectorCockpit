@@ -26,6 +26,8 @@ vi.mock('../../public/js/sort.js', () => ({
   pageState: { current: 1 },
   setHideFertig: vi.fn(),
   isHideFertig: vi.fn(() => true),
+  setShowOnlyBlocked: vi.fn(),
+  isShowOnlyBlocked: vi.fn(() => false),
 }));
 
 vi.mock('../../public/js/render.js', () => ({
@@ -181,6 +183,7 @@ describe('Toggle-Button Klick', () => {
       expect.any(Object), // sortState
       expect.any(Boolean), // hideFertig
       true,               // teamsCollapsed
+      expect.any(Boolean), // showOnlyBlocked
     );
   });
 
@@ -196,6 +199,7 @@ describe('Toggle-Button Klick', () => {
       expect.any(Object),
       expect.any(Boolean),
       false,
+      expect.any(Boolean),
     );
   });
 

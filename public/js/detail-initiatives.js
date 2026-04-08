@@ -4,7 +4,7 @@
  * Initiative-Input-Handling auf der Detail-Page.
  */
 import { data, dSave } from './store.js';
-import { findById, esc, calcWsjf } from './utils.js';
+import { findById, esc, calcWsjf, isCurrentlyBlocked } from './utils.js';
 import {
   WSJF_SCALE,
   WSJF_FIELDS,
@@ -223,3 +223,103 @@ export function handleIniField(el, currentId) {
 
   dSave();
 }
+
+// ─── blockedBy: Blocker hinzufügen / entfernen ──────────────
+
+export function addBlocker(ini, blockerId) {
+  if (!Array.isArray(ini.blockedBy)) ini.blockedBy = [];
+  if (!ini.blockedBy.includes(blockerId)) {
+    ini.blockedBy = [...ini.blockedBy, blockerId];
+    dSave();
+    renderBlockedBy(ini);
+  }
+}
+
+export function removeBlocker(ini, blockerId) {
+  if (!Array.isArray(ini.blockedBy)) return;
+  ini.blockedBy = ini.blockedBy.filter((id) => id !== blockerId);
+  dSave();
+  renderBlockedBy(ini);
+}
+
+// ─── Render: Abhängigkeiten (blockedBy) ─────────────────────
+
+export function renderBlockedBy(ini) {
+  if (!dom.dpBlockedBy) return;
+
+  const blockedBySet = new Set(Array.isArray(ini.blockedBy) ? ini.blockedBy : []);
+  const existingIds  = new Set(data.initiatives.map((i) => i.id));
+
+  // Chips für aktuell gesetzte Blocker
+  const chipsHtml = [...blockedBySet].map((id) => {
+    const blocker = data.initiatives.find((i) => i.id === id);
+    const label   = blocker ? esc(blocker.name || `(ID: ${id})`) : `(gelöscht, ID: ${id})`;
+    const isGone  = !existingIds.has(id);
+    return `<span class="bb-chip${isGone ? ' bb-chip-gone' : ''}" data-blocker-id="${id}">
+      ${label}
+      <button class="bb-chip-remove" data-action="removeBlocker" data-blocker-id="${id}" title="Entfernen" aria-label="Blocker entfernen">×</button>
+    </span>`;
+  }).join('');
+
+  // Outgoing-Ansicht (read-only)
+  const activeOutgoing = data.initiatives.filter(
+    (i) => i.id !== ini.id && Array.isArray(i.blockedBy) && i.blockedBy.includes(ini.id) && isCurrentlyBlocked(i, data.initiatives)
+  );
+  const outgoingHtml = activeOutgoing.length > 0
+    ? activeOutgoing.map((i) => `<span class="blocked-outgoing-item">${esc(i.name || `(ID: ${i.id})`)}</span>`).join('')
+    : '<span class="blocked-outgoing-empty">–</span>';
+
+  dom.dpBlockedBy.innerHTML = `
+    <div class="detail-field">
+      <label class="detail-label" for="dp-blocker-search">Blockiert durch</label>
+      <div class="bb-widget">
+        <div class="bb-chips" id="bb-chips">${chipsHtml || '<span class="bb-chips-empty">Keine Blocker</span>'}</div>
+        <div class="bb-input-wrap">
+          <input class="detail-input bb-search-input" id="dp-blocker-search"
+                 type="text" placeholder="Initiative suchen…" autocomplete="off"
+                 data-ini-id="${ini.id}">
+          <ul class="bb-suggestions" id="bb-suggestions" hidden></ul>
+        </div>
+      </div>
+    </div>
+    <div class="detail-field">
+      <label class="detail-label">Diese Initiative blockiert</label>
+      <div class="blocked-outgoing-list">${outgoingHtml}</div>
+    </div>
+  `;
+}
+
+// ─── Find-as-you-type Logik ──────────────────────────────────
+
+export function handleBlockerSearch(input) {
+  const iniId       = +input.dataset.iniId;
+  const ini         = findById(data.initiatives, iniId);
+  if (!ini) return;
+
+  const query       = input.value.trim().toLowerCase();
+  const blockedBySet = new Set(Array.isArray(ini.blockedBy) ? ini.blockedBy : []);
+  const suggestEl   = document.getElementById('bb-suggestions');
+  if (!suggestEl) return;
+
+  if (!query) {
+    suggestEl.hidden = true;
+    suggestEl.innerHTML = '';
+    return;
+  }
+
+  const matches = data.initiatives
+    .filter((i) => i.id !== iniId && !blockedBySet.has(i.id) && (i.name || '').toLowerCase().includes(query))
+    .slice(0, 8);
+
+  if (!matches.length) {
+    suggestEl.hidden = true;
+    suggestEl.innerHTML = '';
+    return;
+  }
+
+  suggestEl.innerHTML = matches.map((i) =>
+    `<li class="bb-suggestion-item" data-action="addBlocker" data-blocker-id="${i.id}" data-ini-id="${iniId}">${esc(i.name)}</li>`
+  ).join('');
+  suggestEl.hidden = false;
+}
+

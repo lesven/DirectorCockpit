@@ -6,7 +6,7 @@ const mockData = vi.hoisted(() => ({ teams: [], initiatives: [], kunden: [] }));
 vi.mock('../../public/js/store.js', () => ({ data: mockData }));
 vi.mock('../../public/js/cookie.js', () => ({ saveViewState: vi.fn() }));
 
-import { getSortedInis, sortState, filterState, applyViewState, sortInis, getPaginatedInis, pageState, resetPage, setHideFertig, isHideFertig } from '../../public/js/sort.js';
+import { getSortedInis, sortState, filterState, applyViewState, sortInis, getPaginatedInis, pageState, resetPage, setHideFertig, isHideFertig, setShowOnlyBlocked, isShowOnlyBlocked } from '../../public/js/sort.js';
 
 function resetState() {
   filterState.name = '';
@@ -19,6 +19,7 @@ function resetState() {
   pageState.current = 1;
   pageState.pageSize = 20;
   setHideFertig(false); // Default: Fertige sichtbar für Tests
+  setShowOnlyBlocked(false);
 }
 
 function setInis(inis) {
@@ -395,5 +396,40 @@ describe('hideFertig', () => {
   it('applyViewState uses true as default when hideFertig is missing', () => {
     applyViewState({ filter: { name: 'test' } }); // no hideFertig key
     expect(isHideFertig()).toBe(true);
+  });
+});
+
+// ── showOnlyBlocked ──────────────────────────────────────────
+
+describe('getSortedInis() — showOnlyBlocked filter', () => {
+  beforeEach(() => {
+    setShowOnlyBlocked(false);
+  });
+
+  it('shows all when showOnlyBlocked is false', () => {
+    setInis([
+      { id: 1, name: 'A', status: 'yellow', blockedBy: [2] },
+      { id: 2, name: 'B', status: 'yellow', blockedBy: [] },
+    ]);
+    expect(getSortedInis()).toHaveLength(2);
+  });
+
+  it('shows only truly blocked initiatives when showOnlyBlocked is true', () => {
+    setInis([
+      { id: 1, name: 'A', status: 'yellow', blockedBy: [2] }, // blocked by active B
+      { id: 2, name: 'B', status: 'yellow', blockedBy: [] },
+    ]);
+    setShowOnlyBlocked(true);
+    const result = getSortedInis();
+    expect(result.map((i) => i.id)).toEqual([1]);
+  });
+
+  it('excludes initiative blocked only by fertig blocker', () => {
+    setInis([
+      { id: 1, name: 'A', status: 'yellow', blockedBy: [2] }, // blocked by fertig B → not blocked
+      { id: 2, name: 'B', status: 'fertig', blockedBy: [] },
+    ]);
+    setShowOnlyBlocked(true);
+    expect(getSortedInis()).toHaveLength(0);
   });
 });

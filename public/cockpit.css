@@ -2119,3 +2119,106 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 .dp-copy-link-btn:hover {
   background: var(--surface2);
 }
+
+/* ── blockiert-Badge ───────────────────────────────────── */
+.ini-blocked-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85em;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 4px;
+  cursor: default;
+}
+
+/* ─── blockedBy-Typeahead-Widget ─────────────────────────── */
+
+.bb-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bb-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 26px;
+}
+
+.bb-chips-empty {
+  font-size: var(--text-xs);
+  color: var(--text3);
+  align-self: center;
+}
+
+.bb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.bb-chip-gone {
+  opacity: 0.55;
+  border-style: dashed;
+}
+
+.bb-chip-remove {
+  background: none;
+  border: none;
+  color: var(--text3);
+  cursor: pointer;
+  font-size: 1em;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.15s;
+}
+
+.bb-chip-remove:hover {
+  color: var(--danger, #e55);
+}
+
+.bb-input-wrap {
+  position: relative;
+}
+
+.bb-search-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bb-suggestions {
+  position: absolute;
+  top: calc(100% + 3px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.bb-suggestion-item {
+  padding: 7px 12px;
+  font-size: var(--text-xs);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.bb-suggestion-item:hover {
+  background: var(--surface3, rgba(255, 255, 255, 0.08));
+}

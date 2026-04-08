@@ -1,6 +1,6 @@
 import { STATUS_ORDER, PROJECT_STATUS_ORDER } from './config.js';
 import { data } from './store.js';
-import { findById } from './utils.js';
+import { findById, isCurrentlyBlocked } from './utils.js';
 import { saveViewState } from './cookie.js';
 
 export const sortState = { field: null, dir: 'asc' };
@@ -10,6 +10,7 @@ export const filterState = { name: '', team: '', status: '', projektstatus: '', 
 export const pageState = { current: 1, pageSize: 20 };
 
 let hideFertig = true;
+let showOnlyBlocked = false;
 
 export function setHideFertig(val) {
   hideFertig = !!val;
@@ -17,6 +18,14 @@ export function setHideFertig(val) {
 
 export function isHideFertig() {
   return hideFertig;
+}
+
+export function setShowOnlyBlocked(val) {
+  showOnlyBlocked = !!val;
+}
+
+export function isShowOnlyBlocked() {
+  return showOnlyBlocked;
 }
 
 export function resetPage() {
@@ -42,6 +51,8 @@ export function applyViewState(saved) {
   }
   // hideFertig: Default true wenn nicht gespeichert
   hideFertig = typeof saved.hideFertig === 'boolean' ? saved.hideFertig : true;
+  // showOnlyBlocked: Default false
+  showOnlyBlocked = typeof saved.showOnlyBlocked === 'boolean' ? saved.showOnlyBlocked : false;
 }
 
 export function sortInis(field, teamsCollapsed = false) {
@@ -51,7 +62,7 @@ export function sortInis(field, teamsCollapsed = false) {
     sortState.field = field;
     sortState.dir = field === 'wsjf' ? 'desc' : 'asc';
   }
-  saveViewState(filterState, sortState, hideFertig, teamsCollapsed);
+  saveViewState(filterState, sortState, hideFertig, teamsCollapsed, showOnlyBlocked);
 }
 
 export function getSortedInis() {
@@ -62,6 +73,7 @@ export function getSortedInis() {
     if (filterState.status && ini.status !== filterState.status) return false;
     if (filterState.projektstatus && ini.projektstatus !== filterState.projektstatus) return false;
     if (filterState.kunde && String(ini.customer ?? '') !== filterState.kunde) return false;
+    if (showOnlyBlocked && !isCurrentlyBlocked(ini, data.initiatives)) return false;
     return true;
   });
   if (!sortState.field) return filtered;
