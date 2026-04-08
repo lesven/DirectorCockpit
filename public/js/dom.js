@@ -21,6 +21,7 @@ export const dom = {
 
   // Grids & Container
   teamsGrid: document.getElementById('teams-grid'),
+  toggleTeams: document.getElementById('toggle-teams'),
   iniBody: document.getElementById('ini-body'),
   iniPagination: document.getElementById('ini-pagination'),
   nvGrid: document.getElementById('nv-grid'),

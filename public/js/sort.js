@@ -44,14 +44,14 @@ export function applyViewState(saved) {
   hideFertig = typeof saved.hideFertig === 'boolean' ? saved.hideFertig : true;
 }
 
-export function sortInis(field) {
+export function sortInis(field, teamsCollapsed = false) {
   if (sortState.field === field) {
     sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
   } else {
     sortState.field = field;
     sortState.dir = field === 'wsjf' ? 'desc' : 'asc';
   }
-  saveViewState(filterState, sortState, hideFertig);
+  saveViewState(filterState, sortState, hideFertig, teamsCollapsed);
 }
 
 export function getSortedInis() {
