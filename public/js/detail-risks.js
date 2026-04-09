@@ -13,6 +13,7 @@ import {
 } from './config.js';
 import { autoGrow } from './render.js';
 import { dom } from './dom.js';
+import { removeFromCollection, renderEmptyState } from './detail-utils.js';
 
 // ─── Select HTML Helpers (lokal benötigt) ───────────────────
 
@@ -130,14 +131,14 @@ function riskCardHtml(risk) {
 
 function renderRiskList(risks, onAddFirst) {
   if (!risks.length) {
-    dom.dpRiskList.innerHTML = `
-      <div class="dp-risk-empty">
-        <span class="dp-risk-empty-icon">🛡</span>
-        <p>Noch keine Risiken erfasst.</p>
-        <button class="add-btn" id="dp-risk-add-empty">+ Erstes Risiko hinzufügen</button>
-      </div>
-    `;
-    document.getElementById('dp-risk-add-empty')?.addEventListener('click', onAddFirst);
+    renderEmptyState(dom.dpRiskList, {
+      cssClass: 'dp-risk-empty',
+      icon: '🛡',
+      text: 'Noch keine Risiken erfasst.',
+      btnId: 'dp-risk-add-empty',
+      btnText: '+ Erstes Risiko hinzufügen',
+      onAdd: onAddFirst,
+    });
     return;
   }
 
@@ -178,12 +179,13 @@ export function addRisk(currentId) {
 }
 
 export function removeRisk(riskId, currentId) {
-  const risk = findById(data.risks, riskId);
-  const name = risk && risk.bezeichnung ? `„${risk.bezeichnung}"` : 'dieses Risiko';
-  if (!confirm(`${name} wirklich löschen?`)) return;
-  data.risks = data.risks.filter((r) => r.id !== riskId);
-  save();
-  refreshRisks(currentId);
+  removeFromCollection(
+    data, 'risks', riskId,
+    (risk) => risk.bezeichnung,
+    'dieses Risiko',
+    refreshRisks,
+    currentId,
+  );
 }
 
 // ─── Input-Handler für Risk-Felder ──────────────────────────

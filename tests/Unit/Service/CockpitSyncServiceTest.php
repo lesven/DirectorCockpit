@@ -9,6 +9,7 @@ use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\Team;
+use App\Repository\InitiativeRepository;
 use App\Repository\MetadataRepository;
 use App\Service\CockpitSyncService;
 use App\Service\EntitySyncer;
@@ -25,6 +26,7 @@ class CockpitSyncServiceTest extends TestCase
 {
     private EntityManagerInterface&MockObject $em;
     private MetadataRepository&MockObject $metaRepo;
+    private InitiativeRepository&MockObject $initiativeRepo;
     private Connection&MockObject $connection;
     private CockpitSyncService $service;
     private Metadata $meta;
@@ -38,6 +40,7 @@ class CockpitSyncServiceTest extends TestCase
     {
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->metaRepo = $this->createMock(MetadataRepository::class);
+        $this->initiativeRepo = $this->createMock(InitiativeRepository::class);
         $this->connection = $this->createMock(Connection::class);
 
         $this->em->method('getConnection')->willReturn($this->connection);
@@ -58,6 +61,7 @@ class CockpitSyncServiceTest extends TestCase
         $this->service = new CockpitSyncService(
             $this->em,
             $this->metaRepo,
+            $this->initiativeRepo,
             new PayloadValidator(),
             new EntitySyncer($this->em),
         );
@@ -65,6 +69,10 @@ class CockpitSyncServiceTest extends TestCase
 
     private function stubRepositories(array $kunden = [], array $teams = [], array $initiatives = [], array $nichtVergessen = [], array $risks = [], array $milestones = []): void
     {
+        // initiativeRepo wird direkt injiziert und für loadAll() genutzt
+        $this->initiativeRepo->method('findAllWithBlockedBy')->willReturn($initiatives);
+        $this->initiativeRepo->method('findAll')->willReturn($initiatives);
+
         $kundeRepo = $this->createMock(EntityRepository::class);
         $kundeRepo->method('findAll')->willReturn($kunden);
         $kundeRepo->method('findBy')->willReturn($kunden);
@@ -73,9 +81,9 @@ class CockpitSyncServiceTest extends TestCase
         $teamRepo->method('findAll')->willReturn($teams);
         $teamRepo->method('findBy')->willReturn($teams);
 
-        $initiativeRepo = $this->createMock(EntityRepository::class);
-        $initiativeRepo->method('findAll')->willReturn($initiatives);
-        $initiativeRepo->method('findBy')->willReturn($initiatives);
+        $initiativeEmRepo = $this->createMock(EntityRepository::class);
+        $initiativeEmRepo->method('findAll')->willReturn($initiatives);
+        $initiativeEmRepo->method('findBy')->willReturn($initiatives);
 
         $nichtVergessenRepo = $this->createMock(EntityRepository::class);
         $nichtVergessenRepo->method('findAll')->willReturn($nichtVergessen);
@@ -93,7 +101,7 @@ class CockpitSyncServiceTest extends TestCase
             fn(string $class) => match ($class) {
                 Customer::class       => $kundeRepo,
                 Team::class           => $teamRepo,
-                Initiative::class     => $initiativeRepo,
+                Initiative::class     => $initiativeEmRepo,
                 NichtVergessen::class => $nichtVergessenRepo,
                 Risk::class           => $riskRepo,
                 Milestone::class      => $milestoneRepo,

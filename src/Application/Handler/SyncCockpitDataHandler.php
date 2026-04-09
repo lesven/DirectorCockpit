@@ -3,6 +3,7 @@
 namespace App\Application\Handler;
 
 use App\Application\Command\SyncCockpitDataCommand;
+use App\Entity\Customer;
 use App\Entity\Initiative;
 use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
@@ -13,7 +14,7 @@ use App\Repository\MetadataRepository;
 use App\Service\EntitySyncer;
 use App\Service\SyncException;
 use App\Service\ValidationException;
-use App\Service\PayloadValidator;
+use App\Service\PayloadValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -24,13 +25,13 @@ use Psr\Log\NullLogger;
  * Empfängt einen SyncCockpitDataCommand und orchestriert:
  *   Payload-Validierung → transaktionales Entity-Sync → Metadata-Update.
  *
- * Dieser Handler ist der DDD-Nachfolger von CockpitSyncService::syncAll(),
- * aktivierbar via USE_DDD_SYNC=true.
+ * Dies ist der kanonische Sync-Pfad. CockpitSyncService::syncAll() ist deprecated.
  */
 class SyncCockpitDataHandler
 {
     /** @var array<string, class-string<SyncableEntity>> */
     private const ENTITY_REGISTRY = [
+        'kunden'          => Customer::class,
         'teams'           => Team::class,
         'initiatives'     => Initiative::class,
         'nicht_vergessen' => NichtVergessen::class,
@@ -41,7 +42,7 @@ class SyncCockpitDataHandler
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly MetadataRepository $metaRepo,
-        private readonly PayloadValidator $validator,
+        private readonly PayloadValidatorInterface $validator,
         private readonly EntitySyncer $entitySyncer,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {}

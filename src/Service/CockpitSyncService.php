@@ -9,14 +9,18 @@ use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\SyncableEntity;
 use App\Entity\Team;
+use App\Repository\InitiativeRepository;
 use App\Repository\MetadataRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 /**
- * Orchestriert den Lade- und Sync-Vorgang für alle Cockpit-Daten.
- * Validierung → EntitySyncer → Metadata-Update.
+ * Orchestriert den Lade-Vorgang für alle Cockpit-Daten.
+ * Der Sync-Pfad wird ausschließlich über SyncCockpitDataHandler abgewickelt.
+ *
+ * @deprecated syncAll() ist veraltet. Nur loadAll() wird noch genutzt.
+ *             Dieser Service wird in einer späteren Aufräum-Phase entfernt.
  */
 class CockpitSyncService
 {
@@ -33,6 +37,7 @@ class CockpitSyncService
     public function __construct(
         private EntityManagerInterface $em,
         private MetadataRepository $metaRepo,
+        private InitiativeRepository $initiativeRepo,
         private PayloadValidator $validator,
         private EntitySyncer $entitySyncer,
         private LoggerInterface $logger = new NullLogger(),
@@ -45,14 +50,19 @@ class CockpitSyncService
         $result = ['kw' => $meta->getKw()];
 
         foreach (self::ENTITY_REGISTRY as $key => $class) {
-            $entities = $this->em->getRepository($class)->findBy([], ['id' => 'ASC']);
+            $entities = $key === 'initiatives'
+                ? $this->initiativeRepo->findAllWithBlockedBy()
+                : $this->em->getRepository($class)->findBy([], ['id' => 'ASC']);
             $result[$key] = array_map(fn(SyncableEntity $e) => $e->toArray(), $entities);
         }
 
         return $result;
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * @deprecated Nutze SyncCockpitDataHandler für den Sync-Pfad.
+     * @param array<string, mixed> $payload
+     */
     public function syncAll(array $payload): void
     {
         $this->validator->validate($payload, array_keys(self::ENTITY_REGISTRY));

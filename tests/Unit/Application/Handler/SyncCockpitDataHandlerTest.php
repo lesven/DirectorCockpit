@@ -4,6 +4,7 @@ namespace App\Tests\Unit\Application\Handler;
 
 use App\Application\Command\SyncCockpitDataCommand;
 use App\Application\Handler\SyncCockpitDataHandler;
+use App\Entity\Customer;
 use App\Entity\Initiative;
 use App\Entity\Metadata;
 use App\Entity\Milestone;
@@ -13,6 +14,7 @@ use App\Entity\Team;
 use App\Repository\MetadataRepository;
 use App\Service\EntitySyncer;
 use App\Service\PayloadValidator;
+use App\Service\PayloadValidatorInterface;
 use App\Service\SyncException;
 use App\Service\ValidationException;
 use Doctrine\DBAL\Connection;
@@ -71,12 +73,16 @@ class SyncCockpitDataHandlerTest extends TestCase
      * @param list<object> $milestones
      */
     private function stubRepositories(
+        array $kunden = [],
         array $teams = [],
         array $initiatives = [],
         array $nichtVergessen = [],
         array $risks = [],
         array $milestones = [],
     ): void {
+        $kundeRepo = $this->createMock(EntityRepository::class);
+        $kundeRepo->method('findAll')->willReturn($kunden);
+
         $teamRepo = $this->createMock(EntityRepository::class);
         $teamRepo->method('findAll')->willReturn($teams);
 
@@ -94,6 +100,7 @@ class SyncCockpitDataHandlerTest extends TestCase
 
         $this->em->method('getRepository')->willReturnCallback(
             fn(string $class) => match ($class) {
+                Customer::class       => $kundeRepo,
                 Team::class           => $teamRepo,
                 Initiative::class     => $initiativeRepo,
                 NichtVergessen::class => $nichtVergessenRepo,
