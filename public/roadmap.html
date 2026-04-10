@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IT Roadmap Cockpit</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#0a0e17;--surf:#111827;--surf2:#1a2235;
+  --bd:#1e2d45;--bd2:#253454;
+  --tx:#e2e8f0;--mu:#64748b;--di:#94a3b8;
+  --ac:#3b82f6;--gr:#22c55e;--gr-bg:rgba(34,197,94,.12);
+  --am:#f59e0b;--am-bg:rgba(245,158,11,.12);
+  --re:#ef4444;--re-bg:rgba(239,68,68,.12);
+  --gy:#475569;--gy-bg:rgba(71,85,105,.25);
+  --ac-bg:rgba(59,130,246,.12);
+  --vi:#a78bfa;--to:#818cf8;
+  --font:"Exo 2",sans-serif;--lw:300px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:var(--font);font-size:14px;min-height:100vh}
+.hdr{padding:13px 28px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:12px;background:var(--surf);position:sticky;top:0;z-index:20}
+.hdr-logo{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--mu)}
+.hdr-title{font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ac)}
+.kw{font-size:11px;color:var(--mu);background:var(--surf2);border:1px solid var(--bd);padding:3px 10px;border-radius:4px;font-weight:600;letter-spacing:.06em}
+.upload{margin-left:auto;background:var(--surf2);border:1px solid var(--bd2);color:var(--di);padding:5px 13px;border-radius:5px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;letter-spacing:.04em;transition:all .15s}
+.upload:hover{border-color:var(--ac);color:var(--tx)}
+.tabs{display:flex;background:var(--surf);border-bottom:1px solid var(--bd);padding:0 28px;position:sticky;top:49px;z-index:19}
+.tab{padding:11px 18px;cursor:pointer;font-size:12px;font-weight:600;color:var(--mu);border-bottom:2px solid transparent;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.tab:hover{color:var(--tx)}
+.tab.on{color:var(--tx);border-bottom-color:var(--ac)}
+.pip{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.main{padding:24px 28px}
+.pnl{display:none}.pnl.on{display:block}
+.tlw{background:var(--surf);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.tlh{display:flex;border-bottom:1px solid var(--bd);background:var(--surf2)}
+.tlhl{width:var(--lw);flex-shrink:0;padding:8px 16px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);border-right:1px solid var(--bd);display:flex;align-items:center}
+.mos{flex:1;display:flex}
+.mo{flex:1;text-align:center;padding:8px 2px;font-size:10px;font-weight:600;color:var(--mu);letter-spacing:.07em;text-transform:uppercase;border-right:1px solid var(--bd)}
+.mo:last-child{border-right:none}
+.mo.cur{color:var(--to);font-weight:700}
+.row{display:flex;border-bottom:1px solid var(--bd);min-height:58px;transition:background .1s}
+.row:last-child{border-bottom:none}
+.row:hover{background:rgba(30,45,69,.4)}
+.rl{width:var(--lw);flex-shrink:0;padding:10px 16px;border-right:1px solid var(--bd);display:flex;flex-direction:column;justify-content:center;gap:3px}
+.rn{font-weight:600;font-size:13px;color:var(--tx);line-height:1.3}
+.rm{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.badge{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.rs{font-size:11px;color:var(--mu);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:268px}
+.rtl{flex:1;position:relative;overflow:hidden}
+.gl{position:absolute;top:0;bottom:0;width:1px;background:var(--bd);pointer-events:none}
+.tln{position:absolute;top:0;bottom:0;width:2px;background:var(--to);opacity:.35;pointer-events:none}
+.ms{position:absolute;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;border:2px solid;cursor:pointer;z-index:5;transition:transform .12s}
+.ms:hover{transform:translate(-50%,-50%) scale(1.6);z-index:10}
+.fr{position:absolute;top:50%;transform:translate(-50%,-50%) rotate(45deg);width:12px;height:12px;border:2.5px solid;cursor:pointer;z-index:6;transition:transform .12s}
+.fr:hover{transform:translate(-50%,-50%) rotate(45deg) scale(1.5);z-index:10}
+.leg{display:flex;gap:18px;padding:10px 16px;border-top:1px solid var(--bd);background:var(--surf2);flex-wrap:wrap;align-items:center}
+.li{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ldot{width:9px;height:9px;border-radius:50%;border:2px solid;flex-shrink:0}
+.ldia{width:9px;height:9px;border:2px solid;transform:rotate(45deg);flex-shrink:0}
+.tip{position:fixed;background:#1a2235;border:1px solid var(--bd2);color:var(--tx);padding:10px 14px;border-radius:7px;font-size:12px;max-width:300px;z-index:9999;pointer-events:none;opacity:0;transition:opacity .12s;box-shadow:0 10px 30px rgba(0,0,0,.6);line-height:1.65;top:0;left:0}
+.tip.show{opacity:1}
+.tt{font-weight:700;font-size:13px;margin-bottom:4px}
+.ts{color:var(--mu);font-size:11px}
+.empty{padding:48px;text-align:center;color:var(--mu)}
+.url-bar{display:flex;align-items:center;gap:8px;padding:8px 28px;background:var(--surf2);border-bottom:1px solid var(--bd)}
+.url-input{flex:1;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);padding:5px 10px;border-radius:5px;font-family:var(--font);font-size:12px;outline:none;transition:border-color .15s}
+.url-input:focus{border-color:var(--ac)}
+.url-input::placeholder{color:var(--mu)}
+.url-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);white-space:nowrap}
+.url-btn{background:var(--surf);border:1px solid var(--bd2);color:var(--di);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+.url-btn:hover{border-color:var(--ac);color:var(--tx)}
+.url-btn.loading{opacity:.5;pointer-events:none}
+.url-err{font-size:11px;color:var(--re);white-space:nowrap}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 5px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.overdue-fr{animation:pulse-ring 1.6s ease-out infinite}
+.ms.overdue{animation:pulse-ring 1.6s ease-out infinite}
+.tab-group-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);padding:0 10px 0 4px;display:flex;align-items:center;opacity:.6;white-space:nowrap}
+.tab-sep{width:1px;background:var(--bd2);margin:10px 8px;flex-shrink:0}
+.team-chip{font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;letter-spacing:.04em;border:1px solid}
+
+</style>
+</head>
+<body>
+<div class="hdr">
+  <span class="hdr-logo">ARZ</span>
+  <span class="hdr-title">IT Roadmap</span>
+  <input type="file" id="fi" accept=".json" style="display:none">
+  <span class="kw" id="kw">KW &ndash;</span>
+  <button class="upload" onclick="document.getElementById('fi').click()">&#8593; JSON laden</button>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="url-bar" id="urlBar">
+  <span class="url-label">URL</span>
+  <input class="url-input" id="urlInput" type="url" placeholder="https://example.com/cockpit.json" />
+  <button class="url-btn" id="urlRefresh" onclick="fetchUrl()">&#8635; Laden</button>
+  <span class="url-err" id="urlErr"></span>
+</div>
+<div class="main" id="main"></div>
+<div class="tip" id="tip"></div>
+<script>
+
+const TCOLS = {1:"var(--ac)", 2:"var(--gr)", 3:"var(--am)", 4:"var(--vi)"};
+const TIPS = {};
+let TIP_ID = 0;
+
+function sc(s){ return {fertig:"var(--gr)",yellow:"var(--am)",red:"var(--re)",ungeplant:"var(--gy)",green:"var(--gr)"}[s] || "var(--gy)"; }
+function sbg(s){ return {fertig:"var(--gr-bg)",yellow:"var(--am-bg)",red:"var(--re-bg)",ungeplant:"var(--gy-bg)",green:"var(--gr-bg)"}[s] || "var(--gy-bg)"; }
+function mc(s){ return s==="erledigt" ? "var(--gr)" : s==="in_bearbeitung" ? "var(--am)" : "var(--gy)"; }
+function sl(s){ return {fertig:"Fertig",yellow:"In Arbeit",red:"Kritisch",ungeplant:"Ungeplant",green:"OK"}[s] || s; }
+function ml(s){ return {erledigt:"Erledigt",in_bearbeitung:"In Bearb.",offen:"Offen"}[s] || s; }
+function fd(d){ return d ? new Date(d).toLocaleDateString("de-DE",{day:"2-digit",month:"short",year:"2-digit"}) : "\u2013"; }
+function addM(d,n){ const r=new Date(d); r.setMonth(r.getMonth()+n); return r; }
+function som(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+function diffM(a,b){ return (b.getFullYear()-a.getFullYear())*12 + b.getMonth()-a.getMonth(); }
+function eh(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function reg(html){ const id=++TIP_ID; TIPS[id]=html; return id; }
+
+const tipEl = document.getElementById("tip");
+let tipTimer;
+document.addEventListener("mousemove", e => {
+  if (tipEl.classList.contains("show")) {
+    let x = e.clientX+16, y = e.clientY-8;
+    if (x+tipEl.offsetWidth > window.innerWidth) x = e.clientX - tipEl.offsetWidth - 10;
+    if (y+tipEl.offsetHeight > window.innerHeight) y = window.innerHeight - tipEl.offsetHeight - 8;
+    tipEl.style.left = x+"px";
+    tipEl.style.top  = y+"px";
+  }
+});
+function showTip(id){ clearTimeout(tipTimer); tipEl.innerHTML = TIPS[id]||""; tipEl.classList.add("show"); }
+function hideTip(){ clearTimeout(tipTimer); tipTimer = setTimeout(()=>tipEl.classList.remove("show"), 80); }
+
+function attachTips(){
+  document.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mouseenter", () => showTip(+el.dataset.tip));
+    el.addEventListener("mouseleave", hideTip);
+  });
+}
+
+function render(data){
+  Object.keys(TIPS).forEach(k=>delete TIPS[k]); TIP_ID=0;
+  document.getElementById("kw").textContent = "KW " + data.kw;
+  const tabsEl = document.getElementById("tabs");
+  const mainEl = document.getElementById("main");
+  tabsEl.innerHTML = "";
+  mainEl.innerHTML = "";
+
+  const msMap = {};
+  (data.milestones||[]).forEach(m => {
+    if (!msMap[m.initiative]) msMap[m.initiative] = [];
+    msMap[m.initiative].push(m);
+  });
+  const km = {};
+  (data.kunden||[]).forEach(k => km[k.id] = k.name);
+  const teamMap = {};
+  (data.teams||[]).forEach(t => teamMap[t.id] = t.name);
+
+  function makeTab(label, pid, col, isFirst) {
+    const tab = document.createElement("div");
+    tab.className = "tab" + (isFirst ? " on" : "");
+    tab.dataset.pid = pid;
+    const pip = document.createElement("span");
+    pip.className = "pip"; pip.style.background = col;
+    tab.appendChild(pip);
+    tab.appendChild(document.createTextNode(label));
+    tab.onclick = () => activate(tab.dataset.pid);
+    return tab;
+  }
+
+  // ── Teams ──
+  const teamLabel = document.createElement("span");
+  teamLabel.className = "tab-group-label";
+  teamLabel.textContent = "Teams";
+  tabsEl.appendChild(teamLabel);
+
+  data.teams.forEach((team, i) => {
+    const col = TCOLS[team.id] || "var(--gy)";
+    tabsEl.appendChild(makeTab(team.name, "p-t-"+team.id, col, i===0));
+    const pnl = document.createElement("div");
+    pnl.className = "pnl" + (i===0 ? " on" : "");
+    pnl.id = "p-t-" + team.id;
+    pnl.innerHTML = buildPanel(data, team, msMap, km);
+    mainEl.appendChild(pnl);
+  });
+
+  // ── Separator ──
+  const sep = document.createElement("span");
+  sep.className = "tab-sep";
+  tabsEl.appendChild(sep);
+
+  // ── Kunden ──
+  const kundeLabel = document.createElement("span");
+  kundeLabel.className = "tab-group-label";
+  kundeLabel.textContent = "Kunden";
+  tabsEl.appendChild(kundeLabel);
+
+  const kundenMitInits = (data.kunden||[]).filter(k =>
+    data.initiatives.some(i => i.customer === k.id)
+  );
+
+  kundenMitInits.forEach(kunde => {
+    tabsEl.appendChild(makeTab(kunde.name, "p-k-"+kunde.id, "var(--to)", false));
+    const pnl = document.createElement("div");
+    pnl.className = "pnl";
+    pnl.id = "p-k-" + kunde.id;
+    pnl.innerHTML = buildCustomerPanel(data, kunde, msMap, teamMap);
+    mainEl.appendChild(pnl);
+  });
+
+  attachTips();
+}
+
+function activate(pid){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.pid===pid));
+  document.querySelectorAll(".pnl").forEach(p => p.classList.toggle("on", p.id===pid));
+}
+
+function buildPanel(data, team, msMap, km){
+  const inits = data.initiatives.filter(i => i.team === team.id && i.status !== "fertig");
+  if (!inits.length) return '<div class="empty">Keine Initiativen</div>';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  let minD = new Date(today); minD.setMonth(minD.getMonth()-1);
+  let maxD = new Date(today); maxD.setMonth(maxD.getMonth()+4);
+
+  inits.forEach(init => {
+    if (init.frist){ const d=new Date(init.frist); if(d>maxD)maxD=d; if(d<minD)minD=d; }
+    (msMap[init.id]||[]).forEach(m => {
+      if (m.frist){ const d=new Date(m.frist); if(d>maxD)maxD=d; if(d<minD)minD=d; }
+    });
+  });
+
+  minD = som(minD);
+  maxD = addM(som(maxD), 1);
+  const nMo = diffM(minD, maxD) + 1;
+  const months = [];
+  for (let i=0; i<nMo; i++) months.push(addM(minD, i));
+  const span = maxD - minD;
+  const xp = d => ((d-minD)/span*100).toFixed(2)+"%";
+
+  const moHTML = months.map(m => {
+    const cur = m.getFullYear()===today.getFullYear() && m.getMonth()===today.getMonth();
+    return '<div class="mo' + (cur?' cur':'') + '">'
+      + m.toLocaleDateString("de-DE",{month:"short",year:"2-digit"}) + '</div>';
+  }).join("");
+
+  const grids = months.slice(1).map(m =>
+    '<div class="gl" style="left:' + xp(m) + '"></div>'
+  ).join("");
+
+  const tPct = (today-minD)/span*100;
+  const todayLn = (tPct>=0 && tPct<=100)
+    ? '<div class="tln" style="left:' + tPct.toFixed(2) + '%"></div>' : "";
+
+  const sorted = [...inits].sort((a,b) => {
+    if (!a.frist && !b.frist) return 0;
+    if (!a.frist) return 1;
+    if (!b.frist) return -1;
+    return new Date(a.frist) - new Date(b.frist);
+  });
+
+  const rows = sorted.map(init => {
+    const msList = (msMap[init.id]||[]).filter(m => m.frist);
+    const _tod = new Date(); _tod.setHours(0,0,0,0);
+    const fristOvd = init.frist ? new Date(init.frist) < _tod : false;
+    const col = sc(init.status), bg = sbg(init.status);
+    const cust = init.customer ? (km[init.customer]||"") : "";
+
+    const dots = msList.map(m => {
+      const d = new Date(m.frist);
+      const pct = (d-minD)/span*100;
+      if (pct < -3 || pct > 103) return "";
+      const today2 = new Date(); today2.setHours(0,0,0,0);
+      const overdue = m.status !== "erledigt" && new Date(m.frist) < today2;
+      const c = overdue ? "var(--re)" : mc(m.status);
+      const tipHtml = '<div class="tt">' + eh(m.aufgabe||"(kein Titel)") + '</div>'
+        + '<div class="ts">&#128197; ' + fd(m.frist)
+        + (m.owner ? ' &nbsp;&middot;&nbsp; &#128100; ' + eh(m.owner) : "") + '</div>'
+        + (overdue ? '<div style="color:var(--re);margin-top:3px;font-size:11px;font-weight:700">&#9888; Verzug</div>' : (m.status !== "offen" ? '<div style="color:'+c+';margin-top:3px;font-size:11px">&#9679; '+ml(m.status)+'</div>' : ""))
+        + (m.bemerkung ? '<div style="margin-top:5px;color:var(--mu);font-size:11px">'+eh(m.bemerkung)+'</div>' : "");
+      const tid = reg(tipHtml);
+      const msCls = overdue ? "ms overdue" : "ms";
+      return '<div class="' + msCls + '" data-tip="' + tid + '" style="left:' + pct.toFixed(2)
+        + '%;background:' + c + ';border-color:' + c + '"></div>';
+    }).join("");
+
+    let fristEl = "";
+    if (init.frist) {
+      const d2 = new Date(init.frist);
+      const p2 = (d2-minD)/span*100;
+      if (p2 >= -3 && p2 <= 103) {
+        const fcol = fristOvd ? "var(--re)" : col;
+        const fcls = fristOvd ? "fr overdue-fr" : "fr";
+        const tipHtml = '<div class="tt">&#127937; Zieldatum Initiative</div>'
+          + '<div class="ts">&#128197; ' + fd(init.frist) + '</div>'
+          + (fristOvd ? '<div style="color:var(--re);margin-top:3px;font-size:11px;font-weight:700">&#9888; Verzug</div>' : "")
+          + (init.notiz ? '<div style="margin-top:5px;font-size:11px;color:var(--di)">'+eh(init.notiz)+'</div>' : "");
+        const tid = reg(tipHtml);
+        fristEl = '<div class="' + fcls + '" data-tip="' + tid + '" style="left:' + p2.toFixed(2)
+          + '%;background:' + fcol + ';border-color:' + fcol + '"></div>';
+      }
+    }
+
+    const custEl = cust
+      ? '<span class="badge" style="background:var(--surf2);color:var(--mu);border:1px solid var(--bd)">'+eh(cust)+'</span>' : "";
+    const schrEl = init.schritt
+      ? '<div class="rs" title="'+eh(init.schritt)+'">&rarr; '+eh(init.schritt)+'</div>' : "";
+
+    return '<div class="row">'
+      + '<div class="rl">'
+        + '<div class="rn">'+eh(init.name)+'</div>'
+        + '<div class="rm"><span class="badge" style="background:'+bg+';color:'+col+'">'+sl(init.status)+'</span>'+custEl+'</div>'
+        + schrEl
+      + '</div>'
+      + '<div class="rtl">'+grids+todayLn+dots+fristEl+'</div>'
+      + '</div>';
+  }).join("");
+
+  return '<div class="tlw">'
+    + '<div class="tlh">'
+      + '<div class="tlhl">'+eh(team.name)+'&nbsp;&middot;&nbsp;'+inits.length+' Initiativen</div>'
+      + '<div class="mos">'+moHTML+'</div>'
+    + '</div>'
+    + rows
+    + '<div class="leg">'
+      + '<span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mu)">Meilensteine:</span>'
+      + '<div class="li"><span class="ldot" style="background:var(--gr);border-color:var(--gr)"></span>Erledigt</div>'
+      + '<div class="li"><span class="ldot" style="background:var(--am);border-color:var(--am)"></span>In Bearb.</div>'
+      + '<div class="li"><span class="ldot" style="background:var(--gy);border-color:var(--gy)"></span>Offen</div>'
+      + '<span style="width:1px;height:14px;background:var(--bd);flex-shrink:0"></span>'
+      + '<div class="li"><span class="ldia" style="border-color:var(--di)"></span>Zieldatum</div>'
+      + '<div class="li" style="margin-left:auto">'
+        + '<span style="display:inline-block;width:12px;height:2px;background:var(--to);opacity:.6;margin-right:6px;vertical-align:middle"></span>'
+        + 'Heute</div>'
+    + '</div>'
+  + '</div>';
+}
+
+function buildCustomerPanel(data, kunde, msMap, teamMap){
+  const inits = data.initiatives.filter(i => i.customer === kunde.id && i.status !== "fertig");
+  if (!inits.length) return '<div class="empty">Keine Initiativen</div>';
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  let minD = new Date(today); minD.setMonth(minD.getMonth()-1);
+  let maxD = new Date(today); maxD.setMonth(maxD.getMonth()+4);
+
+  inits.forEach(init => {
+    if (init.frist){ const d=new Date(init.frist); if(d>maxD)maxD=d; if(d<minD)minD=d; }
+    (msMap[init.id]||[]).forEach(m => {
+      if (m.frist){ const d=new Date(m.frist); if(d>maxD)maxD=d; if(d<minD)minD=d; }
+    });
+  });
+
+  minD = som(minD);
+  maxD = addM(som(maxD), 1);
+  const nMo = diffM(minD, maxD) + 1;
+  const months = [];
+  for (let i=0; i<nMo; i++) months.push(addM(minD, i));
+  const span = maxD - minD;
+  const xp = d => ((d-minD)/span*100).toFixed(2)+"%";
+
+  const moHTML = months.map(m => {
+    const cur = m.getFullYear()===today.getFullYear() && m.getMonth()===today.getMonth();
+    return '<div class="mo' + (cur?' cur':'') + '">'
+      + m.toLocaleDateString("de-DE",{month:"short",year:"2-digit"}) + '</div>';
+  }).join("");
+
+  const grids = months.slice(1).map(m =>
+    '<div class="gl" style="left:' + xp(m) + '"></div>'
+  ).join("");
+
+  const tPct = (today-minD)/span*100;
+  const todayLn = (tPct>=0 && tPct<=100)
+    ? '<div class="tln" style="left:' + tPct.toFixed(2) + '%"></div>' : "";
+
+  const sorted = [...inits].sort((a,b) => {
+    if (!a.frist && !b.frist) return 0;
+    if (!a.frist) return 1; if (!b.frist) return -1;
+    return new Date(a.frist) - new Date(b.frist);
+  });
+
+  // Team colors for chips
+  const CHIP_COLS = {1:["var(--ac)","var(--ac-bg)"],2:["var(--gr)","var(--gr-bg)"],3:["var(--am)","var(--am-bg)"],4:["var(--vi)","rgba(167,139,250,.12)"]};
+
+  const rows = sorted.map(init => {
+    const msList = (msMap[init.id]||[]).filter(m => m.frist);
+    const _tod = new Date(); _tod.setHours(0,0,0,0);
+    const fristOvd = init.frist ? new Date(init.frist) < _tod : false;
+    const col = sc(init.status), bg = sbg(init.status);
+    const [tc, tbg] = CHIP_COLS[init.team] || ["var(--gy)","var(--gy-bg)"];
+    const teamName = teamMap[init.team] || "–";
+
+    const dots = msList.map(m => {
+      const d = new Date(m.frist);
+      const pct = (d-minD)/span*100;
+      if (pct < -3 || pct > 103) return "";
+      const today2 = new Date(); today2.setHours(0,0,0,0);
+      const overdue = m.status !== "erledigt" && new Date(m.frist) < today2;
+      const c = overdue ? "var(--re)" : mc(m.status);
+      const tipHtml = '<div class="tt">' + eh(m.aufgabe||"(kein Titel)") + '</div>'
+        + '<div class="ts">&#128197; ' + fd(m.frist)
+        + (m.owner ? ' &nbsp;&middot;&nbsp; &#128100; ' + eh(m.owner) : "") + '</div>'
+        + (overdue ? '<div style="color:var(--re);margin-top:3px;font-size:11px;font-weight:700">&#9888; Verzug</div>' : (m.status !== "offen" ? '<div style="color:'+c+';margin-top:3px;font-size:11px">&#9679; '+ml(m.status)+'</div>' : ""))
+        + (m.bemerkung ? '<div style="margin-top:5px;color:var(--mu);font-size:11px">'+eh(m.bemerkung)+'</div>' : "");
+      const tid = reg(tipHtml);
+      const msCls = overdue ? "ms overdue" : "ms";
+      return '<div class="' + msCls + '" data-tip="' + tid + '" style="left:' + pct.toFixed(2)
+        + '%;background:' + c + ';border-color:' + c + '"></div>';
+    }).join("");
+
+    let fristEl = "";
+    if (init.frist) {
+      const d2 = new Date(init.frist);
+      const p2 = (d2-minD)/span*100;
+      if (p2 >= -3 && p2 <= 103) {
+        const fcol = fristOvd ? "var(--re)" : col;
+        const fcls = fristOvd ? "fr overdue-fr" : "fr";
+        const tipHtml = '<div class="tt">&#127937; Zieldatum Initiative</div>'
+          + '<div class="ts">&#128197; ' + fd(init.frist) + '</div>'
+          + (fristOvd ? '<div style="color:var(--re);margin-top:3px;font-size:11px;font-weight:700">&#9888; Verzug</div>' : "")
+          + (init.notiz ? '<div style="margin-top:5px;font-size:11px;color:var(--di)">'+eh(init.notiz)+'</div>' : "");
+        const tid = reg(tipHtml);
+        fristEl = '<div class="' + fcls + '" data-tip="' + tid + '" style="left:' + p2.toFixed(2)
+          + '%;background:' + fcol + ';border-color:' + fcol + '"></div>';
+      }
+    }
+
+    const teamChip = '<span class="team-chip" style="color:'+tc+';background:'+tbg+';border-color:'+tc+'">'+eh(teamName)+'</span>';
+    const schrEl = init.schritt
+      ? '<div class="rs" title="'+eh(init.schritt)+'">&rarr; '+eh(init.schritt)+'</div>' : "";
+
+    return '<div class="row">'
+      + '<div class="rl">'
+        + '<div class="rn">'+eh(init.name)+'</div>'
+        + '<div class="rm"><span class="badge" style="background:'+bg+';color:'+col+'">'+sl(init.status)+'</span>'+teamChip+'</div>'
+        + schrEl
+      + '</div>'
+      + '<div class="rtl">'+grids+todayLn+dots+fristEl+'</div>'
+      + '</div>';
+  }).join("");
+
+  return '<div class="tlw">'
+    + '<div class="tlh">'
+      + '<div class="tlhl">'+eh(kunde.name)+' &nbsp;&middot;&nbsp; '+inits.length+' Initiativen</div>'
+      + '<div class="mos">'+moHTML+'</div>'
+    + '</div>'
+    + rows
+    + '<div class="leg">'
+      + '<span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mu)">Meilensteine:</span>'
+      + '<div class="li"><span class="ldot" style="background:var(--gr);border-color:var(--gr)"></span>Erledigt</div>'
+      + '<div class="li"><span class="ldot" style="background:var(--am);border-color:var(--am)"></span>In Bearb.</div>'
+      + '<div class="li"><span class="ldot" style="background:var(--gy);border-color:var(--gy)"></span>Offen</div>'
+      + '<span style="width:1px;height:14px;background:var(--bd);flex-shrink:0"></span>'
+      + '<div class="li"><span class="ldia" style="border-color:var(--di)"></span>Zieldatum</div>'
+      + '<div class="li" style="margin-left:auto">'
+        + '<span style="display:inline-block;width:12px;height:2px;background:var(--to);opacity:.6;margin-right:6px;vertical-align:middle"></span>'
+        + 'Heute</div>'
+    + '</div>'
+  + '</div>';
+}
+
+// ── URL fetch ──
+const URL_KEY = "roadmap_json_url";
+const urlInput = document.getElementById("urlInput");
+const urlErr   = document.getElementById("urlErr");
+const urlBtn   = document.getElementById("urlRefresh");
+
+// Restore saved URL and auto-load
+const savedUrl = localStorage.getItem(URL_KEY);
+if (savedUrl) {
+  urlInput.value = savedUrl;
+  fetchUrl();
+}
+
+// Auto-refresh every 180 seconds
+setInterval(() => { if (urlInput.value.trim()) fetchUrl(); }, 180000);
+
+urlInput.addEventListener("keydown", e => { if (e.key === "Enter") fetchUrl(); });
+
+function fetchUrl(){
+  const url = urlInput.value.trim();
+  if (!url) { urlErr.textContent = "Bitte URL eingeben."; return; }
+  urlErr.textContent = "";
+  urlBtn.classList.add("loading");
+  urlBtn.textContent = "...";
+  localStorage.setItem(URL_KEY, url);
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(data => {
+      urlBtn.classList.remove("loading");
+      urlBtn.innerHTML = "&#8635; Laden";
+      render(data);
+    })
+    .catch(err => {
+      urlBtn.classList.remove("loading");
+      urlBtn.innerHTML = "&#8635; Laden";
+      urlErr.textContent = "Fehler: " + err.message;
+    });
+}
+
+document.getElementById("fi").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try { render(JSON.parse(ev.target.result)); }
+    catch(err) { alert("JSON-Fehler: " + err.message); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+});
+
+document.getElementById('main').innerHTML = '<div class="empty" style="padding:64px;text-align:center;color:var(--mu)">&#128194; JSON-Datei laden um die Roadmap anzuzeigen</div>';
+</script>
+</body>
+</html>
