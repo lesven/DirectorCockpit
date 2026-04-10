@@ -48,7 +48,10 @@ final class FeatureFlags
 
     /**
      * Hole Umgebungsvariablen aus globalen Quellen.
-     * Kapselt Superglobal-Zugriff wie pro PHPMD-Guidelines.
+     * Kapselt Superglobal-Zugriff: $_ENV/$_SERVER sind notwendig für Env-Var-Lesen.
+     * (PHPMD akzeptiert das trotzdem nicht, daher Suppression direkt hier.)
+     *
+     * @noinspection PhpUndefinedVariableInspection
      */
     private static function getEnv(string $key): ?string
     {
