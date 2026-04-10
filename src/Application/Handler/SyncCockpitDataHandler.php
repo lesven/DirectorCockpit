@@ -11,6 +11,7 @@ use App\Entity\Risk;
 use App\Entity\SyncableEntity;
 use App\Entity\Team;
 use App\Repository\MetadataRepository;
+use App\Service\EntityRegistry;
 use App\Service\EntitySyncer;
 use App\Service\SyncException;
 use App\Service\ValidationException;
@@ -29,16 +30,6 @@ use Psr\Log\NullLogger;
  */
 class SyncCockpitDataHandler
 {
-    /** @var array<string, class-string<SyncableEntity>> */
-    private const ENTITY_REGISTRY = [
-        'kunden'          => Customer::class,
-        'teams'           => Team::class,
-        'initiatives'     => Initiative::class,
-        'nicht_vergessen' => NichtVergessen::class,
-        'risks'           => Risk::class,
-        'milestones'      => Milestone::class,
-    ];
-
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly MetadataRepository $metaRepo,
@@ -55,11 +46,11 @@ class SyncCockpitDataHandler
     {
         $payload = $command->payload;
 
-        $this->validator->validate($payload, array_keys(self::ENTITY_REGISTRY));
+        $this->validator->validate($payload, array_keys(EntityRegistry::ENTITY_REGISTRY));
 
         $this->em->getConnection()->beginTransaction();
         try {
-            foreach (self::ENTITY_REGISTRY as $key => $class) {
+            foreach (EntityRegistry::ENTITY_REGISTRY as $key => $class) {
                 $existing = $this->em->getRepository($class)->findAll();
                 $this->entitySyncer->sync($existing, $payload[$key] ?? [], $class);
             }
