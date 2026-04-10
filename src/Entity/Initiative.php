@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Domain\Model\Shared\Deadline;
 use App\Enum\ProjectStatusEnum;
 use App\Enum\StatusEnum;
 use App\Repository\InitiativeRepository;
@@ -174,21 +175,6 @@ final class Initiative implements SyncableEntity
 
     private static function parseFrist(mixed $value): ?\DateTimeImmutable
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if (!is_string($value)) {
-            return null;
-        }
-        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
-        if ($date !== false && $date->format('Y-m-d') === $value) {
-            return $date;
-        }
-        $date = \DateTimeImmutable::createFromFormat('d.m.Y', $value);
-        if ($date !== false) {
-            return $date;
-        }
-
-        return null;
+        return Deadline::fromMixed($value);
     }
 }

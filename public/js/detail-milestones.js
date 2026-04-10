@@ -8,6 +8,7 @@ import { findById, esc, generateId } from './utils.js';
 import { MILESTONE_STATUS_OPTIONS, MILESTONE_STATUS_CSS } from './config.js';
 import { dom } from './dom.js';
 import { selectHtml } from './detail-initiatives.js';
+import { removeFromCollection, renderEmptyState } from './detail-utils.js';
 
 // ─── Render: Milestone-Karte ─────────────────────────────────
 
@@ -46,14 +47,14 @@ function milestoneCardHtml(ms) {
 
 function renderMilestoneList(milestones, onAddFirst) {
   if (!milestones.length) {
-    dom.dpMilestoneList.innerHTML = `
-      <div class="dp-milestone-empty">
-        <span class="dp-milestone-empty-icon">📋</span>
-        <p>Noch keine Meilensteine erfasst.</p>
-        <button class="add-btn" id="dp-milestone-add-empty">+ Ersten Meilenstein hinzufügen</button>
-      </div>
-    `;
-    document.getElementById('dp-milestone-add-empty')?.addEventListener('click', onAddFirst);
+    renderEmptyState(dom.dpMilestoneList, {
+      cssClass: 'dp-milestone-empty',
+      icon: '📋',
+      text: 'Noch keine Meilensteine erfasst.',
+      btnId: 'dp-milestone-add-empty',
+      btnText: '+ Ersten Meilenstein hinzufügen',
+      onAdd: onAddFirst,
+    });
     return;
   }
 
@@ -103,12 +104,13 @@ export function addMilestone(currentId) {
 }
 
 export function removeMilestone(msId, currentId) {
-  const ms = findById(data.milestones, msId);
-  const name = ms && ms.aufgabe ? `„${ms.aufgabe}"` : 'diesen Meilenstein';
-  if (!confirm(`${name} wirklich löschen?`)) return;
-  data.milestones = data.milestones.filter((m) => m.id !== msId);
-  save();
-  refreshMilestones(currentId);
+  removeFromCollection(
+    data, 'milestones', msId,
+    (ms) => ms.aufgabe,
+    'diesen Meilenstein',
+    refreshMilestones,
+    currentId,
+  );
 }
 
 // ─── Input-Handler für Milestone-Felder ─────────────────────

@@ -11,7 +11,7 @@ use App\Enum\RoamStatusEnum;
  *
  * @param list<string> $entityKeys  Bekannte Entity-Schlüssel aus dem ENTITY_REGISTRY.
  */
-class PayloadValidator
+class PayloadValidator implements PayloadValidatorInterface
 {
     private const WSJF_FIELDS = ['businessValue', 'timeCriticality', 'riskReduction', 'jobSize'];
     private const WSJF_SCALE = [1, 2, 3, 5, 8, 13, 21];
