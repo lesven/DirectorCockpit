@@ -15,4 +15,21 @@ class InitiativeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Initiative::class);
     }
+
+    /**
+     * Lädt alle Initiativen sortiert nach ID und lädt blockedBy in einem einzigen Query
+     * (verhindert N+1 beim Zugriff auf Initiative::toArray()).
+     *
+     * @return list<Initiative>
+     */
+    public function findAllWithBlockedBy(): array
+    {
+        /** @var list<Initiative> */
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.blockedBy', 'b')
+            ->addSelect('b')
+            ->orderBy('i.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
