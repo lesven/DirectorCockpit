@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use InvalidArgumentException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserService
@@ -30,7 +31,7 @@ class UserService
         $this->validateRoles($roles);
 
         if ($this->userRepository->findByEmail($email) !== null) {
-            throw new \InvalidArgumentException(sprintf('Ein Benutzer mit der E-Mail-Adresse "%s" existiert bereits.', $email));
+            throw new InvalidArgumentException(sprintf('Ein Benutzer mit der E-Mail-Adresse "%s" existiert bereits.', $email));
         }
 
         // Temporary user object just to hash the password
@@ -38,7 +39,7 @@ class UserService
         $hashed = $this->passwordHasher->hashPassword($user, $plainPassword);
         $user->setPassword($hashed);
 
-        $this->userRepository->save($user, flush: true);
+        $this->userRepository->save($user);
 
         return $user;
     }
@@ -53,7 +54,7 @@ class UserService
     {
         $this->validateRoles($roles);
         $user->setRoles($roles);
-        $this->userRepository->save($user, flush: true);
+        $this->userRepository->save($user);
 
         return $user;
     }
@@ -66,10 +67,10 @@ class UserService
     public function deleteUser(User $userToDelete, User $requestingUser): void
     {
         if ($userToDelete->getId() === $requestingUser->getId()) {
-            throw new \InvalidArgumentException('Du kannst dein eigenes Konto nicht löschen.');
+            throw new InvalidArgumentException('Du kannst dein eigenes Konto nicht löschen.');
         }
 
-        $this->userRepository->remove($userToDelete, flush: true);
+        $this->userRepository->remove($userToDelete);
     }
 
     /**
@@ -80,14 +81,14 @@ class UserService
     public function changePassword(User $user, string $currentPlain, string $newPlain): void
     {
         if (!$this->passwordHasher->isPasswordValid($user, $currentPlain)) {
-            throw new \InvalidArgumentException('Das aktuelle Passwort ist falsch.');
+            throw new InvalidArgumentException('Das aktuelle Passwort ist falsch.');
         }
 
         $this->validatePassword($newPlain);
 
         $hashed = $this->passwordHasher->hashPassword($user, $newPlain);
         $user->setPassword($hashed);
-        $this->userRepository->save($user, flush: true);
+        $this->userRepository->save($user);
     }
 
     /**
@@ -103,7 +104,7 @@ class UserService
     private function validateEmail(string $email): void
     {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new \InvalidArgumentException('Die E-Mail-Adresse hat ein ungültiges Format.');
+            throw new InvalidArgumentException('Die E-Mail-Adresse hat ein ungültiges Format.');
         }
     }
 
@@ -113,19 +114,19 @@ class UserService
     public function validatePassword(string $plain): void
     {
         if (strlen($plain) < self::MIN_PASSWORD_LENGTH) {
-            throw new \InvalidArgumentException(sprintf('Das Passwort muss mindestens %d Zeichen lang sein.', self::MIN_PASSWORD_LENGTH));
+            throw new InvalidArgumentException(sprintf('Das Passwort muss mindestens %d Zeichen lang sein.', self::MIN_PASSWORD_LENGTH));
         }
         if (!preg_match('/[A-Z]/', $plain)) {
-            throw new \InvalidArgumentException('Das Passwort muss mindestens einen Großbuchstaben enthalten.');
+            throw new InvalidArgumentException('Das Passwort muss mindestens einen Großbuchstaben enthalten.');
         }
         if (!preg_match('/[a-z]/', $plain)) {
-            throw new \InvalidArgumentException('Das Passwort muss mindestens einen Kleinbuchstaben enthalten.');
+            throw new InvalidArgumentException('Das Passwort muss mindestens einen Kleinbuchstaben enthalten.');
         }
         if (!preg_match('/[0-9]/', $plain)) {
-            throw new \InvalidArgumentException('Das Passwort muss mindestens eine Ziffer enthalten.');
+            throw new InvalidArgumentException('Das Passwort muss mindestens eine Ziffer enthalten.');
         }
         if (!preg_match('/[\W_]/', $plain)) {
-            throw new \InvalidArgumentException('Das Passwort muss mindestens ein Sonderzeichen enthalten.');
+            throw new InvalidArgumentException('Das Passwort muss mindestens ein Sonderzeichen enthalten.');
         }
     }
 
@@ -137,7 +138,7 @@ class UserService
         $allowed = ['ROLE_USER', 'ROLE_ADMIN'];
         foreach ($roles as $role) {
             if (!in_array($role, $allowed, true)) {
-                throw new \InvalidArgumentException(sprintf('Ungültige Rolle "%s". Erlaubt: %s', $role, implode(', ', $allowed)));
+                throw new InvalidArgumentException(sprintf('Ungültige Rolle "%s". Erlaubt: %s', $role, implode(', ', $allowed)));
             }
         }
     }

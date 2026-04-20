@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Service\UserService;
+use LogicException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,14 +40,14 @@ class AuthController extends AbstractController
     #[Route('/api/logout', name: 'api_logout', methods: ['POST'])]
     public function logout(): never
     {
-        throw new \LogicException('This method should never be reached. Symfony handles logout.');
+        throw new LogicException('This method should never be reached. Symfony handles logout.');
     }
 
     /**
      * GET /api/me — returns current user data or 401.
      */
     #[Route('/api/me', name: 'api_me', methods: ['GET'])]
-    public function me(#[CurrentUser] ?User $user): JsonResponse
+    public function getCurrentUser(#[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
             return new JsonResponse(['error' => 'Nicht eingeloggt.'], Response::HTTP_UNAUTHORIZED);

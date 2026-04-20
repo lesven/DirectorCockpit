@@ -32,7 +32,15 @@
     </rule>
 
     <!-- ─── Unused Code ──────────────────────────────────────────── -->
-    <rule ref="rulesets/unusedcode.xml"/>
+    <rule ref="rulesets/unusedcode.xml">
+        <!--
+          UnusedFormalParameter: Symfony-Interfaces (Security-Handler, EventListener, Controller)
+          schreiben Parameter vor, die intern nicht genutzt werden. Das ist kein Code-Smell,
+          sondern Interface-Contract-Pflicht. Beispiele: AuthenticationFailureHandler,
+          AuthenticationSuccessHandler. Die Regel erzeugt zu viele False Positives.
+        -->
+        <exclude name="UnusedFormalParameter"/>
+    </rule>
 
     <!-- ─── Clean Code ───────────────────────────────────────────── -->
     <rule ref="rulesets/cleancode.xml">

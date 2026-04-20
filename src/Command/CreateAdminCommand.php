@@ -35,17 +35,10 @@ class CreateAdminCommand extends Command
         $io = new SymfonyStyle($input, $output);
         $io->title('Admin-Benutzer erstellen');
 
-        $email = $input->getOption('email');
-        if (!is_string($email) || $email === '') {
-            $email = $io->ask('E-Mail-Adresse');
-        }
+        $email = $this->resolveStringOption($input->getOption('email'), fn () => $io->ask('E-Mail-Adresse'));
+        $password = $this->resolveStringOption($input->getOption('password'), fn () => $io->askHidden('Passwort (min. 12 Zeichen, Groß/Klein/Zahl/Sonderzeichen)'));
 
-        $password = $input->getOption('password');
-        if (!is_string($password) || $password === '') {
-            $password = $io->askHidden('Passwort (min. 12 Zeichen, Groß/Klein/Zahl/Sonderzeichen)');
-        }
-
-        if (!is_string($email) || !is_string($password)) {
+        if ($email === null || $password === null) {
             $io->error('E-Mail und Passwort dürfen nicht leer sein.');
             return Command::FAILURE;
         }
@@ -60,5 +53,14 @@ class CreateAdminCommand extends Command
         $io->success(sprintf('Admin-Benutzer "%s" (ID %d) erfolgreich erstellt.', $user->getEmail(), $user->getId()));
 
         return Command::SUCCESS;
+    }
+
+    private function resolveStringOption(mixed $option, callable $ask): ?string
+    {
+        if (is_string($option) && $option !== '') {
+            return $option;
+        }
+        $value = $ask();
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }
