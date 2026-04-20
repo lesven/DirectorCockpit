@@ -2,6 +2,12 @@ import { Selector, ClientFunction, t } from 'testcafe';
 
 /** Base URL - uses TestCafe baseUrl from config */
 export const BASE_URL = 'http://localhost:8089/cockpit.html';
+export const LOGIN_URL = 'http://localhost:8089/login.html';
+export const ADMIN_URL = 'http://localhost:8089/admin.html';
+
+/** E2E test admin credentials — must exist in running Docker container */
+export const E2E_ADMIN_EMAIL = 'e2e-admin@test.internal';
+export const E2E_ADMIN_PASSWORD = 'E2eAdmin!2025X';
 
 const SEED_PAYLOAD = {
   kw: '12',
@@ -110,6 +116,7 @@ const seedViaAPI = ClientFunction((json) => {
   return fetch('/api/cockpit', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -123,10 +130,23 @@ const clearViewState = ClientFunction(() => {
 });
 
 /**
+ * Logs in via the login page. Call this before navigating to other pages.
+ */
+export async function loginAsAdmin() {
+  await t.navigateTo(LOGIN_URL);
+  await t.typeText(Selector('#email'), E2E_ADMIN_EMAIL);
+  await t.typeText(Selector('#password'), E2E_ADMIN_PASSWORD);
+  await t.click(Selector('button[type="submit"]'));
+  // Wait until redirected away from login page (to cockpit.html or ?redirect=)
+  await t.expect(Selector('body').exists).ok({ timeout: 5000 });
+}
+
+/**
  * Seeds data via API and navigates to the cockpit page.
  * Call this in beforeEach hooks.
  */
 export async function setupTest() {
+  await loginAsAdmin();
   await seedViaAPI(JSON.stringify(SEED_PAYLOAD));
   await t.deleteCookies('cockpit_view');
   await clearViewState();

@@ -20,6 +20,51 @@ npm run lint         # ESLint prüfen
 npm run format       # Prettier formatieren
 ```
 
+## Authentifizierung
+
+DirectorCockpit verwendet Session-basierte Authentifizierung (Symfony Security).
+
+### Erster Admin-Benutzer anlegen
+
+```bash
+make create-admin
+# → Fragt interaktiv nach E-Mail und Passwort
+# Oder direkt:
+docker compose exec app php bin/console app:create-admin --email admin@example.com --password 'MeinSicheresPasswort!1'
+```
+
+### Passwort-Anforderungen
+
+- Mindestens 12 Zeichen
+- Mindestens ein Großbuchstabe (A–Z)
+- Mindestens ein Kleinbuchstabe (a–z)
+- Mindestens eine Ziffer (0–9)
+- Mindestens ein Sonderzeichen
+
+### Rollen
+
+| Rolle | Berechtigungen |
+|-------|---------------|
+| `ROLE_USER` | Lesen und Schreiben aller Cockpit-Daten |
+| `ROLE_ADMIN` | Zusätzlich: Benutzerverwaltung (Benutzer anlegen, Rollen ändern, löschen) |
+
+### Seiten
+
+- `/login.html` — Login-Formular
+- `/admin.html` — Benutzerverwaltung (nur ROLE_ADMIN)
+- `/cockpit.html`, `/kunden.html`, `/roadmap.html` — Erfordern Login (ROLE_USER)
+
+### API-Endpunkte
+
+| Endpunkt | Methode | Zugriff | Beschreibung |
+|----------|---------|---------|--------------|
+| `/api/login` | POST | Öffentlich | JSON-Login (email + password) |
+| `/api/logout` | POST | Eingeloggt | Session beenden |
+| `/api/me` | GET | ROLE_USER | Aktueller Benutzer |
+| `/api/user/password` | PUT | ROLE_USER | Passwort ändern |
+| `/api/admin/users` | GET/POST | ROLE_ADMIN | Benutzerliste / Neuen Benutzer anlegen |
+| `/api/admin/users/{id}` | PUT/DELETE | ROLE_ADMIN | Rollen ändern / Benutzer löschen |
+
 ## Modul-Architektur
 
 ```

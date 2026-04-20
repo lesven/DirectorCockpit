@@ -5,6 +5,7 @@
  */
 import { data, load } from './store.js';
 import { esc } from './utils.js';
+import { initAuth } from './auth.js';
 
 // ─── Konstanten ──────────────────────────────────────────────
 
@@ -391,6 +392,7 @@ function activate(pid) {
 
 export async function init() {
   initTooltips();
+  await initAuth();
   await load();
   render(data);
 }

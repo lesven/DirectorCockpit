@@ -4,6 +4,7 @@
  */
 import { data, load, save, dSave } from './store.js';
 import { generateId, esc, findById } from './utils.js';
+import { initAuth } from './auth.js';
 
 const tbody      = document.getElementById('kunden-body');
 const countBadge = document.getElementById('kunden-count');
@@ -82,6 +83,7 @@ tbody.addEventListener('input', (e) => {
 // ─── Init ────────────────────────────────────────────────────
 
 (async function init() {
+  await initAuth();
   await load();
   renderKunden();
 })();

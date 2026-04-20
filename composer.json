@@ -7,7 +7,9 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/orm": "^3.0",
         "symfony/framework-bundle": "^7.2",
+        "symfony/password-hasher": "^7.2",
         "symfony/runtime": "^7.2",
+        "symfony/security-bundle": "^7.2",
         "symfony/yaml": "^7.4"
     },
     "require-dev": {

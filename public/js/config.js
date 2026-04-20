@@ -1,5 +1,9 @@
 export const CONFIG = {
   API_URL: '/api/cockpit',
+  LOGIN_URL: '/api/login',
+  LOGOUT_URL: '/api/logout',
+  ME_URL: '/api/me',
+  LOGIN_PAGE: '/login.html',
   SAVE_DEBOUNCE_MS: 400,
   SAVE_INDICATOR_MS: 1400,
   ERROR_INDICATOR_MS: 3000,
