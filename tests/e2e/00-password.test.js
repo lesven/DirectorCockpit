@@ -7,45 +7,44 @@ fixture('AUTH-3: Passwort-Änderung')
     await t
       .typeText(Selector('#email'), E2E_ADMIN_EMAIL)
       .typeText(Selector('#password'), E2E_ADMIN_PASSWORD)
-      .click(Selector('button[type="submit"]'));
-    await t.expect(Selector('#teams-grid').exists).ok({ timeout: 6000 });
+      .click(Selector('#login-btn'));
+    await t.expect(Selector('#teams-grid').exists).ok({ timeout: 8000 });
   });
 
 test('AUTH-3.1: Passwort-Ändern-Button öffnet Modal', async (t) => {
-  // Passwort-Ändern-Button (🔑) im Header
-  const pwBtn = Selector('button, [role="button"]').withText('🔑');
-  await t.expect(pwBtn.exists).ok('Passwort-Ändern-Button sollte im Header existieren', { timeout: 4000 });
-  await t.click(pwBtn);
+  // #change-password-btn wird von auth.js in #user-info gerendert
+  await t.expect(Selector('#change-password-btn').exists).ok('Passwort-Ändern-Button sollte im Header existieren', { timeout: 5000 });
+  await t.click(Selector('#change-password-btn'));
 
-  // Modal sollte erscheinen
-  const modal = Selector('#pw-change-modal, .pw-change-modal, dialog');
-  await t.expect(modal.exists).ok('Passwort-Ändern-Modal sollte erscheinen', { timeout: 3000 });
+  // Modal wird lazy-geladen und als #pw-change-modal eingefügt
+  await t.expect(Selector('#pw-change-modal').hasClass('open')).ok('Passwort-Ändern-Modal sollte erscheinen', { timeout: 4000 });
 });
 
 test('AUTH-3.2: Falsches aktuelles Passwort zeigt Fehlermeldung', async (t) => {
-  const pwBtn = Selector('button, [role="button"]').withText('🔑');
-  await t.click(pwBtn);
+  await t.click(Selector('#change-password-btn'));
+  await t.expect(Selector('#pw-change-modal').hasClass('open')).ok({ timeout: 4000 });
 
-  const modal = Selector('#pw-change-modal, .pw-change-modal, dialog');
-  await t.typeText(modal.find('#current-password, [name="currentPassword"]'), 'FalschesPasswort!99');
-  await t.typeText(modal.find('#new-password, [name="newPassword"]'), 'NeuesValid!Pw12');
-  await t.typeText(modal.find('#confirm-password, [name="confirmPassword"]'), 'NeuesValid!Pw12');
-  await t.click(modal.find('button[type="submit"]'));
+  await t
+    .typeText(Selector('#pc-current'), 'FalschesPasswort!99')
+    .typeText(Selector('#pc-new'), 'NeuesValid!Pw12X')
+    .typeText(Selector('#pc-confirm'), 'NeuesValid!Pw12X');
+  await t.click(Selector('#pc-submit'));
 
-  const errMsg = modal.find('.error-message, .alert-error, [data-testid="error"]');
-  await t.expect(errMsg.visible).ok('Fehlermeldung bei falschem Passwort', { timeout: 3000 });
+  // Server gibt 422 zurück, #pc-error erscheint
+  await t.expect(Selector('#pc-error').visible).ok('Fehlermeldung bei falschem Passwort', { timeout: 4000 });
 });
 
 test('AUTH-3.3: Client-Validierung bei zu kurzem Passwort', async (t) => {
-  const pwBtn = Selector('button, [role="button"]').withText('🔑');
-  await t.click(pwBtn);
+  await t.click(Selector('#change-password-btn'));
+  await t.expect(Selector('#pw-change-modal').hasClass('open')).ok({ timeout: 4000 });
 
-  const modal = Selector('#pw-change-modal, .pw-change-modal, dialog');
-  await t.typeText(modal.find('#current-password, [name="currentPassword"]'), E2E_ADMIN_PASSWORD);
-  await t.typeText(modal.find('#new-password, [name="newPassword"]'), 'kurz');
-  await t.typeText(modal.find('#confirm-password, [name="confirmPassword"]'), 'kurz');
-  await t.click(modal.find('button[type="submit"]'));
+  await t
+    .typeText(Selector('#pc-current'), E2E_ADMIN_PASSWORD)
+    .typeText(Selector('#pc-new'), 'kurz')
+    .typeText(Selector('#pc-confirm'), 'kurz');
+  await t.click(Selector('#pc-submit'));
 
-  const errMsg = modal.find('.error-message, .alert-error, [data-testid="error"]');
-  await t.expect(errMsg.visible).ok('Fehlermeldung bei zu kurzem Passwort', { timeout: 2000 });
+  // Client-seitige Validierung: #pc-error erscheint sofort ohne Server-Call
+  await t.expect(Selector('#pc-error').visible).ok('Fehlermeldung bei zu kurzem Passwort', { timeout: 2000 });
+  await t.expect(Selector('#pc-error').innerText).contains('12 Zeichen');
 });

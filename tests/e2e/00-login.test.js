@@ -8,44 +8,43 @@ test('AUTH-1.1: Erfolgreicher Login leitet auf cockpit.html weiter', async (t) =
   await t
     .typeText(Selector('#email'), E2E_ADMIN_EMAIL)
     .typeText(Selector('#password'), E2E_ADMIN_PASSWORD)
-    .click(Selector('button[type="submit"]'));
+    .click(Selector('#login-btn'));
 
-  await t.expect(Selector('#teams-grid').exists).ok('cockpit.html sollte geladen sein', { timeout: 6000 });
+  await t.expect(Selector('#teams-grid').exists).ok('cockpit.html sollte geladen sein', { timeout: 8000 });
 });
 
 test('AUTH-1.2: Falsche Anmeldedaten zeigen Fehlermeldung', async (t) => {
   await t
     .typeText(Selector('#email'), 'falsch@test.de')
     .typeText(Selector('#password'), 'FalschesPasswort!99')
-    .click(Selector('button[type="submit"]'));
+    .click(Selector('#login-btn'));
 
   const errorMsg = Selector('#login-error');
   await t.expect(errorMsg.visible).ok('Fehlermeldung sollte erscheinen', { timeout: 3000 });
   await t.expect(errorMsg.innerText).contains('Anmeldedaten');
-  // URL bleibt login.html
-  await t.expect(Selector('form').exists).ok();
+  // Formular bleibt sichtbar
+  await t.expect(Selector('#login-form').exists).ok();
 });
 
 test('AUTH-1.3: Unauthentifizierter Zugriff auf cockpit.html leitet zu login.html', async (t) => {
-  // Erst ohne eingeloggt zu sein direkt cockpit.html aufrufen
+  // Ohne Session direkt cockpit.html aufrufen
   await t.navigateTo(BASE_URL);
-  // Sollte zu login.html umgeleitet werden
-  await t.expect(Selector('#email').exists).ok('Login-Formular sollte erscheinen', { timeout: 4000 });
+  // auth.js ruft /api/me auf, bekommt 401 und leitet zu login.html weiter
+  await t.expect(Selector('#login-form').exists).ok('Login-Formular sollte erscheinen', { timeout: 6000 });
 });
 
 test('AUTH-1.4: Logout funktioniert und leitet zu login.html', async (t) => {
-  // Erst einloggen
+  // Einloggen
   await t
     .typeText(Selector('#email'), E2E_ADMIN_EMAIL)
     .typeText(Selector('#password'), E2E_ADMIN_PASSWORD)
-    .click(Selector('button[type="submit"]'));
+    .click(Selector('#login-btn'));
 
-  await t.expect(Selector('#teams-grid').exists).ok({ timeout: 6000 });
+  await t.expect(Selector('#teams-grid').exists).ok({ timeout: 8000 });
 
-  // Abmelden-Button klicken
-  const logoutBtn = Selector('[data-action="logout"], #logout-btn, button').withText('Abmelden');
-  await t.click(logoutBtn.nth(0));
+  // Abmelden-Button (gerendert von auth.js)
+  await t.click(Selector('#logout-btn'));
 
-  // Sollte zu login.html weitergeleitet werden
-  await t.expect(Selector('#email').exists).ok('Login-Formular nach Logout', { timeout: 4000 });
+  // Zu login.html weitergeleitet
+  await t.expect(Selector('#login-form').exists).ok('Login-Formular nach Logout', { timeout: 6000 });
 });

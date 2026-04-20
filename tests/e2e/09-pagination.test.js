@@ -1,5 +1,5 @@
 import { Selector, ClientFunction } from 'testcafe';
-import { BASE_URL, selectors } from './helpers.js';
+import { LOGIN_URL, selectors, loginAsAdmin } from './helpers.js';
 
 // Seed mit 25 Initiativen (alle status='grey', keine 'fertig')
 const PAGINATION_SEED = (() => {
@@ -29,6 +29,7 @@ const seedViaAPI = ClientFunction((json) =>
   fetch('/api/cockpit', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok),
 );
@@ -54,8 +55,9 @@ const nextBtn = Selector('.pagination-btn').withText('›');
 const paginationInfo = Selector('.pagination-info');
 
 fixture('US-Pagination: Paginierung der Initiativen-Tabelle')
-  .page(BASE_URL)
+  .page(LOGIN_URL)
   .beforeEach(async (t) => {
+    await loginAsAdmin();
     await setupPaginationTest(t);
   });
 

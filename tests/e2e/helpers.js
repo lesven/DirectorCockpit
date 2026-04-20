@@ -131,14 +131,15 @@ const clearViewState = ClientFunction(() => {
 
 /**
  * Logs in via the login page. Call this before navigating to other pages.
+ * Waits until the redirect to cockpit.html completes (#teams-grid is present).
  */
 export async function loginAsAdmin() {
   await t.navigateTo(LOGIN_URL);
   await t.typeText(Selector('#email'), E2E_ADMIN_EMAIL);
   await t.typeText(Selector('#password'), E2E_ADMIN_PASSWORD);
-  await t.click(Selector('button[type="submit"]'));
-  // Wait until redirected away from login page (to cockpit.html or ?redirect=)
-  await t.expect(Selector('body').exists).ok({ timeout: 5000 });
+  await t.click(Selector('#login-btn'));
+  // Wait until redirected to cockpit.html and page is ready
+  await t.expect(Selector('#teams-grid').exists).ok('Login fehlgeschlagen oder Weiterleitung zu cockpit.html nicht erfolgt', { timeout: 8000 });
 }
 
 /**
