@@ -138,8 +138,8 @@ test('AC-2.6: wsjf-empty CSS-Klasse gesetzt wenn kein WSJF vorhanden', async (t)
 });
 
 const putInvalidWsjf = ClientFunction(() =>
-  fetch('/api/cockpit', {
-    method: 'PUT',
+  fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: JSON.stringify({

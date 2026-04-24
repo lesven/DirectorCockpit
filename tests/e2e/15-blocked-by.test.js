@@ -5,8 +5,8 @@ import { Selector, ClientFunction } from 'testcafe';
 import { LOGIN_URL, waitForSave, loginAsAdmin } from './helpers.js';
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: json,

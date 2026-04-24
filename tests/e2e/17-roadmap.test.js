@@ -4,8 +4,8 @@ import { LOGIN_URL, loginAsAdmin } from './helpers.js';
 const ROADMAP_URL = 'http://localhost:8089/roadmap.html';
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: json,

@@ -2,7 +2,7 @@
  * kunden.js – Kundenstammdaten-Seite.
  * Verwaltet die Kunde-Liste über den zentralen /api/cockpit Sync.
  */
-import { data, load, save, dSave } from './store.js';
+import { data, load, createEntity, deleteEntity, saveEntity } from './store.js';
 import { generateId, esc, findById } from './utils.js';
 import { initAuth } from './auth.js';
 
@@ -36,11 +36,13 @@ function renderKundeRow(k) {
 
 // ─── Aktionen ────────────────────────────────────────────────
 
-function addKunde() {
+async function addKunde() {
   const id = generateId();
+  const entityData = { id, name: 'Neuer Kunde' };
+  const created = await createEntity('kunden', entityData);
+  if (!created) return;
   if (!Array.isArray(data.kunden)) data.kunden = [];
-  data.kunden.push({ id, name: '' });
-  save();
+  data.kunden.push(created);
   renderKunden();
   setTimeout(() => {
     const inputs = tbody.querySelectorAll('.customer-name-input');
@@ -48,12 +50,13 @@ function addKunde() {
   }, 50);
 }
 
-function removeKunde(id) {
+async function removeKunde(id) {
   const k = findById(data.kunden || [], id);
   const name = k?.name ? `\u201E${k.name}\u201C` : 'diesen Kunden';
   if (!confirm(`${name} wirklich löschen?\n\nInitiativen, die diesem Kunden zugeordnet sind, werden nicht automatisch geändert.`)) return;
+  const ok = await deleteEntity('kunden', id);
+  if (!ok) return;
   data.kunden = (data.kunden || []).filter((item) => item.id !== id);
-  save();
   renderKunden();
 }
 
@@ -77,7 +80,7 @@ tbody.addEventListener('input', (e) => {
   const item = findById(data[source], +el.dataset.id);
   if (!item) return;
   item[el.dataset.field] = el.value;
-  dSave();
+  saveEntity(source, +el.dataset.id);
 });
 
 // ─── Init ────────────────────────────────────────────────────
