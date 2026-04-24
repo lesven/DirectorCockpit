@@ -8,6 +8,15 @@ export const CONFIG = {
   SAVE_INDICATOR_MS: 1400,
   ERROR_INDICATOR_MS: 3000,
   FOCUS_DELAY_MS: 50,
+  ENTITY_URLS: {
+    teams: '/api/teams',
+    initiatives: '/api/initiatives',
+    milestones: '/api/milestones',
+    risks: '/api/risks',
+    nicht_vergessen: '/api/nicht-vergessen',
+    kunden: '/api/kunden',
+    metadata: '/api/metadata',
+  },
 };
 
 export const STATUSES = ['fertig', 'yellow', 'grey', 'ungeplant'];

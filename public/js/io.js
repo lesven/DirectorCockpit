@@ -1,4 +1,4 @@
-import { data, save, setData } from './store.js';
+import { data, save, setData, load } from './store.js';
 import { renderAll } from './render.js';
 import { generateId } from './utils.js';
 import { MILESTONE_STATUSES } from './config.js';
@@ -135,7 +135,7 @@ export function importJSON() {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       try {
         const parsed = JSON.parse(ev.target.result);
         if (typeof parsed !== 'object' || parsed === null) throw new Error('Ungültiges Format');
@@ -147,8 +147,17 @@ export function importJSON() {
           )
         )
           return;
-        setData(migrated);
-        save();
+        const res = await fetch('/api/cockpit/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(migrated),
+          credentials: 'same-origin',
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        await load();
         renderAll();
       } catch (err) {
         alert('Import fehlgeschlagen: ' + err.message);

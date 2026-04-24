@@ -197,12 +197,62 @@ createSubmit.addEventListener('click', async () => {
 
 // ─── Init ─────────────────────────────────────────────────────
 
+const teamTbody = document.getElementById('team-tbody');
+
+let allTeams = [];
+
+async function loadTeams() {
+  const { ok, data } = await apiFetch('/api/admin/teams');
+  if (!ok) { showError(errorBox, data.error ?? 'Fehler beim Laden der Teams.'); return; }
+  allTeams = data;
+  renderTeams(allTeams);
+}
+
+function renderTeams(teams) {
+  teamTbody.innerHTML = '';
+  if (!teams.length) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" style="text-align: center; color: var(--text2); padding: 1rem;">Keine Teams vorhanden</td>`;
+    teamTbody.appendChild(tr);
+    return;
+  }
+  teams.forEach((t) => {
+    const tr = document.createElement('tr');
+    const ownerUser = t.createdBy ? allUsers.find(u => u.id === t.createdBy) : null;
+    const ownerLabel = ownerUser ? esc(ownerUser.email) : (t.createdBy ? `User #${t.createdBy}` : '<em style="color:var(--text2)">Kein Ersteller</em>');
+    const opts = [`<option value="">— Kein Ersteller —</option>`]
+      .concat(allUsers.map(u => `<option value="${u.id}"${u.id === t.createdBy ? ' selected' : ''}>${esc(u.email)}</option>`))
+      .join('');
+    tr.innerHTML = `
+      <td>${esc(t.name || '(unbenannt)')}</td>
+      <td>${ownerLabel}</td>
+      <td><select data-team-id="${t.id}" class="owner-select">${opts}</select></td>
+    `;
+    teamTbody.appendChild(tr);
+  });
+}
+
+teamTbody.addEventListener('change', async (e) => {
+  if (!e.target.classList.contains('owner-select')) return;
+  const teamId = Number(e.target.dataset.teamId);
+  const userId = e.target.value ? Number(e.target.value) : null;
+  const { ok, data } = await apiFetch(`/api/admin/teams/${teamId}/owner`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+  if (!ok) { showError(errorBox, data.error ?? 'Team-Ersteller konnte nicht geändert werden.'); return; }
+  hideError(errorBox);
+  await loadTeams();
+});
+
 (async function init() {
   currentUser = await initAuth();
-  if (!currentUser) return; // redirected by initAuth
+  if (!currentUser) return;
   if (!currentUser.roles.includes('ROLE_ADMIN')) {
     document.querySelector('.admin-main').innerHTML = '<p style="color:#fca5a5">Zugriff verweigert. Nur Admins dürfen diese Seite aufrufen.</p>';
     return;
   }
   await loadUsers();
+  await loadTeams();
 })();

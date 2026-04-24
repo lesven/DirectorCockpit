@@ -3,7 +3,7 @@
  * Verantwortlich für: Stammdaten-Render, WSJF-Render, Header-Badges,
  * Initiative-Input-Handling auf der Detail-Page.
  */
-import { data, dSave } from './store.js';
+import { data, saveEntity } from './store.js';
 import { findById, esc, calcWsjf, isCurrentlyBlocked } from './utils.js';
 import {
   WSJF_SCALE,
@@ -221,7 +221,7 @@ export function handleIniField(el, currentId) {
     renderHeaderBadges(ini);
   }
 
-  dSave();
+  saveEntity('initiatives', currentId);
 }
 
 // ─── blockedBy: Blocker hinzufügen / entfernen ──────────────
@@ -230,7 +230,7 @@ export function addBlocker(ini, blockerId) {
   if (!Array.isArray(ini.blockedBy)) ini.blockedBy = [];
   if (!ini.blockedBy.includes(blockerId)) {
     ini.blockedBy = [...ini.blockedBy, blockerId];
-    dSave();
+    saveEntity('initiatives', ini.id);
     renderBlockedBy(ini);
   }
 }
@@ -238,7 +238,7 @@ export function addBlocker(ini, blockerId) {
 export function removeBlocker(ini, blockerId) {
   if (!Array.isArray(ini.blockedBy)) return;
   ini.blockedBy = ini.blockedBy.filter((id) => id !== blockerId);
-  dSave();
+  saveEntity('initiatives', ini.id);
   renderBlockedBy(ini);
 }
 

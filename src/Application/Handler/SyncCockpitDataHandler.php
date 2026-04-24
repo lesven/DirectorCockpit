@@ -10,6 +10,7 @@ use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\SyncableEntity;
 use App\Entity\Team;
+use App\Entity\User;
 use App\Repository\MetadataRepository;
 use App\Service\EntityRegistry;
 use App\Service\EntitySyncer;
@@ -75,6 +76,57 @@ class SyncCockpitDataHandler
                 'trace'     => $e->getTraceAsString(),
             ]);
             throw new SyncException('Sync fehlgeschlagen: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Import-Variante: Setzt createdBy auf neue Teams und NichtVergessen.
+     *
+     * @throws ValidationException
+     * @throws SyncException
+     */
+    public function handleForUser(SyncCockpitDataCommand $command, User $user): void
+    {
+        $payload = $command->payload;
+
+        $this->validator->validate($payload, array_keys(EntityRegistry::ENTITY_REGISTRY));
+
+        $this->em->getConnection()->beginTransaction();
+        try {
+            foreach (EntityRegistry::ENTITY_REGISTRY as $key => $class) {
+                $existing = $this->em->getRepository($class)->findAll();
+                $this->entitySyncer->sync($existing, $payload[$key] ?? [], $class);
+            }
+
+            // Set createdBy on newly created teams and NV entries
+            foreach (['teams' => Team::class, 'nicht_vergessen' => NichtVergessen::class] as $key => $class) {
+                foreach ($payload[$key] ?? [] as $item) {
+                    $entity = $this->em->find($class, $item['id']);
+                    if ($entity !== null && $entity->getCreatedBy() === null) {
+                        $entity->setCreatedBy($user);
+                    }
+                }
+            }
+
+            $meta = $this->metaRepo->getOrCreate();
+            $meta->setKw($payload['kw'] ?? '');
+
+            $this->em->flush();
+
+            $this->entitySyncer->syncBlockedByRelations($payload['initiatives'] ?? []);
+            $this->em->flush();
+
+            $this->em->getConnection()->commit();
+        } catch (ValidationException $e) {
+            $this->em->getConnection()->rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            $this->em->getConnection()->rollBack();
+            $this->logger->error('Import fehlgeschlagen', [
+                'exception' => $e->getMessage(),
+                'trace'     => $e->getTraceAsString(),
+            ]);
+            throw new SyncException('Import fehlgeschlagen: ' . $e->getMessage(), 0, $e);
         }
     }
 }

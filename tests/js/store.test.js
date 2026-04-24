@@ -123,89 +123,9 @@ describe('load()', () => {
 });
 
 describe('save()', () => {
-  it('sends PUT request with current data', async () => {
-    setData({ kw: '5', teams: [], initiatives: [], nicht_vergessen: [] });
-    let resolvePromise;
-    globalThis.fetch = vi.fn().mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolvePromise = resolve;
-        }),
-    );
-
+  it('is a no-op (backward compat)', () => {
+    globalThis.fetch = vi.fn();
     save();
-    expect(fetch).toHaveBeenCalledWith('/api/cockpit', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-      credentials: 'same-origin',
-    });
-
-    // Resolve to avoid unhandled promise
-    resolvePromise({ ok: true });
-    await vi.waitFor(() => expect(document.getElementById('save-ind').textContent).toBe('gespeichert'));
-  });
-
-  it('shows error indicator on failure', async () => {
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error('fail'));
-
-    save();
-    await vi.waitFor(() => expect(document.getElementById('save-ind').textContent).toBe('Fehler!'));
-  });
-
-  it('redirects to login on 401 during save', async () => {
-    globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 });
-    save();
-    await vi.waitFor(() => expect(redirectToLogin).toHaveBeenCalledTimes(1));
-  });
-
-  it('queues save when one is already in-flight', async () => {
-    let resolveFirst;
-    let callCount = 0;
-    globalThis.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return new Promise((resolve) => {
-          resolveFirst = resolve;
-        });
-      }
-      return Promise.resolve({ ok: true });
-    });
-
-    // First save starts
-    save();
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    // Second save while first is in-flight → should queue
-    save();
-    expect(fetch).toHaveBeenCalledTimes(1); // still only 1
-
-    // Complete first save → queued save should fire
-    resolveFirst({ ok: true });
-    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
-  });
-
-  it('only triggers one queued save even if called multiple times', async () => {
-    let resolveFirst;
-    let callCount = 0;
-    globalThis.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return new Promise((resolve) => {
-          resolveFirst = resolve;
-        });
-      }
-      return Promise.resolve({ ok: true });
-    });
-
-    save(); // starts first save
-    save(); // queued
-    save(); // re-queued (replaces the previous queue)
-    save(); // re-queued again
-    expect(fetch).toHaveBeenCalledTimes(1);
-
-    resolveFirst({ ok: true });
-    // Should result in exactly one more save (the queued one)
-    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

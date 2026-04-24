@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\TeamRepository;
 use App\Repository\UserRepository;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,6 +25,8 @@ class AdminController extends AbstractController
     public function __construct(
         private readonly UserService $userService,
         private readonly UserRepository $userRepository,
+        private readonly TeamRepository $teamRepository,
+        private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {}
 
@@ -123,5 +127,54 @@ class AdminController extends AbstractController
         ]);
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/teams/{id}/owner', name: 'admin_teams_owner', methods: ['PUT'])]
+    public function changeTeamOwner(int $id, Request $request, #[CurrentUser] User $admin): JsonResponse
+    {
+        $team = $this->teamRepository->find($id);
+        if ($team === null) {
+            return new JsonResponse(['error' => 'Team nicht gefunden.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $body = json_decode($request->getContent(), true);
+        $userId = $body['userId'] ?? null;
+
+        if ($userId === null) {
+            $team->setCreatedBy(null);
+            $this->em->flush();
+
+            $this->logger->info('Admin hat Team-Ersteller geändert', [
+                'adminId' => $admin->getId(),
+                'teamId' => $id,
+                'newOwnerId' => $userId,
+            ]);
+
+            return new JsonResponse($team->toArray());
+        }
+
+        $user = $this->userRepository->find($userId);
+        if ($user === null) {
+            return new JsonResponse(['error' => 'Benutzer nicht gefunden.'], Response::HTTP_NOT_FOUND);
+        }
+        $team->setCreatedBy($user);
+
+        $this->em->flush();
+
+        $this->logger->info('Admin hat Team-Ersteller geändert', [
+            'adminId' => $admin->getId(),
+            'teamId' => $id,
+            'newOwnerId' => $userId,
+        ]);
+
+        return new JsonResponse($team->toArray());
+    }
+
+    #[Route('/teams', name: 'admin_teams_list', methods: ['GET'])]
+    public function listTeams(): JsonResponse
+    {
+        $teams = $this->teamRepository->findBy([], ['id' => 'ASC']);
+
+        return new JsonResponse(array_map(static fn($t) => $t->toArray(), $teams));
     }
 }

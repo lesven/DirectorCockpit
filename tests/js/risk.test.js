@@ -18,6 +18,9 @@ vi.mock('../../public/js/store.js', () => ({
   get data() { return mockData; },
   dSave: vi.fn(),
   save: vi.fn(),
+  saveEntity: vi.fn(),
+  createEntity: vi.fn(),
+  deleteEntity: vi.fn().mockResolvedValue(true),
 }));
 
 vi.mock('../../public/js/utils.js', () => ({

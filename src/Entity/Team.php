@@ -24,6 +24,20 @@ final class Team implements SyncableEntity
     #[ORM\Column(length: 500)]
     private string $schritt = '';
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $user): void
+    {
+        $this->createdBy = $user;
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
@@ -33,6 +47,7 @@ final class Team implements SyncableEntity
             'status' => $this->status->value,
             'fokus' => $this->fokus,
             'schritt' => $this->schritt,
+            'createdBy' => $this->createdBy?->getId(),
         ];
     }
 

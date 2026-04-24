@@ -3,7 +3,7 @@
  * Verantwortlich für: Risiko-CRUD, Risiko-Render (Liste + Summary-Bar),
  * Risk-Input-Handling auf der Detail-Page.
  */
-import { data, save, dSave } from './store.js';
+import { data, createEntity, saveEntity } from './store.js';
 import { findById, esc, calcRiskScore, getRiskLevel, generateId } from './utils.js';
 import {
   RISK_PROBABILITY_LABELS,
@@ -159,7 +159,7 @@ export function refreshRisks(currentId) {
 
 // ─── CRUD: Risiken ───────────────────────────────────────────
 
-export function addRisk(currentId) {
+export async function addRisk(currentId) {
   if (currentId === null) return;
   const risk = {
     id: generateId(),
@@ -171,8 +171,9 @@ export function addRisk(currentId) {
     roamStatus: null,
     roamNotiz: '',
   };
-  data.risks.push(risk);
-  save();
+  const created = await createEntity('risks', risk);
+  if (!created) return;
+  data.risks.push(created);
   refreshRisks(currentId);
   const inputs = dom.dpRiskList.querySelectorAll('.dp-risk-bezeichnung');
   if (inputs.length) inputs[inputs.length - 1].focus();
@@ -208,5 +209,5 @@ export function handleRiskField(el, currentId) {
     risk[field] = el.value;
     if (field === 'roamNotiz' || field === 'beschreibung') autoGrow(el);
   }
-  dSave();
+  saveEntity('risks', riskId);
 }

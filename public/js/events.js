@@ -1,4 +1,4 @@
-import { data, save, dSave } from './store.js';
+import { data, saveEntity, saveMetadata } from './store.js';
 import { addEntity, removeEntity, cycleStatus } from './crud.js';
 import { findById } from './utils.js';
 import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, isHideFertig, setShowOnlyBlocked, isShowOnlyBlocked } from './sort.js';
@@ -47,7 +47,7 @@ function handleActionClick(e) {
       const v = prompt('Kalenderwoche:', data.kw || '');
       if (v !== null) {
         data.kw = v.trim();
-        save();
+        saveMetadata();
         renderAll();
       }
       break;
@@ -184,7 +184,7 @@ function handleInlineInput(e) {
   const item = findById(data[source], id);
   if (!item) return;
   item[field] = el.value;
-  dSave();
+  saveEntity(source, id);
 }
 
 function handleInlineChange(e) {
@@ -201,7 +201,7 @@ function handleInlineChange(e) {
   if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
     renderEntity('initiatives');
   }
-  dSave();
+  saveEntity(source, id);
 }
 
 export function bindEvents() {

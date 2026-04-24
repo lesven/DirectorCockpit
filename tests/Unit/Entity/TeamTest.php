@@ -3,6 +3,7 @@
 namespace App\Tests\Unit\Entity;
 
 use App\Entity\Team;
+use App\Entity\User;
 use PHPUnit\Framework\TestCase;
 
 class TeamTest extends TestCase
@@ -86,5 +87,31 @@ class TeamTest extends TestCase
     {
         $team = Team::fromArray(['id' => 77]);
         $this->assertSame(77, $team->getId());
+    }
+
+    public function testCreatedByDefaultsToNull(): void
+    {
+        $team = Team::fromArray(['id' => 1]);
+        $this->assertNull($team->getCreatedBy());
+        $this->assertNull($team->toArray()['createdBy']);
+    }
+
+    public function testSetCreatedByAndToArray(): void
+    {
+        $team = Team::fromArray(['id' => 1]);
+        $user = new User('test@example.com', 'hashed', ['ROLE_USER']);
+
+        $team->setCreatedBy($user);
+        $this->assertSame($user, $team->getCreatedBy());
+    }
+
+    public function testSetCreatedByToNull(): void
+    {
+        $team = Team::fromArray(['id' => 1]);
+        $user = new User('test@example.com', 'hashed', ['ROLE_USER']);
+        $team->setCreatedBy($user);
+        $team->setCreatedBy(null);
+        $this->assertNull($team->getCreatedBy());
+        $this->assertNull($team->toArray()['createdBy']);
     }
 }
