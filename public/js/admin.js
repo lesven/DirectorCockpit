@@ -1,4 +1,5 @@
 import { initAuth } from './auth.js';
+import { debounce } from './utils.js';
 
 const tbody = document.getElementById('user-tbody');
 const errorBox = document.getElementById('admin-error');
@@ -10,8 +11,12 @@ const createCancel = document.getElementById('create-cancel');
 const newEmail = document.getElementById('new-email');
 const newPassword = document.getElementById('new-password');
 const newRole = document.getElementById('new-role');
+const userSearch = document.getElementById('user-search');
+const userSearchClear = document.getElementById('user-search-clear');
 
 let currentUser = null;
+let allUsers = [];
+let currentQuery = '';
 
 // ─── API helpers ──────────────────────────────────────────────
 
@@ -19,6 +24,21 @@ async function apiFetch(url, options = {}) {
   const res = await fetch(url, { credentials: 'same-origin', ...options });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
+}
+
+// ─── Search/Filter ───────────────────────────────────────────
+
+function filterUsers(users, query) {
+  if (!query || query.length < 2) {
+    return users;
+  }
+  const lower = query.toLowerCase();
+  return users.filter(u => u.email.toLowerCase().includes(lower));
+}
+
+function applyFilter() {
+  const filtered = filterUsers(allUsers, currentQuery);
+  renderUsers(filtered);
 }
 
 // ─── Render ───────────────────────────────────────────────────
@@ -36,6 +56,15 @@ function formatRoles(roles) {
 
 function renderUsers(users) {
   tbody.innerHTML = '';
+  
+  // Show "no results" message if active search and no matches
+  if (currentQuery.length >= 2 && users.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="5" style="text-align: center; color: var(--text2); padding: 1rem;">Kein Benutzer gefunden für „${esc(currentQuery)}"</td>`;
+    tbody.appendChild(tr);
+    return;
+  }
+  
   users.forEach((u) => {
     const tr = document.createElement('tr');
     const isAdmin = u.roles.includes('ROLE_ADMIN');
@@ -77,8 +106,25 @@ function esc(str) {
 async function loadUsers() {
   const { ok, data } = await apiFetch('/api/admin/users');
   if (!ok) { showError(errorBox, data.error ?? 'Fehler beim Laden der Benutzer.'); return; }
-  renderUsers(data);
+  allUsers = data;
+  applyFilter();
 }
+
+// ─── User search ──────────────────────────────────────────────
+
+const handleSearchInput = debounce(() => {
+  currentQuery = userSearch.value.trim();
+  applyFilter();
+}, 300);
+
+userSearch.addEventListener('input', handleSearchInput);
+
+userSearchClear.addEventListener('click', () => {
+  userSearch.value = '';
+  currentQuery = '';
+  applyFilter();
+  userSearch.focus();
+});
 
 // ─── Role change ──────────────────────────────────────────────
 
