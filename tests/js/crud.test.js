@@ -38,6 +38,7 @@ vi.stubGlobal('confirm', vi.fn());
 import { removeEntity, cycleStatus, addEntity } from '../../public/js/crud.js';
 import { save, createEntity, deleteEntity, saveEntity } from '../../public/js/store.js';
 import { renderEntity } from '../../public/js/render.js';
+import { openDetail } from '../../public/js/detail.js';
 
 // ── Hilfsfunktionen ──────────────────────────────────────────────────────────
 
@@ -211,5 +212,60 @@ describe('cycleStatus()', () => {
     resetData({ initiatives: [{ id: 1, name: 'A', status: 'grey' }] });
     expect(() => cycleStatus(999, false)).not.toThrow();
     expect(mockData.initiatives[0].status).toBe('grey');
+  });
+});
+
+// ── addEntity ──────────────────────────────────────────────────────────────
+
+describe('addEntity()', () => {
+  it('ruft createEntity mit den Default-Daten auf', async () => {
+    createEntity.mockResolvedValueOnce({ id: 1, name: 'Neues Team', status: 'grey', fokus: '', schritt: '' });
+    await addEntity('teams');
+    expect(createEntity).toHaveBeenCalledWith('teams', expect.objectContaining({
+      name: 'Neues Team',
+      status: 'grey',
+    }));
+  });
+
+  it('pushed das erstelle Entity in data[type]', async () => {
+    const created = { id: 42, name: 'Neues Team', status: 'grey', fokus: '', schritt: '' };
+    createEntity.mockResolvedValueOnce(created);
+    resetData({ teams: [] });
+    await addEntity('teams');
+    expect(mockData.teams).toHaveLength(1);
+    expect(mockData.teams[0]).toBe(created);
+  });
+
+  it('ruft renderEntity nach dem Erstellen auf', async () => {
+    createEntity.mockResolvedValueOnce({ id: 1, name: 'Neues Team', status: 'grey' });
+    await addEntity('teams');
+    expect(renderEntity).toHaveBeenCalledWith('teams');
+  });
+
+  it('tut nichts wenn createEntity null zurückgibt', async () => {
+    createEntity.mockResolvedValueOnce(null);
+    resetData({ teams: [] });
+    await addEntity('teams');
+    expect(mockData.teams).toHaveLength(0);
+    expect(renderEntity).not.toHaveBeenCalled();
+  });
+
+  it('öffnet Detail-Page für neue Initiative', async () => {
+    const created = { id: 99, name: '', status: 'grey' };
+    createEntity.mockResolvedValueOnce(created);
+    resetData({ initiatives: [] });
+    await addEntity('initiatives');
+    expect(openDetail).toHaveBeenCalledWith(99);
+  });
+
+  it('fokussiert das letzte Input bei nicht_vergessen', async () => {
+    vi.useFakeTimers();
+    document.body.innerHTML = '<div><input class="nv-title" /></div>';
+    const created = { id: 1, title: '', body: '' };
+    createEntity.mockResolvedValueOnce(created);
+    resetData({ nicht_vergessen: [] });
+    await addEntity('nicht_vergessen');
+    expect(renderEntity).toHaveBeenCalledWith('nicht_vergessen');
+    vi.useRealTimers();
   });
 });
