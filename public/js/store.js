@@ -1,6 +1,7 @@
 import { CONFIG } from './config.js';
 import { debounce } from './utils.js';
 import { dom } from './dom.js';
+import { redirectToLogin } from './auth.js';
 
 export const data = { kw: '', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [], kunden: [] };
 
@@ -19,7 +20,11 @@ export function setData(newData) {
 
 export async function load() {
   try {
-    const res = await fetch(CONFIG.API_URL);
+    const res = await fetch(CONFIG.API_URL, { credentials: 'same-origin' });
+    if (res.status === 401) {
+      redirectToLogin();
+      return;
+    }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     setData(await res.json());
   } catch (e) {
@@ -66,7 +71,12 @@ async function _doSave() {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+      credentials: 'same-origin',
     });
+    if (res.status === 401) {
+      redirectToLogin();
+      return;
+    }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     showIndicator('gespeichert', CONFIG.SAVE_INDICATOR_MS);
   } catch (err) {

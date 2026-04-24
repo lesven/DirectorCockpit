@@ -1,4 +1,4 @@
-.PHONY: up down build composer-install migrate seed backup test test-unit test-integration test-e2e test-e2e-visible analyse phpmd coverage fresh
+.PHONY: up down build composer-install migrate seed backup test test-unit test-integration test-e2e test-e2e-visible analyse phpmd coverage fresh create-admin
 
 BACKUP_DATE := $(shell date +%y-%m-%d)
 BACKUP_DIR := backups
@@ -26,6 +26,9 @@ backup:
 	@mkdir -p $(BACKUP_DIR)
 	docker compose exec -T db sh -c 'PGPASSWORD="$$POSTGRES_PASSWORD" pg_dump -U "$$POSTGRES_USER" "$$POSTGRES_DB"' > $(BACKUP_FILE)
 	@echo "Backup written to $(BACKUP_FILE)"
+
+create-admin:
+	docker compose exec app php bin/console app:create-admin
 
 test:
 	docker compose exec app php vendor/bin/phpunit

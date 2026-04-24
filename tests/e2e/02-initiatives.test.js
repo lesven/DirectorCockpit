@@ -141,6 +141,7 @@ const putInvalidWsjf = ClientFunction(() =>
   fetch('/api/cockpit', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: JSON.stringify({
       kw: '12',
       teams: [],

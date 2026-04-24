@@ -1,5 +1,5 @@
 import { Selector, ClientFunction } from 'testcafe';
-import { setupTest, waitForSave } from './helpers.js';
+import { LOGIN_URL, setupTest, waitForSave, loginAsAdmin } from './helpers.js';
 
 const KUNDEN_URL = 'http://localhost:8089/kunden.html';
 
@@ -7,6 +7,7 @@ const seedViaAPI = ClientFunction((json) => {
   return fetch('/api/cockpit', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -16,6 +17,7 @@ const reloadPage = ClientFunction(() => {
 });
 
 async function setupKundenTest(t) {
+  await loginAsAdmin();
   await seedViaAPI(
     JSON.stringify({
       kw: '',
@@ -28,7 +30,7 @@ async function setupKundenTest(t) {
       nicht_vergessen: [],
     }),
   );
-  await reloadPage();
+  await t.navigateTo(KUNDEN_URL);
   await Selector('#kunden-body tr', { timeout: 5000 })();
 }
 
@@ -37,7 +39,7 @@ const addBtn      = Selector('#add-kunde-btn');
 const kundenCount = Selector('#kunden-count');
 
 fixture('US-16: Kundenstammdaten-Seite')
-  .page(KUNDEN_URL)
+  .page(LOGIN_URL)
   .beforeEach(async (t) => {
     await setupKundenTest(t);
   });

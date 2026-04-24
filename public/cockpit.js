@@ -7,6 +7,7 @@ import { dom } from './js/dom.js';
 import { openDetail, closeDetail } from './js/detail.js';
 import { parseHash } from './js/routing.js';
 import { findById } from './js/utils.js';
+import { initAuth } from './js/auth.js';
 
 function showToast(message) {
   const el = dom.toast;
@@ -32,7 +33,7 @@ function handleDeepLink() {
   }
 }
 
-load().then(() => {
+initAuth().then(() => load()).then(() => {
   const saved = loadViewState();
   if (saved) {
     // Verwaiste Team-ID verwerfen

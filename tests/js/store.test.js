@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock CONFIG
+// Mock CONFIG (including auth URLs)
 vi.mock('../../public/js/config.js', () => ({
   CONFIG: {
     API_URL: '/api/cockpit',
+    LOGIN_URL: '/api/login',
+    LOGOUT_URL: '/api/logout',
+    ME_URL: '/api/me',
+    LOGIN_PAGE: '/login.html',
     SAVE_DEBOUNCE_MS: 400,
     SAVE_INDICATOR_MS: 1400,
     ERROR_INDICATOR_MS: 3000,
@@ -22,8 +26,17 @@ vi.mock('../../public/js/dom.js', () => ({
   },
 }));
 
+// Mock auth.js — we don't want actual redirects in unit tests
+vi.mock('../../public/js/auth.js', () => ({
+  redirectToLogin: vi.fn(),
+  initAuth: vi.fn().mockResolvedValue({ id: 1, email: 'test@test.de', roles: ['ROLE_USER'] }),
+  logout: vi.fn(),
+  fetchCurrentUser: vi.fn().mockResolvedValue({ id: 1, email: 'test@test.de', roles: ['ROLE_USER'] }),
+}));
+
 import { data, load, save, setData } from '../../public/js/store.js';
 import { dom } from '../../public/js/dom.js';
+import { redirectToLogin } from '../../public/js/auth.js';
 
 beforeEach(() => {
   // Reset data to defaults
@@ -35,6 +48,7 @@ beforeEach(() => {
 
   // Reset fetch mock und Console-Ausgaben unterdrücken
   vi.restoreAllMocks();
+  redirectToLogin.mockClear();
   vi.spyOn(console, 'warn').mockImplementation(() => {});
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -68,12 +82,19 @@ describe('load()', () => {
     const mockData = { kw: '10', teams: [{ id: 1 }], initiatives: [], nicht_vergessen: [] };
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
       json: () => Promise.resolve(mockData),
     });
 
     await load();
     expect(data.kw).toBe('10');
     expect(data.teams).toHaveLength(1);
+  });
+
+  it('redirects to login on 401 during load', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    await load();
+    expect(redirectToLogin).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to default_data.json on API error', async () => {
@@ -117,6 +138,7 @@ describe('save()', () => {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+      credentials: 'same-origin',
     });
 
     // Resolve to avoid unhandled promise
@@ -129,6 +151,12 @@ describe('save()', () => {
 
     save();
     await vi.waitFor(() => expect(document.getElementById('save-ind').textContent).toBe('Fehler!'));
+  });
+
+  it('redirects to login on 401 during save', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    save();
+    await vi.waitFor(() => expect(redirectToLogin).toHaveBeenCalledTimes(1));
   });
 
   it('queues save when one is already in-flight', async () => {
