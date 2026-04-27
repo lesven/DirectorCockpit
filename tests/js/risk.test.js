@@ -26,6 +26,7 @@ vi.mock('../../public/js/store.js', () => ({
 vi.mock('../../public/js/utils.js', () => ({
   findById: (arr, id) => arr.find((x) => x.id === id),
   esc: (s) => (s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')),
+  debounce: (fn) => fn,
   calcRiskScore: (r) => r.eintrittswahrscheinlichkeit * r.schadensausmass,
   getRiskLevel: (score) => {
     if (score <= 4)  return { label: 'Gering',   css: 'risk-low' };

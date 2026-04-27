@@ -27,6 +27,8 @@ vi.mock('../../public/js/crud.js', () => ({
 const mockFindById = vi.hoisted(() => vi.fn());
 vi.mock('../../public/js/utils.js', () => ({
   findById: mockFindById,
+  debounce: (fn) => fn,
+  esc: (s) => String(s || ''),
 }));
 
 const mockFilterState = { name: '', team: '', status: '', projektstatus: '', kunde: '' };

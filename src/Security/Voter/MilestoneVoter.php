@@ -9,7 +9,9 @@ use App\Entity\Initiative;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Repository\InitiativeRepository;
+use App\Repository\InitiativeShareRepository;
 use App\Repository\TeamRepository;
+use App\Repository\TeamShareRepository;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -25,6 +27,8 @@ class MilestoneVoter extends Voter
     public function __construct(
         private readonly InitiativeRepository $initiativeRepository,
         private readonly TeamRepository $teamRepository,
+        private readonly TeamShareRepository $teamShareRepository,
+        private readonly InitiativeShareRepository $initiativeShareRepository,
     ) {
     }
 
@@ -56,18 +60,26 @@ class MilestoneVoter extends Voter
             return false;
         }
 
+        return $this->hasAccessViaInitiative($initiative, (int) $initiativeId, $user);
+    }
+
+    private function hasAccessViaInitiative(Initiative $initiative, int $initiativeId, User $user): bool
+    {
         $teamId = $initiative->toArray()['team'] ?? null;
-        if ($teamId === null) {
-            return false;
+
+        if ($teamId !== null) {
+            $team = $this->teamRepository->find($teamId);
+            if ($team instanceof Team) {
+                $owner = $team->getCreatedBy();
+                if ($owner !== null && $owner->getId() === $user->getId()) {
+                    return true;
+                }
+                if ($this->teamShareRepository->findOneByTeamAndUser($team, $user) !== null) {
+                    return true;
+                }
+            }
         }
 
-        $team = $this->teamRepository->find($teamId);
-        if (!$team instanceof Team) {
-            return false;
-        }
-
-        $owner = $team->getCreatedBy();
-
-        return $owner !== null && $owner->getId() === $user->getId();
+        return $this->initiativeShareRepository->findOneByInitiativeIdAndUser($initiativeId, $user) !== null;
     }
 }

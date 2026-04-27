@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\SyncableEntity;
 use App\Entity\User;
 use App\Repository\InitiativeRepository;
+use App\Repository\InitiativeShareRepository;
 use App\Repository\MetadataRepository;
 use App\Repository\MilestoneRepository;
 use App\Repository\NichtVergessenRepository;
@@ -22,6 +23,7 @@ class CockpitSyncService
         private NichtVergessenRepository $nvRepo,
         private MilestoneRepository $milestoneRepo,
         private RiskRepository $riskRepo,
+        private InitiativeShareRepository $initiativeShareRepo,
     ) {}
 
     /** @return array<string, mixed> */
@@ -30,12 +32,34 @@ class CockpitSyncService
         $meta = $this->metaRepo->getOrCreate();
         $result = ['kw' => $meta->getKw()];
 
-        $teams = $this->teamRepo->findVisibleByUser($user);
-        $result['teams'] = array_map(fn(SyncableEntity $e) => $e->toArray(), $teams);
+        // Own teams + explicitly shared teams
+        $ownTeams = $this->teamRepo->findVisibleByUser($user);
+        $sharedTeams = $user->isAdmin() ? [] : $this->teamRepo->findSharedByUser($user);
 
-        $teamIds = array_map(fn($t) => $t->getId(), $teams);
+        $allTeams = array_values(array_unique(array_merge($ownTeams, $sharedTeams), SORT_REGULAR));
+        $result['teams'] = array_map(fn(SyncableEntity $e) => $e->toArray(), $allTeams);
 
+        $teamIds = array_map(fn($t) => $t->getId(), $allTeams);
+
+        // Initiatives via team membership
         $initiatives = $this->initiativeRepo->findByTeamIdsWithBlockedBy($teamIds);
+
+        // Additionally: individually shared initiatives not already included
+        if (!$user->isAdmin()) {
+            $individualShares = $this->initiativeShareRepo->findByUser($user);
+            $includedIds = array_map(fn($i) => $i->getId(), $initiatives);
+            foreach ($individualShares as $share) {
+                $iniId = $share->getInitiativeId();
+                if (!in_array($iniId, $includedIds, true)) {
+                    $ini = $this->initiativeRepo->find($iniId);
+                    if ($ini !== null) {
+                        $initiatives[] = $ini;
+                        $includedIds[] = $iniId;
+                    }
+                }
+            }
+        }
+
         $result['initiatives'] = array_map(fn(SyncableEntity $e) => $e->toArray(), $initiatives);
 
         $initiativeIds = array_map(fn($i) => $i->getId(), $initiatives);

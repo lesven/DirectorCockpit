@@ -5,6 +5,7 @@ import { loadViewState } from './js/cookie.js';
 import { applyViewState, filterState } from './js/sort.js';
 import { dom } from './js/dom.js';
 import { openDetail, closeDetail } from './js/detail.js';
+import { openTeamDetail, closeTeamDetail } from './js/team-detail.js';
 import { parseHash } from './js/routing.js';
 import { findById } from './js/utils.js';
 import { initAuth } from './js/auth.js';
@@ -24,6 +25,17 @@ function showToast(message) {
 function handleDeepLink() {
   const route = parseHash();
   if (!route) return;
+
+  if (route.type === 'team') {
+    const team = findById(data.teams, route.id);
+    if (team) {
+      openTeamDetail(route.id, { pushState: false });
+    } else {
+      showToast(`Team nicht gefunden (ID ${route.id})`);
+    }
+    return;
+  }
+
   const ini = findById(data.initiatives, route.id);
   if (ini) {
     openDetail(route.id, { pushState: false });
@@ -67,15 +79,26 @@ initAuth().then(() => load()).then(() => {
   window.addEventListener('popstate', () => {
     const route = parseHash();
     if (route) {
-      const ini = findById(data.initiatives, route.id);
-      if (ini) {
-        openDetail(route.id, { pushState: false });
+      if (route.type === 'team') {
+        const team = findById(data.teams, route.id);
+        if (team) {
+          openTeamDetail(route.id, { pushState: false });
+        } else {
+          closeTeamDetail({ pushState: false });
+          showToast(`Team nicht gefunden (ID ${route.id})`);
+        }
       } else {
-        closeDetail({ pushState: false });
-        showToast(`Initiative nicht gefunden (ID ${route.id})`);
+        const ini = findById(data.initiatives, route.id);
+        if (ini) {
+          openDetail(route.id, { pushState: false });
+        } else {
+          closeDetail({ pushState: false });
+          showToast(`Initiative nicht gefunden (ID ${route.id})`);
+        }
       }
     } else {
       closeDetail({ pushState: false });
+      closeTeamDetail({ pushState: false });
     }
   });
 });

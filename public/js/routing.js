@@ -1,18 +1,21 @@
 /**
  * Hash-basiertes Routing für Deep-Links.
- * Format: #initiative/{id}
+ * Formate: #initiative/{id}, #team/{id}
  */
 
-const HASH_PATTERN = /^#initiative\/(\d+)$/;
+const INITIATIVE_HASH_PATTERN = /^#initiative\/(\d+)$/;
+const TEAM_HASH_PATTERN = /^#team\/(\d+)$/;
 
 /**
  * Parst den aktuellen window.location.hash.
  * @returns {{ type: string, id: number } | null}
  */
 export function parseHash(hash = window.location.hash) {
-  const m = HASH_PATTERN.exec(hash);
-  if (!m) return null;
-  return { type: 'initiative', id: +m[1] };
+  let m = INITIATIVE_HASH_PATTERN.exec(hash);
+  if (m) return { type: 'initiative', id: +m[1] };
+  m = TEAM_HASH_PATTERN.exec(hash);
+  if (m) return { type: 'team', id: +m[1] };
+  return null;
 }
 
 /**

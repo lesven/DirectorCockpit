@@ -72,4 +72,15 @@ export const dom = {
   overdueMilestonesSection: document.getElementById('overdue-milestones-section'),
   overdueMilestonesBody: document.getElementById('overdue-milestones-body'),
   overdueMilestonesCount: document.getElementById('overdue-milestones-count'),
+
+  // Team-Detail-Page
+  teamDetailPage: document.getElementById('team-detail-page'),
+  tdpBack: document.getElementById('tdp-back'),
+  tdpName: document.getElementById('tdp-name'),
+  tdpStammdaten: document.getElementById('tdp-stammdaten'),
+  tdpSharesList: document.getElementById('tdp-shares-list'),
+  tdpSharesCount: document.getElementById('tdp-shares-count'),
+  tdpSharesAdd: document.getElementById('tdp-shares-add'),
+  tdpUserSearch: document.getElementById('tdp-user-search'),
+  tdpUserSuggestions: document.getElementById('tdp-user-suggestions'),
 };

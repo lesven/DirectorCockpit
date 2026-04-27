@@ -31,6 +31,7 @@ vi.mock('../../public/js/utils.js', () => ({
   getRiskLevel: () => ({ label: 'Gering', css: 'risk-low' }),
   calcWsjf: () => null,
   generateId: () => Date.now(),
+  debounce: (fn) => fn,
 }));
 
 vi.mock('../../public/js/render.js', () => ({

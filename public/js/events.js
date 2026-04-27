@@ -5,6 +5,7 @@ import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, 
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
+import { openTeamDetail, bindTeamDetailEvents } from './team-detail.js';
 import { saveViewState } from './cookie.js';
 import { dom } from './dom.js';
 
@@ -68,6 +69,9 @@ function handleActionClick(e) {
       break;
     case 'openDetail':
       openDetail(id);
+      break;
+    case 'openTeamDetail':
+      openTeamDetail(id);
       break;
     case 'gotoPage': {
       const p = +target.dataset.page;
@@ -217,4 +221,5 @@ export function bindEvents() {
   document.addEventListener('input', handleInlineInput);
   document.addEventListener('change', handleInlineChange);
   bindDetailEvents();
+  bindTeamDetailEvents();
 }

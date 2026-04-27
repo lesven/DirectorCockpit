@@ -17,6 +17,9 @@ export const CONFIG = {
     kunden: '/api/kunden',
     metadata: '/api/metadata',
   },
+  USERS_SEARCH_URL: '/api/users',
+  TEAM_SHARES_URL: (teamId) => `/api/teams/${teamId}/shares`,
+  INITIATIVE_SHARES_URL: (initiativeId) => `/api/initiatives/${initiativeId}/shares`,
 };
 
 export const STATUSES = ['fertig', 'yellow', 'grey', 'ungeplant'];

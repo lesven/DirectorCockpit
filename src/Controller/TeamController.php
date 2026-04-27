@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Team;
 use App\Entity\User;
 use App\Repository\TeamRepository;
+use App\Repository\TeamShareRepository;
 use App\Security\Voter\TeamVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -24,9 +25,35 @@ class TeamController extends AbstractController
 {
     public function __construct(
         private readonly TeamRepository $teamRepository,
+        private readonly TeamShareRepository $teamShareRepository,
         private readonly EntityManagerInterface $em,
         private readonly LoggerInterface $logger,
     ) {}
+
+    #[Route('/{id}', methods: ['GET'])]
+    public function detail(int $id, #[CurrentUser] User $currentUser): JsonResponse
+    {
+        $team = $this->teamRepository->find($id);
+        if ($team === null) {
+            return $this->json(['error' => 'Team nicht gefunden.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->denyAccessUnlessGranted(TeamVoter::VIEW, $team);
+
+        $shares = $this->teamShareRepository->findByTeam($team);
+        $owner = $team->getCreatedBy();
+        $isOwner = $currentUser->isAdmin()
+            || ($owner !== null && $owner->getId() === $currentUser->getId());
+
+        return $this->json([
+            'team' => $team->toArray(),
+            'shares' => array_map(
+                fn($s) => ['id' => $s->getSharedWith()->getId(), 'email' => $s->getSharedWith()->getEmail()],
+                $shares,
+            ),
+            'isOwner' => $isOwner,
+        ]);
+    }
 
     #[Route('', methods: ['POST'])]
     public function create(Request $request, #[CurrentUser] User $user): JsonResponse

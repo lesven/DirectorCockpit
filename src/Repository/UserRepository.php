@@ -55,4 +55,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Search users by email fragment (case-insensitive), excluding a given user.
+     *
+     * @return list<User>
+     */
+    public function searchByEmail(string $query, User $excludeUser, int $limit = 10): array
+    {
+        /** @var list<User> */
+        return $this->createQueryBuilder('u')
+            ->where('LOWER(u.email) LIKE LOWER(:query)')
+            ->andWhere('u.id != :excludeId')
+            ->setParameter('query', '%' . addcslashes($query, '%_\\') . '%')
+            ->setParameter('excludeId', $excludeUser->getId())
+            ->orderBy('u.email', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

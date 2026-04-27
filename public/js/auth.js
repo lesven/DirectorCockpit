@@ -59,6 +59,10 @@ export async function initAuth() {
   const user = await fetchCurrentUser();
   if (!user) return null;
 
+  // Expose user info globally for modules that need to check ownership
+  window._currentUserId = user.id;
+  window._currentUserIsAdmin = user.roles.includes('ROLE_ADMIN');
+
   _renderUserInfo(user);
 
   return user;

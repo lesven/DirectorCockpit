@@ -33,4 +33,21 @@ class TeamRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Returns teams that have been explicitly shared with the given user (not their own teams).
+     *
+     * @return list<Team>
+     */
+    public function findSharedByUser(User $user): array
+    {
+        /** @var list<Team> */
+        return $this->createQueryBuilder('t')
+            ->join('App\Entity\TeamShare', 'ts', 'WITH', 'ts.team = t AND ts.sharedWith = :user')
+            ->where('t.createdBy != :user OR t.createdBy IS NULL')
+            ->setParameter('user', $user)
+            ->orderBy('t.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
