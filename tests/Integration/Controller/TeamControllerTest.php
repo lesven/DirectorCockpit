@@ -15,10 +15,21 @@ class TeamControllerTest extends WebTestCase
     use AuthTestTrait;
 
     private const JSON = ['CONTENT_TYPE' => 'application/json'];
+    private const TEST_TEAM_IDS = [9001, 9010, 9011, 9020, 9030, 9040, 9999];
+
+    private function cleanupTestTeams(): void
+    {
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+        $em->getConnection()->executeStatement(
+            'DELETE FROM team WHERE id IN (' . implode(',', self::TEST_TEAM_IDS) . ')'
+        );
+    }
 
     public function testCreateTeam(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         $user = $this->createAndLoginUser($client, 'team-create@test.de');
 
         $client->request('POST', '/api/teams', [], [], self::JSON, json_encode([
@@ -43,6 +54,7 @@ class TeamControllerTest extends WebTestCase
     public function testUpdateOwnTeam(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         $user = $this->createAndLoginUser($client, 'team-update@test.de');
 
         /** @var EntityManagerInterface $em */
@@ -64,6 +76,7 @@ class TeamControllerTest extends WebTestCase
     public function testUpdateOtherUserTeamDenied(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         /** @var EntityManagerInterface $em */
         $em = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -87,6 +100,7 @@ class TeamControllerTest extends WebTestCase
     public function testDeleteOwnTeam(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         $user = $this->createAndLoginUser($client, 'team-delete@test.de');
 
         /** @var EntityManagerInterface $em */
@@ -103,6 +117,7 @@ class TeamControllerTest extends WebTestCase
     public function testAdminCanUpdateAnyTeam(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         /** @var EntityManagerInterface $em */
         $em = static::getContainer()->get(EntityManagerInterface::class);
 
@@ -128,6 +143,7 @@ class TeamControllerTest extends WebTestCase
     public function testCockpitLoadShowsOnlyOwnTeams(): void
     {
         $client = static::createClient();
+        $this->cleanupTestTeams();
         /** @var EntityManagerInterface $em */
         $em = static::getContainer()->get(EntityManagerInterface::class);
 

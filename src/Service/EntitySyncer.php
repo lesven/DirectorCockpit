@@ -40,6 +40,12 @@ class EntitySyncer
                 $byId[$id]->updateFromArray($item);
                 continue;
             }
+            // Entity may exist outside the provided scope (e.g. belongs to another user)
+            $found = $this->em->find($entityClass, $id);
+            if ($found !== null) {
+                $found->updateFromArray($item);
+                continue;
+            }
             $this->em->persist($entityClass::fromArray($item));
         }
 

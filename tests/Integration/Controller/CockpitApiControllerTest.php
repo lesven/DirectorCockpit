@@ -26,8 +26,11 @@ class CockpitApiControllerTest extends WebTestCase
         $email = 'cockpit-test@internal.test';
         $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($user === null) {
-            $user = new User($email, 'pw', ['ROLE_USER']);
+            $user = new User($email, 'pw', ['ROLE_USER', 'ROLE_ADMIN']);
             $em->persist($user);
+            $em->flush();
+        } elseif (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
             $em->flush();
         }
 
