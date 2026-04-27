@@ -55,9 +55,9 @@ test('AC-6.2: Import einer validen JSON-Datei lädt Daten', async (t) => {
         nicht_vergessen: [{ id: 9003, title: 'Import NV', body: 'Importiert' }],
       };
 
-      // Importiere direkt über die PUT-API (gleicher Effekt wie File-Import)
-      fetch('/api/cockpit', {
-        method: 'PUT',
+      // Importiere direkt über die Import-API
+      fetch('/api/cockpit/import', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(testData),
       })

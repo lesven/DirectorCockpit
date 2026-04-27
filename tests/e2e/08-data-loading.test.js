@@ -10,8 +10,8 @@ fixture('US-9: Datenladen & Fallback')
 test('AC-9.1: Bei erreichbarem Backend werden API-Daten geladen', async (t) => {
   // Seed data via API before loading the page
   await t.eval(() => {
-    return fetch('/api/cockpit', {
-      method: 'PUT',
+    return fetch('/api/cockpit/import', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({
@@ -35,8 +35,8 @@ test('AC-9.1: Bei erreichbarem Backend werden API-Daten geladen', async (t) => {
 test('AC-9.2: Seite zeigt Daten auch nach API-Roundtrip korrekt an', async (t) => {
   // Create test data
   await t.eval(() => {
-    return fetch('/api/cockpit', {
-      method: 'PUT',
+    return fetch('/api/cockpit/import', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       body: JSON.stringify({

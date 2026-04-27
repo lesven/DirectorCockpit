@@ -4,8 +4,8 @@ import { LOGIN_URL, setupTest, waitForSave, loginAsAdmin } from './helpers.js';
 const KUNDEN_URL = 'http://localhost:8089/kunden.html';
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: json,
@@ -62,18 +62,19 @@ test('AC-16.2: Neuen Kunden anlegen erhöht Anzahl und fokussiert Eingabefeld', 
   const before = await kundenRows.count;
   await t.click(addBtn);
 
-  await t.expect(kundenRows.count).eql(before + 1);
+  await t.expect(kundenRows.count).eql(before + 1, { timeout: 5000 });
 
-  // Das neue Input-Feld sollte leer und fokussiert sein
+  // Das neue Input-Feld sollte den Platzhalter-Namen haben und fokussiert sein
   const lastInput = kundenRows.nth(-1).find('input');
-  await t.expect(lastInput.value).eql('');
+  await t.expect(lastInput.value).eql('Neuer Kunde');
   await t.expect(lastInput.focused).ok('Neues Feld sollte fokussiert sein');
 });
 
 test('AC-16.3: Kundennamen inline bearbeiten und persistieren', async (t) => {
   const firstInput = kundenRows.nth(0).find('input');
   await t.selectText(firstInput).typeText(firstInput, 'Umbenannte Firma');
-  await waitForSave();
+  // Wait for debounced save (400ms) + network
+  await t.wait(1500);
 
   // Seite neu laden und prüfen
   await reloadPage();
@@ -110,9 +111,12 @@ test('AC-16.4: Löschen abbrechen behält Kunden', async (t) => {
 
 test('AC-16.5: Neuer Kunde wird nach Speichern persistent', async (t) => {
   await t.click(addBtn);
+  // Wait for the new row to appear in DOM (createEntity is async)
+  await t.expect(kundenRows.count).eql(3, { timeout: 5000 });
   const lastInput = kundenRows.nth(-1).find('input');
-  await t.typeText(lastInput, 'Neue Firma GmbH');
-  await waitForSave();
+  await t.selectText(lastInput).typeText(lastInput, 'Neue Firma GmbH');
+  // Wait for debounced save (400ms) + network round-trip
+  await t.wait(2000);
 
   await reloadPage();
   await Selector('#kunden-body tr', { timeout: 5000 })();

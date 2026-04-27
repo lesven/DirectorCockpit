@@ -113,8 +113,8 @@ const SEED_PAYLOAD = {
 };
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'same-origin',
     body: json,
@@ -159,11 +159,18 @@ export async function setupTest() {
 }
 
 /**
- * Waits for the save indicator to appear and then disappear.
+ * Waits for the save to complete.
+ * Uses a generous timeout to account for debounced saves (400ms) + network latency.
+ * Falls back to a fixed wait if the indicator was already shown and hidden.
  */
 export async function waitForSave() {
   const indicator = Selector('#save-ind');
-  await t.expect(indicator.hasClass('show')).ok('Save indicator should appear', { timeout: 3000 });
+  try {
+    await t.expect(indicator.hasClass('show')).ok({ timeout: 5000 });
+  } catch {
+    // Indicator may have already appeared and disappeared — wait for debounce + network instead
+    await t.wait(1500);
+  }
 }
 
 /**

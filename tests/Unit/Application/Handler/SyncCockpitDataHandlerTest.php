@@ -11,7 +11,12 @@ use App\Entity\Milestone;
 use App\Entity\NichtVergessen;
 use App\Entity\Risk;
 use App\Entity\Team;
+use App\Repository\InitiativeRepository;
 use App\Repository\MetadataRepository;
+use App\Repository\MilestoneRepository;
+use App\Repository\NichtVergessenRepository;
+use App\Repository\RiskRepository;
+use App\Repository\TeamRepository;
 use App\Service\EntitySyncer;
 use App\Service\PayloadValidator;
 use App\Service\PayloadValidatorInterface;
@@ -62,6 +67,11 @@ class SyncCockpitDataHandlerTest extends TestCase
             $this->metaRepo,
             new PayloadValidator(),
             new EntitySyncer($this->em),
+            $this->createMock(TeamRepository::class),
+            $this->createMock(InitiativeRepository::class),
+            $this->createMock(NichtVergessenRepository::class),
+            $this->createMock(MilestoneRepository::class),
+            $this->createMock(RiskRepository::class),
         );
     }
 

@@ -15,4 +15,22 @@ class MilestoneRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Milestone::class);
     }
+
+    /**
+     * @param list<int> $initiativeIds
+     * @return list<Milestone>
+     */
+    public function findByInitiativeIds(array $initiativeIds): array
+    {
+        if (empty($initiativeIds)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('m')
+            ->where('m.initiative IN (:ids)')
+            ->setParameter('ids', $initiativeIds)
+            ->orderBy('m.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

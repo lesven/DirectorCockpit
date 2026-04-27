@@ -4,7 +4,7 @@
  * Vermeidet Duplikation der confirm/filter/save- und EmptyState-Muster.
  */
 import { findById } from './utils.js';
-import { save } from './store.js';
+import { deleteEntity } from './store.js';
 
 /**
  * Entfernt ein Entity aus einem benannten data-Array nach Bestätigung.
@@ -16,14 +16,17 @@ import { save } from './store.js';
  * @param {string}   emptyFallback – Fallback-Text wenn kein Label vorhanden
  * @param {function} refreshFn    – Wird nach dem Löschen mit currentId aufgerufen
  * @param {number}   currentId    – ID der aktuellen Initiative
- * @returns {boolean} true wenn gelöscht, false wenn abgebrochen
+ * @returns {Promise<boolean>} true wenn gelöscht, false wenn abgebrochen
  */
-export function removeFromCollection(data, key, id, labelFn, emptyFallback, refreshFn, currentId) {
+export async function removeFromCollection(data, key, id, labelFn, emptyFallback, refreshFn, currentId) {
   const entity = findById(data[key], id);
   const label = entity && labelFn(entity) ? `„${labelFn(entity)}"` : emptyFallback;
   if (!confirm(`${label} wirklich löschen?`)) return false;
+
+  const ok = await deleteEntity(key, id);
+  if (!ok) return false;
+
   data[key] = data[key].filter((e) => e.id !== id);
-  save();
   refreshFn(currentId);
   return true;
 }

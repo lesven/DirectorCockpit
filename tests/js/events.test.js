@@ -3,13 +3,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 const mockData = { kw: 'KW1', teams: [], initiatives: [], nicht_vergessen: [], risks: [], milestones: [], kunden: [] };
-const mockSave = vi.hoisted(() => vi.fn());
-const mockDSave = vi.hoisted(() => vi.fn());
+const mockSaveEntity = vi.hoisted(() => vi.fn());
+const mockSaveMetadata = vi.hoisted(() => vi.fn());
 
 vi.mock('../../public/js/store.js', () => ({
   get data() { return mockData; },
-  save: mockSave,
-  dSave: mockDSave,
+  save: vi.fn(),
+  dSave: vi.fn(),
+  saveEntity: mockSaveEntity,
+  saveMetadata: mockSaveMetadata,
 }));
 
 const mockAddEntity    = vi.hoisted(() => vi.fn());
@@ -25,6 +27,8 @@ vi.mock('../../public/js/crud.js', () => ({
 const mockFindById = vi.hoisted(() => vi.fn());
 vi.mock('../../public/js/utils.js', () => ({
   findById: mockFindById,
+  debounce: (fn) => fn,
+  esc: (s) => String(s || ''),
 }));
 
 const mockFilterState = { name: '', team: '', status: '', projektstatus: '', kunde: '' };
@@ -128,8 +132,8 @@ function createDomFixture() {
 
 beforeEach(() => {
   document.body.innerHTML = '';
-  mockSave.mockClear();
-  mockDSave.mockClear();
+  mockSaveEntity.mockClear(); mockSaveMetadata.mockClear();
+  ;
   mockAddEntity.mockClear();
   mockRemoveEntity.mockClear();
   mockCycleStatus.mockClear();
@@ -223,7 +227,7 @@ describe('handleActionClick – editKW', () => {
     const btn = createBtn('editKW');
     btn.click();
     expect(mockData.kw).toBe('42');
-    expect(mockSave).toHaveBeenCalled();
+    expect(mockSaveMetadata).toHaveBeenCalled();
     expect(mockRenderAll).toHaveBeenCalled();
   });
 
@@ -233,7 +237,7 @@ describe('handleActionClick – editKW', () => {
     const btn = createBtn('editKW');
     btn.click();
     expect(mockData.kw).toBe(oldKw);
-    expect(mockSave).not.toHaveBeenCalled();
+    expect(mockSaveMetadata).not.toHaveBeenCalled();
   });
 });
 
@@ -275,7 +279,7 @@ describe('handleInlineInput', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }));
 
     expect(item.name).toBe('neu');
-    expect(mockDSave).toHaveBeenCalled();
+    expect(mockSaveEntity).toHaveBeenCalled();
   });
 
   it('ignoriert SELECTs', () => {
@@ -286,7 +290,7 @@ describe('handleInlineInput', () => {
     document.body.appendChild(sel);
 
     sel.dispatchEvent(new Event('input', { bubbles: true }));
-    expect(mockDSave).not.toHaveBeenCalled();
+    expect(mockSaveEntity).not.toHaveBeenCalled();
   });
 });
 
@@ -308,7 +312,7 @@ describe('handleInlineChange', () => {
     sel.dispatchEvent(new Event('change', { bubbles: true }));
 
     expect(item.status).toBe('green');
-    expect(mockDSave).toHaveBeenCalled();
+    expect(mockSaveEntity).toHaveBeenCalled();
   });
 
   it('konvertiert team-Feld zu Integer', () => {

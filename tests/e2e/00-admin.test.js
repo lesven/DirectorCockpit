@@ -16,6 +16,8 @@ fixture('AUTH-2: Admin-Benutzerverwaltung')
     // Zur Admin-Seite navigieren
     await t.navigateTo(ADMIN_URL);
     await t.expect(Selector('#user-table').exists).ok({ timeout: 5000 });
+    // Warten bis Tabelle via API befüllt wurde
+    await t.expect(Selector('#user-tbody tr').count).gte(1, { timeout: 5000 });
   });
 
 test('AUTH-2.1: Benutzerliste wird angezeigt', async (t) => {

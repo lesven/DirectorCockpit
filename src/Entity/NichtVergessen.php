@@ -17,6 +17,20 @@ final class NichtVergessen implements SyncableEntity
     #[ORM\Column(type: 'text')]
     private string $body = '';
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $createdBy = null;
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $user): void
+    {
+        $this->createdBy = $user;
+    }
+
     /** @return array<string, mixed> */
     public function toArray(): array
     {
@@ -24,6 +38,7 @@ final class NichtVergessen implements SyncableEntity
             'id' => $this->id,
             'title' => $this->title,
             'body' => $this->body,
+            'createdBy' => $this->createdBy?->getId(),
         ];
     }
 

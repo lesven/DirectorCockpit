@@ -15,4 +15,22 @@ class RiskRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Risk::class);
     }
+
+    /**
+     * @param list<int> $initiativeIds
+     * @return list<Risk>
+     */
+    public function findByInitiativeIds(array $initiativeIds): array
+    {
+        if (empty($initiativeIds)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('r')
+            ->where('r.initiative IN (:ids)')
+            ->setParameter('ids', $initiativeIds)
+            ->orderBy('r.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

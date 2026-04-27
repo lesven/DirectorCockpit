@@ -32,7 +32,23 @@ describe('parseHash()', () => {
   });
 
   it('gibt null bei unbekanntem Typ', () => {
-    expect(parseHash('#team/123')).toBeNull();
+    expect(parseHash('#unknown/123')).toBeNull();
+  });
+
+  it('parst gültigen Team-Hash', () => {
+    expect(parseHash('#team/42')).toEqual({ type: 'team', id: 42 });
+  });
+
+  it('parst Team-Hash mit großer ID', () => {
+    expect(parseHash('#team/1740307200000001')).toEqual({ type: 'team', id: 1740307200000001 });
+  });
+
+  it('gibt null bei team ohne ID', () => {
+    expect(parseHash('#team/')).toBeNull();
+  });
+
+  it('gibt null bei team mit nicht-numerischer ID', () => {
+    expect(parseHash('#team/abc')).toBeNull();
   });
 
   it('gibt null bei nicht-numerischer ID', () => {

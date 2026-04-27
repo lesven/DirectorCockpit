@@ -26,8 +26,11 @@ class CockpitApiControllerTest extends WebTestCase
         $email = 'cockpit-test@internal.test';
         $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($user === null) {
-            $user = new User($email, 'pw', ['ROLE_USER']);
+            $user = new User($email, 'pw', ['ROLE_USER', 'ROLE_ADMIN']);
             $em->persist($user);
+            $em->flush();
+        } elseif (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
             $em->flush();
         }
 
@@ -68,7 +71,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -97,11 +100,11 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $payload['teams'][0]['name'] = 'Updated';
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -123,10 +126,10 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         $payload['teams'] = [['id' => 1, 'name' => 'A', 'status' => 'grey', 'fokus' => '', 'schritt' => '']];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         $client->request('GET', '/api/cockpit');
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -137,7 +140,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testInvalidJsonReturnsBadRequest(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], 'not-json');
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], 'not-json');
 
         $this->assertResponseStatusCodeSame(400);
     }
@@ -145,7 +148,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testInvalidPayloadStructureReturnsBadRequest(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'teams' => 'not-an-array',
         ]));
 
@@ -160,7 +163,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testSyncWithOnlyKwSucceeds(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['kw' => '10'])
         );
         $this->assertResponseIsSuccessful();
@@ -174,7 +177,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testSyncWithEmptyBodyReturnsBadRequest(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], '');
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], '');
 
         $this->assertResponseStatusCodeSame(400);
     }
@@ -183,7 +186,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testSyncWithNonArrayEntityItemReturnsBadRequest(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['teams' => ['kein-objekt']])
         );
 
@@ -194,7 +197,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testSyncWithMissingIdFieldReturnsError(): void
     {
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['teams' => [['name' => 'kein-id']]])
         );
 
@@ -214,7 +217,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -247,7 +250,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -279,7 +282,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -308,7 +311,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 510, 'initiative' => 200, 'aufgabe' => 'Test', 'frist' => '2026-09-15', 'status' => 'offen'],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -332,7 +335,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 511, 'initiative' => 200, 'frist' => ''],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -354,7 +357,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 512, 'initiative' => 200, 'frist' => '15.04.2026'],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
@@ -371,7 +374,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -393,7 +396,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
@@ -427,7 +430,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -454,7 +457,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -479,7 +482,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -500,7 +503,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
@@ -516,7 +519,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -543,7 +546,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         return $client;
     }
 
@@ -590,7 +593,7 @@ class CockpitApiControllerTest extends WebTestCase
     {
         // DB leeren
         $client = $this->authClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []])
         );
 
@@ -621,7 +624,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -646,11 +649,11 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         // Dann Relation löschen
         $payload['initiatives'][1]['blockedBy'] = [];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -671,7 +674,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
@@ -686,7 +689,7 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [$this->baseIni(10)],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -704,7 +707,7 @@ class CockpitApiControllerTest extends WebTestCase
     public function testUnauthenticatedPutReturns401(): void
     {
         $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['kw' => '1']));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['kw' => '1']));
         $this->assertResponseStatusCodeSame(401);
     }
 }

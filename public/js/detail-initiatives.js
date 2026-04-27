@@ -3,7 +3,7 @@
  * Verantwortlich für: Stammdaten-Render, WSJF-Render, Header-Badges,
  * Initiative-Input-Handling auf der Detail-Page.
  */
-import { data, dSave } from './store.js';
+import { data, saveEntity } from './store.js';
 import { findById, esc, calcWsjf, isCurrentlyBlocked } from './utils.js';
 import {
   WSJF_SCALE,
@@ -11,8 +11,10 @@ import {
   STATUS_LABELS,
   STATUS_CSS_MAP,
   STATUS_OPTIONS,
+  CONFIG,
 } from './config.js';
 import { dom } from './dom.js';
+import { debounce } from './utils.js';
 
 // ─── Select HTML Helpers (lokal benötigt) ───────────────────
 
@@ -221,7 +223,7 @@ export function handleIniField(el, currentId) {
     renderHeaderBadges(ini);
   }
 
-  dSave();
+  saveEntity('initiatives', currentId);
 }
 
 // ─── blockedBy: Blocker hinzufügen / entfernen ──────────────
@@ -230,7 +232,7 @@ export function addBlocker(ini, blockerId) {
   if (!Array.isArray(ini.blockedBy)) ini.blockedBy = [];
   if (!ini.blockedBy.includes(blockerId)) {
     ini.blockedBy = [...ini.blockedBy, blockerId];
-    dSave();
+    saveEntity('initiatives', ini.id);
     renderBlockedBy(ini);
   }
 }
@@ -238,7 +240,7 @@ export function addBlocker(ini, blockerId) {
 export function removeBlocker(ini, blockerId) {
   if (!Array.isArray(ini.blockedBy)) return;
   ini.blockedBy = ini.blockedBy.filter((id) => id !== blockerId);
-  dSave();
+  saveEntity('initiatives', ini.id);
   renderBlockedBy(ini);
 }
 
@@ -323,3 +325,166 @@ export function handleBlockerSearch(input) {
   suggestEl.hidden = false;
 }
 
+// ─── Initiative Sharing ───────────────────────────────────────────────────────
+
+let _iniSharesIndicatorTimer;
+let _currentIniShares = [];
+let _currentIniCanManage = false;
+let _currentIniShareId = null;
+
+function _showIniSharesIndicator(text, isError = false) {
+  const el = document.getElementById('dp-save-ind');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle('error', isError);
+  el.classList.add('show');
+  clearTimeout(_iniSharesIndicatorTimer);
+  _iniSharesIndicatorTimer = setTimeout(() => el.classList.remove('show'), isError ? 3000 : 1400);
+}
+
+function _renderIniSharesList(shares, canManage) {
+  const container = document.getElementById('dp-ini-shares');
+  const addContainer = document.getElementById('dp-ini-shares-add');
+  if (!container) return;
+
+  if (shares.length === 0) {
+    container.innerHTML = canManage
+      ? '<p class="tdp-shares-empty">Noch keine Freigaben.</p>'
+      : '<p class="tdp-shares-empty">Keine gesonderten Freigaben.</p>';
+  } else {
+    container.innerHTML = shares
+      .map(
+        (s) => `
+        <div class="tdp-share-row" data-ini-share-user-id="${s.id}">
+          <span class="tdp-share-email">${esc(s.email)}</span>
+          ${canManage ? `<button class="tdp-share-remove ini-share-remove" data-user-id="${s.id}" title="Freigabe entfernen">✕</button>` : ''}
+        </div>
+      `,
+      )
+      .join('');
+  }
+
+  if (addContainer) addContainer.hidden = !canManage;
+}
+
+/**
+ * Lädt und rendert die Shares für eine Initiative.
+ * @param {number} initiativeId
+ */
+export async function renderInitiativeShares(initiativeId) {
+  _currentIniShareId = initiativeId;
+  const container = document.getElementById('dp-ini-shares');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${CONFIG.INITIATIVE_SHARES_URL(initiativeId)}`, { credentials: 'same-origin' });
+    if (!res.ok) {
+      container.innerHTML = '';
+      return;
+    }
+    const shares = await res.json();
+    _currentIniShares = shares;
+
+    // Determine if the current user can manage shares:
+    // If the endpoint returned without 403, user has VIEW.
+    // We detect MANAGE by checking if the initiative belongs to a team the user owns.
+    // Simplest approach: attempt a HEAD/OPTIONS probe — instead we check via a separate flag
+    // set by a 403 probe when needed. For simplicity: show manage UI if user is the team owner.
+    // We check this by looking at data.teams: if the team has createdBy === currentUserId.
+    const ini = findById(data.initiatives, initiativeId);
+    let canManage = false;
+    if (ini && ini.team) {
+      const team = findById(data.teams, ini.team);
+      if (team && typeof window._currentUserId !== 'undefined') {
+        canManage = team.createdBy === window._currentUserId || window._currentUserIsAdmin === true;
+      }
+    }
+    _currentIniCanManage = canManage;
+    _renderIniSharesList(shares, canManage);
+  } catch {
+    container.innerHTML = '';
+  }
+}
+
+const _debouncedIniUserSearch = debounce(async (query) => {
+  if (query.length < 2) { _hideIniSuggestions(); return; }
+  try {
+    const res = await fetch(`${CONFIG.USERS_SEARCH_URL}?q=${encodeURIComponent(query)}`, { credentials: 'same-origin' });
+    if (!res.ok) return;
+    const users = await res.json();
+    _renderIniSuggestions(users);
+  } catch {
+    _hideIniSuggestions();
+  }
+}, 300);
+
+function _renderIniSuggestions(users) {
+  const el = document.getElementById('dp-ini-user-suggestions');
+  if (!el) return;
+  if (!users.length) { _hideIniSuggestions(); return; }
+  el.innerHTML = users
+    .map((u) => `<li class="tdp-suggestion-item" data-ini-share-user-id="${u.id}" data-email="${esc(u.email)}">${esc(u.email)}</li>`)
+    .join('');
+  el.hidden = false;
+}
+
+function _hideIniSuggestions() {
+  const el = document.getElementById('dp-ini-user-suggestions');
+  if (el) el.hidden = true;
+}
+
+export async function addInitiativeShare(initiativeId, userId, email) {
+  try {
+    const res = await fetch(CONFIG.INITIATIVE_SHARES_URL(initiativeId), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ userId }),
+    });
+    if (res.status === 409) { _showIniSharesIndicator('Bereits geteilt!', true); return; }
+    if (!res.ok) { _showIniSharesIndicator('Fehler!', true); return; }
+
+    _currentIniShares = [..._currentIniShares, { id: userId, email }];
+    _renderIniSharesList(_currentIniShares, _currentIniCanManage);
+    const searchEl = document.getElementById('dp-ini-user-search');
+    if (searchEl) searchEl.value = '';
+    _hideIniSuggestions();
+    _showIniSharesIndicator('Freigabe hinzugefügt');
+  } catch {
+    _showIniSharesIndicator('Netzwerkfehler!', true);
+  }
+}
+
+export async function removeInitiativeShare(initiativeId, userId) {
+  if (!confirm('Freigabe für diesen Benutzer wirklich entfernen?')) return;
+  try {
+    const res = await fetch(`${CONFIG.INITIATIVE_SHARES_URL(initiativeId)}/${userId}`, {
+      method: 'DELETE',
+      credentials: 'same-origin',
+    });
+    if (!res.ok) { _showIniSharesIndicator('Fehler!', true); return; }
+
+    _currentIniShares = _currentIniShares.filter((s) => s.id !== userId);
+    _renderIniSharesList(_currentIniShares, _currentIniCanManage);
+    _showIniSharesIndicator('Freigabe entfernt');
+  } catch {
+    _showIniSharesIndicator('Netzwerkfehler!', true);
+  }
+}
+
+export function handleIniUserSearchInput(input) {
+  _debouncedIniUserSearch(input.value.trim());
+}
+
+export function handleIniShareSuggestionClick(li) {
+  if (_currentIniShareId === null) return;
+  const userId = Number(li.dataset.iniShareUserId);
+  const email = li.dataset.email;
+  addInitiativeShare(_currentIniShareId, userId, email);
+}
+
+export function handleIniShareRemoveClick(btn) {
+  if (_currentIniShareId === null) return;
+  const userId = Number(btn.dataset.userId);
+  removeInitiativeShare(_currentIniShareId, userId);
+}

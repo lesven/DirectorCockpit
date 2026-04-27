@@ -3,7 +3,7 @@
  * Verantwortlich für: Milestone-CRUD, Milestone-Render, Milestone-Input-Handling
  * auf der Detail-Page.
  */
-import { data, save, dSave } from './store.js';
+import { data, createEntity, saveEntity } from './store.js';
 import { findById, esc, generateId } from './utils.js';
 import { MILESTONE_STATUS_OPTIONS, MILESTONE_STATUS_CSS } from './config.js';
 import { dom } from './dom.js';
@@ -85,7 +85,7 @@ export function refreshMilestones(currentId) {
 
 // ─── CRUD: Meilensteine ──────────────────────────────────────
 
-export function addMilestone(currentId) {
+export async function addMilestone(currentId) {
   if (currentId === null) return;
   const ms = {
     id: generateId(),
@@ -96,8 +96,9 @@ export function addMilestone(currentId) {
     frist: null,
     bemerkung: '',
   };
-  data.milestones.push(ms);
-  save();
+  const created = await createEntity('milestones', ms);
+  if (!created) return;
+  data.milestones.push(created);
   refreshMilestones(currentId);
   const inputs = dom.dpMilestoneList.querySelectorAll('.dp-ms-aufgabe');
   if (inputs.length) inputs[inputs.length - 1].focus();
@@ -128,5 +129,5 @@ export function handleMilestoneField(el, currentId) {
   if (field === 'status') {
     refreshMilestones(currentId);
   }
-  dSave();
+  saveEntity('milestones', msId);
 }

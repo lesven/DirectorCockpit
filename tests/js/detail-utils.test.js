@@ -4,9 +4,10 @@ vi.mock('../../public/js/utils.js', () => ({
   findById: (arr, id) => arr.find((x) => x.id === id) ?? null,
 }));
 
-const mockSave = vi.hoisted(() => vi.fn());
+const mockDeleteEntity = vi.hoisted(() => vi.fn().mockResolvedValue(true));
 vi.mock('../../public/js/store.js', () => ({
-  save: mockSave,
+  save: vi.fn(),
+  deleteEntity: mockDeleteEntity,
 }));
 
 import { removeFromCollection, renderEmptyState } from '../../public/js/detail-utils.js';
@@ -18,7 +19,8 @@ describe('removeFromCollection', () => {
   let refreshFn;
 
   beforeEach(() => {
-    mockSave.mockClear();
+    mockDeleteEntity.mockClear();
+    mockDeleteEntity.mockResolvedValue(true);
     data = {
       milestones: [
         { id: 1, aufgabe: 'Planung' },
@@ -29,55 +31,55 @@ describe('removeFromCollection', () => {
     vi.stubGlobal('confirm', () => true);
   });
 
-  it('entfernt das Entity aus der Collection', () => {
-    removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
+  it('entfernt das Entity aus der Collection', async () => {
+    await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
 
     expect(data.milestones).toHaveLength(1);
     expect(data.milestones[0].id).toBe(2);
   });
 
-  it('ruft save() nach dem Löschen auf', () => {
-    removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
+  it('ruft deleteEntity() nach dem Löschen auf', async () => {
+    await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
 
-    expect(mockSave).toHaveBeenCalledOnce();
+    expect(mockDeleteEntity).toHaveBeenCalledWith('milestones', 1);
   });
 
-  it('ruft refreshFn mit currentId auf', () => {
-    removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 42);
+  it('ruft refreshFn mit currentId auf', async () => {
+    await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 42);
 
     expect(refreshFn).toHaveBeenCalledWith(42);
   });
 
-  it('gibt true zurück wenn gelöscht', () => {
-    const result = removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
+  it('gibt true zurück wenn gelöscht', async () => {
+    const result = await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
 
     expect(result).toBe(true);
   });
 
-  it('löscht nicht wenn confirm abgebrochen wird', () => {
+  it('löscht nicht wenn confirm abgebrochen wird', async () => {
     vi.stubGlobal('confirm', () => false);
 
-    const result = removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
+    const result = await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Eintrag', refreshFn, 10);
 
     expect(result).toBe(false);
     expect(data.milestones).toHaveLength(2);
-    expect(mockSave).not.toHaveBeenCalled();
+    expect(mockDeleteEntity).not.toHaveBeenCalled();
     expect(refreshFn).not.toHaveBeenCalled();
   });
 
-  it('nutzt emptyFallback wenn Entity kein Label hat', () => {
+  it('nutzt emptyFallback wenn Entity kein Label hat', async () => {
     vi.stubGlobal('confirm', vi.fn(() => true));
     data.milestones = [{ id: 1, aufgabe: '' }];
 
-    removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Meilenstein', refreshFn, 10);
+    await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Meilenstein', refreshFn, 10);
 
     expect(confirm).toHaveBeenCalledWith('diesen Meilenstein wirklich löschen?');
   });
 
-  it('zeigt Entityname in confirm-Dialog wenn vorhanden', () => {
+  it('zeigt Entityname in confirm-Dialog wenn vorhanden', async () => {
     vi.stubGlobal('confirm', vi.fn(() => true));
 
-    removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Meilenstein', refreshFn, 10);
+    await removeFromCollection(data, 'milestones', 1, (e) => e.aufgabe, 'diesen Meilenstein', refreshFn, 10);
 
     expect(confirm).toHaveBeenCalledWith('„Planung" wirklich löschen?');
   });

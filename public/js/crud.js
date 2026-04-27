@@ -1,18 +1,22 @@
 import { ENTITY_DEFS, STATUSES, CONFIG } from './config.js';
-import { data, save } from './store.js';
+import { data, createEntity, deleteEntity, saveEntity } from './store.js';
 import { renderEntity } from './render.js';
 import { findById, generateId } from './utils.js';
 import { openDetail } from './detail.js';
 
-export function addEntity(type) {
+export async function addEntity(type) {
   const def = ENTITY_DEFS[type];
   const id = generateId();
-  data[type].push({ id, ...def.defaults });
-  save();
+  const entityData = { id, ...def.defaults };
+
+  const created = await createEntity(type, entityData);
+  if (!created) return;
+
+  data[type].push(created);
   renderEntity(type);
 
   if (type === 'initiatives') {
-    openDetail(id);
+    openDetail(created.id);
     return;
   }
 
@@ -24,26 +28,30 @@ export function addEntity(type) {
   }
 }
 
-export function removeEntity(type, id) {
+export async function removeEntity(type, id) {
   const def = ENTITY_DEFS[type];
   const item = findById(data[type], id);
   const name = item && item[def.labelField] ? `\u201E${item[def.labelField]}\u201C` : def.fallback;
   if (!confirm(`${name} wirklich löschen?`)) return;
+
+  const ok = await deleteEntity(type, id);
+  if (!ok) return;
+
   data[type] = data[type].filter((x) => x.id !== id);
   if (type === 'initiatives') {
     data.risks = data.risks.filter((r) => r.initiative !== id);
     data.milestones = data.milestones.filter((m) => m.initiative !== id);
   }
-  save();
   renderEntity(type);
 }
 
 export function cycleStatus(id, isTeam) {
-  const arr = isTeam ? data.teams : data.initiatives;
+  const type = isTeam ? 'teams' : 'initiatives';
+  const arr = data[type];
   const item = findById(arr, id);
   if (!item) return;
   const idx = STATUSES.indexOf(item.status);
   item.status = STATUSES[(idx + 1) % STATUSES.length];
-  save();
-  renderEntity(isTeam ? 'teams' : 'initiatives');
+  saveEntity(type, id);
+  renderEntity(type);
 }
