@@ -15,10 +15,11 @@ fixture('Team-Detail')
   });
 
 test('Team-Detail-Button öffnet Detailseite', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
   await t.expect(detailBtn.exists).ok('Team-Detail-Button nicht gefunden');
 
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
 
   const teamDetailPage = Selector('#team-detail-page');
   await t.expect(teamDetailPage.visible).ok('Team-Detailseite nicht sichtbar');
@@ -28,8 +29,9 @@ test('Team-Detail-Button öffnet Detailseite', async (t) => {
 });
 
 test('Team-Detailseite zeigt Teamname', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
 
   const nameInput = Selector('#tdp-name');
   await t.expect(nameInput.exists).ok('Teamname-Input nicht gefunden');
@@ -39,8 +41,9 @@ test('Team-Detailseite zeigt Teamname', async (t) => {
 });
 
 test('Zurück-Button kehrt zu Cockpit zurück', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
 
   await t.click(Selector('#tdp-back'));
 
@@ -49,16 +52,18 @@ test('Zurück-Button kehrt zu Cockpit zurück', async (t) => {
 });
 
 test('Hash-URL wird beim Öffnen gesetzt', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
 
   const hash = await getHash();
   await t.expect(hash).match(/^#team\/\d+$/, 'Hash sollte #team/{id} Format haben');
 });
 
 test('ESC schließt Team-Detailseite', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
   await t.expect(Selector('#team-detail-page').visible).ok();
 
   await t.pressKey('esc');
@@ -66,8 +71,9 @@ test('ESC schließt Team-Detailseite', async (t) => {
 });
 
 test('Freigaben-Sektion ist für Owner sichtbar', async (t) => {
+  const teamCard = Selector('.team-card').nth(0);
   const detailBtn = Selector('.team-detail-btn').nth(0);
-  await t.click(detailBtn);
+  await t.hover(teamCard).click(detailBtn);
 
   // Owner should see the add-section
   const addSection = Selector('#tdp-shares-add');

@@ -327,10 +327,19 @@ main {
   top: 10px;
   right: 10px;
   display: none;
+  align-items: center;
   gap: 4px;
 }
 
 .team-card:hover .card-actions { display: flex; }
+
+.card-actions-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  flex-shrink: 0;
+  margin: 0 2px;
+}
 
 .icon-btn {
   background: none;
@@ -345,6 +354,7 @@ main {
 
 .icon-btn:hover { color: var(--red); background: rgba(248,113,113,0.1); }
 .icon-btn.cycle:hover { color: var(--accent); background: rgba(122,169,255,0.1); }
+.icon-btn.team-detail-btn:hover { color: var(--accent); background: rgba(122,169,255,0.1); }
 
 /* ── Filter bar ──────────────────────────────────────────── */
 #ini-filters {
@@ -2355,22 +2365,7 @@ input[type="date"].detail-input::-webkit-calendar-picker-indicator {
 
 .tdp-suggestion-item:hover { background: var(--surface); color: var(--accent); }
 
-/* ── team-detail-btn auf Team-Karten ────────────────────── */
-.team-detail-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text3);
-  font-size: 14px;
-  padding: 2px 4px;
-  border-radius: var(--radius-sm);
-  line-height: 1;
-  transition: color 0.15s, background 0.15s;
-  opacity: 0;
-}
-
-.team-card:hover .team-detail-btn { opacity: 1; }
-.team-detail-btn:hover { color: var(--accent); background: rgba(122,169,255,0.1); opacity: 1; }
+/* ── team-detail-btn: Hover-Farbe via icon-btn.team-detail-btn:hover oben */
 
 /* ── Responsive tdp ──────────────────────────────────────── */
 @media (max-width: 1100px) {
