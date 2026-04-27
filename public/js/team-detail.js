@@ -114,10 +114,10 @@ function _renderStammdaten(team) {
       </select>
     </label>
     <label class="dp-label">Fokus
-      <textarea class="dp-textarea" data-field="fokus" data-team-id="${team.id}" rows="3">${esc(team.fokus || '')}</textarea>
+      <textarea class="dp-textarea" data-field="fokus" data-team-id="${team.id}" rows="4" placeholder="Woran arbeitet das Team gerade?">${esc(team.fokus || '')}</textarea>
     </label>
     <label class="dp-label">Nächster Schritt
-      <textarea class="dp-textarea" data-field="schritt" data-team-id="${team.id}" rows="2">${esc(team.schritt || '')}</textarea>
+      <textarea class="dp-textarea" data-field="schritt" data-team-id="${team.id}" rows="3" placeholder="Was ist der nächste konkrete Schritt?">${esc(team.schritt || '')}</textarea>
     </label>
   `;
 }
@@ -128,19 +128,18 @@ function _renderShares(shares, isOwner) {
   dom.tdpSharesCount.textContent = shares.length ? `(${shares.length})` : '';
 
   if (shares.length === 0) {
-    dom.tdpSharesList.innerHTML = isOwner
-      ? '<p class="tdp-shares-empty">Noch keine Freigaben. Suche nach einem Benutzer unten.</p>'
-      : '<p class="tdp-shares-empty">Keine Benutzer mit Zugriff auf dieses Team.</p>';
+    dom.tdpSharesList.innerHTML = `<p class="tdp-shares-empty">${isOwner ? 'Noch keine Freigaben — suche nach einem Benutzer.' : 'Keine weiteren Benutzer mit Zugriff.'}</p>`;
   } else {
     dom.tdpSharesList.innerHTML = shares
-      .map(
-        (s) => `
+      .map((s) => {
+        const initial = s.email ? s.email[0].toUpperCase() : '?';
+        return `
         <div class="tdp-share-row" data-user-id="${s.id}">
-          <span class="tdp-share-email">${esc(s.email)}</span>
-          ${isOwner ? `<button class="tdp-share-remove" data-user-id="${s.id}" title="Freigabe entfernen">✕</button>` : ''}
-        </div>
-      `,
-      )
+          <span class="tdp-share-avatar" aria-hidden="true">${esc(initial)}</span>
+          <span class="tdp-share-email" title="${esc(s.email)}">${esc(s.email)}</span>
+          ${isOwner ? `<button class="tdp-share-remove icon-btn" data-user-id="${s.id}" title="Freigabe entfernen" aria-label="Freigabe für ${esc(s.email)} entfernen">✕</button>` : ''}
+        </div>`;
+      })
       .join('');
   }
 

@@ -195,11 +195,11 @@
     <span class="save-indicator" id="tdp-save-ind" role="status" aria-live="polite">gespeichert</span>
   </div>
 
-  <div class="dp-content">
+  <div class="dp-content tdp-content">
     <!-- Linke Sidebar: Stammdaten -->
     <div class="dp-left-col">
       <div class="dp-section">
-        <span class="dp-section-title">Team</span>
+        <span class="dp-section-title">Stammdaten</span>
         <div class="dp-form" id="tdp-stammdaten"></div>
       </div>
     </div>
@@ -212,10 +212,13 @@
           <span class="section-count" id="tdp-shares-count"></span>
           <div class="section-line"></div>
         </div>
-        <div id="tdp-shares-list"></div>
+        <div id="tdp-shares-list" class="tdp-shares-list"></div>
         <div id="tdp-shares-add" class="tdp-shares-add" hidden>
-          <input class="tdp-user-search" id="tdp-user-search" type="text" placeholder="E-Mail suchen…" autocomplete="off" aria-label="Benutzer suchen">
-          <ul class="tdp-user-suggestions" id="tdp-user-suggestions" hidden></ul>
+          <p class="tdp-shares-add-label">Benutzer hinzufügen</p>
+          <div class="tdp-search-wrap">
+            <input class="tdp-user-search" id="tdp-user-search" type="text" placeholder="E-Mail suchen…" autocomplete="off" aria-label="Benutzer suchen" aria-expanded="false" aria-haspopup="listbox">
+            <ul class="tdp-user-suggestions" id="tdp-user-suggestions" role="listbox" hidden></ul>
+          </div>
         </div>
       </div>
     </div>
