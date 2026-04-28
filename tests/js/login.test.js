@@ -1,9 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+/**
+ * login.test.js — Tests for login.js via dynamic import.
+ * login.js has no exports and binds to DOM at module-level,
+ * so we set up DOM before importing and drive it via events.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const mockFetch = vi.fn();
 globalThis.fetch = mockFetch;
 
-// Set up DOM for login form
 function setupLoginDom() {
   document.body.innerHTML = `
     <form id="login-form">
@@ -15,91 +19,149 @@ function setupLoginDom() {
   `;
 }
 
-// We test the validation and form-submit logic by directly exercising
-// the login.js module after setting up the DOM
+async function loadLoginModule() {
+  setupLoginDom();
+  vi.resetModules();
+  await import('../../public/js/login.js');
+}
 
-describe('login form – validation', () => {
-  beforeEach(() => {
-    setupLoginDom();
-    mockFetch.mockClear();
+async function submitForm() {
+  const form = document.getElementById('login-form');
+  form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  // Allow microtasks (fetch calls) to settle
+  await new Promise((r) => setTimeout(r, 0));
+}
+
+describe('login.js – validation', () => {
+  beforeEach(async () => {
+    mockFetch.mockReset();
+    await loadLoginModule();
   });
 
   it('shows error when email is empty on submit', async () => {
-    // Load the module logic inline (cannot import due to side effects, test logic directly)
+    document.getElementById('email').value = '';
+    document.getElementById('password').value = 'ValidPass99!Z';
+    await submitForm();
+
     const errorBox = document.getElementById('login-error');
-
-    // Simulate what login.js does when email is empty
-    const email = '';
-    const password = 'ValidPass99!Z';
-    if (!email || !password) {
-      errorBox.textContent = 'Bitte E-Mail und Passwort eingeben.';
-      errorBox.classList.add('visible');
-    }
-
     expect(errorBox.textContent).toContain('E-Mail und Passwort');
     expect(errorBox.classList.contains('visible')).toBe(true);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('shows error when password is empty on submit', async () => {
+    document.getElementById('email').value = 'test@test.de';
+    document.getElementById('password').value = '';
+    await submitForm();
+
     const errorBox = document.getElementById('login-error');
-    const email = 'test@example.com';
-    const password = '';
-    if (!email || !password) {
-      errorBox.textContent = 'Bitte E-Mail und Passwort eingeben.';
-      errorBox.classList.add('visible');
-    }
+    expect(errorBox.textContent).toContain('E-Mail und Passwort');
     expect(errorBox.classList.contains('visible')).toBe(true);
   });
 });
 
-describe('login form – API interaction', () => {
-  beforeEach(() => {
-    setupLoginDom();
-    mockFetch.mockClear();
-    globalThis.location = { href: '', search: '' };
+describe('login.js – API interaction', () => {
+  beforeEach(async () => {
+    mockFetch.mockReset();
+    // Save original location, provide a mock one
+    globalThis._originalLocation = globalThis.location;
+    delete globalThis.location;
+    globalThis.location = { href: '', search: '', pathname: '/login.html', hash: '' };
+    await loadLoginModule();
+  });
+
+  afterEach(() => {
+    if (globalThis._originalLocation) {
+      globalThis.location = globalThis._originalLocation;
+      delete globalThis._originalLocation;
+    }
+  });
+
+  it('sends POST /api/login on valid submit', async () => {
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ email: 'a@b.de' }) });
+
+    document.getElementById('email').value = 'a@b.de';
+    document.getElementById('password').value = 'ValidPass99!Z';
+    await submitForm();
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/login', expect.objectContaining({
+      method: 'POST',
+    }));
   });
 
   it('redirects to cockpit.html on successful login', async () => {
-    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({ email: 'a@b.de' }) });
+    mockFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) });
 
-    const email = 'a@b.de';
-    const password = 'ValidPass99!Z';
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-      credentials: 'same-origin',
-    });
+    document.getElementById('email').value = 'a@b.de';
+    document.getElementById('password').value = 'ValidPass99!Z';
+    await submitForm();
 
-    if (res.ok) {
-      const redirect = new URLSearchParams('').get('redirect') || '/cockpit.html';
-      globalThis.location.href = redirect;
-    }
-
-    expect(globalThis.location.href).toBe('/cockpit.html');
+    expect(globalThis.location.href).toContain('/cockpit.html');
   });
 
-  it('shows error message on 401 response', async () => {
+  it('shows error message on failed login', async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 401,
       json: () => Promise.resolve({ error: 'Ungültige Anmeldedaten.' }),
     });
 
+    document.getElementById('email').value = 'x@y.de';
+    document.getElementById('password').value = 'wrong';
+    await submitForm();
+
     const errorBox = document.getElementById('login-error');
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'x@y.de', password: 'wrong' }),
+    expect(errorBox.classList.contains('visible')).toBe(true);
+    expect(errorBox.textContent).toContain('Ungültige');
+  });
+
+  it('shows connection error on network failure', async () => {
+    mockFetch.mockRejectedValue(new Error('Network error'));
+
+    document.getElementById('email').value = 'a@b.de';
+    document.getElementById('password').value = 'ValidPass99!Z';
+    await submitForm();
+
+    const errorBox = document.getElementById('login-error');
+    expect(errorBox.classList.contains('visible')).toBe(true);
+    expect(errorBox.textContent).toContain('Verbindungsfehler');
+  });
+
+  it('disables button during submit and re-enables after', async () => {
+    let resolvePromise;
+    mockFetch.mockImplementation(() => new Promise((r) => { resolvePromise = r; }));
+
+    document.getElementById('email').value = 'a@b.de';
+    document.getElementById('password').value = 'ValidPass99!Z';
+
+    const btn = document.getElementById('login-btn');
+    const form = document.getElementById('login-form');
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    // Button should be disabled while waiting
+    expect(btn.disabled).toBe(true);
+    expect(btn.textContent).toContain('Anmelden');
+
+    // Resolve the fetch
+    resolvePromise({ ok: true, json: () => Promise.resolve({}) });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(btn.disabled).toBe(false);
+  });
+
+  it('shows fallback error when API returns no error field', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.reject(new Error('parse error')),
     });
 
-    if (!res.ok) {
-      const data = await res.json();
-      errorBox.textContent = data.error ?? 'Fehler';
-      errorBox.classList.add('visible');
-    }
+    document.getElementById('email').value = 'a@b.de';
+    document.getElementById('password').value = 'ValidPass99!Z';
+    await submitForm();
 
-    expect(errorBox.textContent).toContain('Ungültige');
+    const errorBox = document.getElementById('login-error');
     expect(errorBox.classList.contains('visible')).toBe(true);
+    expect(errorBox.textContent).toContain('fehlgeschlagen');
   });
 });
