@@ -1,10 +1,11 @@
-import { data, save, dSave } from './store.js';
+import { data, saveEntity, saveMetadata } from './store.js';
 import { addEntity, removeEntity, cycleStatus } from './crud.js';
 import { findById } from './utils.js';
 import { sortInis, sortState, filterState, resetPage, pageState, setHideFertig, isHideFertig, setShowOnlyBlocked, isShowOnlyBlocked } from './sort.js';
 import { renderAll, renderEntity, autoGrow } from './render.js';
 import { exportJSON, importJSON } from './io.js';
 import { openDetail, bindDetailEvents } from './detail.js';
+import { openTeamDetail, bindTeamDetailEvents } from './team-detail.js';
 import { saveViewState } from './cookie.js';
 import { dom } from './dom.js';
 
@@ -47,7 +48,7 @@ function handleActionClick(e) {
       const v = prompt('Kalenderwoche:', data.kw || '');
       if (v !== null) {
         data.kw = v.trim();
-        save();
+        saveMetadata();
         renderAll();
       }
       break;
@@ -68,6 +69,9 @@ function handleActionClick(e) {
       break;
     case 'openDetail':
       openDetail(id);
+      break;
+    case 'openTeamDetail':
+      openTeamDetail(id);
       break;
     case 'gotoPage': {
       const p = +target.dataset.page;
@@ -184,7 +188,7 @@ function handleInlineInput(e) {
   const item = findById(data[source], id);
   if (!item) return;
   item[field] = el.value;
-  dSave();
+  saveEntity(source, id);
 }
 
 function handleInlineChange(e) {
@@ -201,7 +205,7 @@ function handleInlineChange(e) {
   if (source === 'initiatives' && (field === 'status' || field === 'projektstatus')) {
     renderEntity('initiatives');
   }
-  dSave();
+  saveEntity(source, id);
 }
 
 export function bindEvents() {
@@ -217,4 +221,5 @@ export function bindEvents() {
   document.addEventListener('input', handleInlineInput);
   document.addEventListener('change', handleInlineChange);
   bindDetailEvents();
+  bindTeamDetailEvents();
 }

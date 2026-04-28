@@ -16,6 +16,8 @@ vi.mock('../../public/js/crud.js', () => ({
 
 vi.mock('../../public/js/utils.js', () => ({
   findById: vi.fn(),
+  debounce: (fn) => fn,
+  esc: (s) => String(s || ''),
 }));
 
 vi.mock('../../public/js/sort.js', () => ({

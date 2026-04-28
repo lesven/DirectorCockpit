@@ -4,7 +4,7 @@
  * Render-/CRUD-Logik liegt in den Teilmodulen:
  *   detail-initiatives.js | detail-risks.js | detail-milestones.js
  */
-import { data, dSave } from './store.js';
+import { data, saveEntity } from './store.js';
 import { copyMilestonesToClipboard } from './milestoneExport.js';
 import { findById } from './utils.js';
 import { renderEntity } from './render.js';
@@ -20,6 +20,10 @@ import {
   addBlocker,
   removeBlocker,
   handleBlockerSearch,
+  renderInitiativeShares,
+  handleIniUserSearchInput,
+  handleIniShareSuggestionClick,
+  handleIniShareRemoveClick,
 } from './detail-initiatives.js';
 import {
   refreshRisks,
@@ -49,6 +53,7 @@ export function openDetail(id, { pushState = true } = {}) {
   renderStammdaten(ini);
   renderBlockedBy(ini);
   renderWsjf(ini);
+  renderInitiativeShares(id);
   refreshRisks(currentId);
   refreshMilestones(currentId);
 
@@ -80,7 +85,7 @@ function handleDetailInput(e) {
 
   if (el === dom.dpName) {
     const ini = findById(data.initiatives, currentId);
-    if (ini) { ini.name = el.value; dSave(); }
+    if (ini) { ini.name = el.value; saveEntity('initiatives', currentId); }
     return;
   }
 
@@ -194,6 +199,21 @@ export function bindDetailEvents() {
   dom.detailPage.addEventListener('input', (e) => {
     if (e.target.id === 'dp-blocker-search') {
       handleBlockerSearch(e.target);
+    }
+    if (e.target.id === 'dp-ini-user-search') {
+      handleIniUserSearchInput(e.target);
+    }
+  });
+
+  dom.detailPage.addEventListener('click', (e) => {
+    const iniSuggestion = e.target.closest('[data-ini-share-user-id]');
+    if (iniSuggestion && iniSuggestion.tagName === 'LI') {
+      handleIniShareSuggestionClick(iniSuggestion);
+      return;
+    }
+    const iniRemoveBtn = e.target.closest('.ini-share-remove');
+    if (iniRemoveBtn) {
+      handleIniShareRemoveClick(iniRemoveBtn);
     }
   });
 }

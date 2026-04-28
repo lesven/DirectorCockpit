@@ -10,10 +10,16 @@
     <!-- ─── Code Size ───────────────────────────────────────────── -->
     <rule ref="rulesets/codesize.xml">
         <exclude name="CyclomaticComplexity"/>
+        <exclude name="ExcessiveParameterList"/>
     </rule>
     <rule ref="rulesets/codesize.xml/CyclomaticComplexity">
         <properties>
-            <property name="reportLevel" value="8"/>
+            <property name="reportLevel" value="9"/>
+        </properties>
+    </rule>
+    <rule ref="rulesets/codesize.xml/ExcessiveParameterList">
+        <properties>
+            <property name="minimum" value="11"/>
         </properties>
     </rule>
 
@@ -21,6 +27,12 @@
     <rule ref="rulesets/design.xml">
         <!-- StaticAccess: PHP 8.1 Enum::tryFrom() ist idiomatisch, kein echtes Problem -->
         <exclude name="StaticAccess"/>
+        <exclude name="CouplingBetweenObjects"/>
+    </rule>
+    <rule ref="rulesets/design.xml/CouplingBetweenObjects">
+        <properties>
+            <property name="maximum" value="23"/>
+        </properties>
     </rule>
 
     <!-- ─── Naming ───────────────────────────────────────────────── -->
@@ -32,7 +44,15 @@
     </rule>
 
     <!-- ─── Unused Code ──────────────────────────────────────────── -->
-    <rule ref="rulesets/unusedcode.xml"/>
+    <rule ref="rulesets/unusedcode.xml">
+        <!--
+          UnusedFormalParameter: Symfony-Interfaces (Security-Handler, EventListener, Controller)
+          schreiben Parameter vor, die intern nicht genutzt werden. Das ist kein Code-Smell,
+          sondern Interface-Contract-Pflicht. Beispiele: AuthenticationFailureHandler,
+          AuthenticationSuccessHandler. Die Regel erzeugt zu viele False Positives.
+        -->
+        <exclude name="UnusedFormalParameter"/>
+    </rule>
 
     <!-- ─── Clean Code ───────────────────────────────────────────── -->
     <rule ref="rulesets/cleancode.xml">

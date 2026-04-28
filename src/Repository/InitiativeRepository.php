@@ -17,9 +17,6 @@ class InitiativeRepository extends ServiceEntityRepository
     }
 
     /**
-     * Lädt alle Initiativen sortiert nach ID und lädt blockedBy in einem einzigen Query
-     * (verhindert N+1 beim Zugriff auf Initiative::toArray()).
-     *
      * @return list<Initiative>
      */
     public function findAllWithBlockedBy(): array
@@ -29,6 +26,34 @@ class InitiativeRepository extends ServiceEntityRepository
             ->leftJoin('i.blockedBy', 'b')
             ->addSelect('b')
             ->orderBy('i.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param list<int> $teamIds
+     * @return list<Initiative>
+     */
+    public function findByTeamIdsWithBlockedBy(array $teamIds): array
+    {
+        $qb = $this->createQueryBuilder('i')
+            ->leftJoin('i.blockedBy', 'b')
+            ->addSelect('b');
+
+        if (!empty($teamIds)) {
+            $qb->where('i.team IN (:teamIds) OR i.team IS NULL')
+               ->setParameter('teamIds', $teamIds);
+
+            /** @var list<Initiative> */
+            return $qb->orderBy('i.id', 'ASC')
+                ->getQuery()
+                ->getResult();
+        }
+
+        $qb->where('i.team IS NULL');
+
+        /** @var list<Initiative> */
+        return $qb->orderBy('i.id', 'ASC')
             ->getQuery()
             ->getResult();
     }

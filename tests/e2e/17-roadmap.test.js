@@ -1,11 +1,13 @@
-import { Selector, ClientFunction } from 'testcafe';
+import { Selector, ClientFunction, t } from 'testcafe';
+import { LOGIN_URL, loginAsAdmin } from './helpers.js';
 
 const ROADMAP_URL = 'http://localhost:8089/roadmap.html';
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -40,9 +42,11 @@ const SEED = {
 };
 
 async function setupRoadmapTest() {
+  await loginAsAdmin();
+  await t.navigateTo(ROADMAP_URL);
   await seedViaAPI(JSON.stringify(SEED));
   await reloadPage();
-  await Selector('.tab', { timeout: 5000 })();
+  await Selector('.tab', { timeout: 8000 })();
 }
 
 // ─── Selektoren ──────────────────────────────────────────────
@@ -57,7 +61,7 @@ const tipEl       = Selector('.tip');
 const backLink    = Selector('.footer-back-link');
 
 fixture('US-17: IT Roadmap Seite')
-  .page(ROADMAP_URL)
+  .page(LOGIN_URL)
   .beforeEach(async () => {
     await setupRoadmapTest();
   });

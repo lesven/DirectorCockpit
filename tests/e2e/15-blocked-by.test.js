@@ -2,12 +2,13 @@
  * E2E-Tests: Initiative blockedBy – Dominoeffekt-Tracking
  */
 import { Selector, ClientFunction } from 'testcafe';
-import { BASE_URL, waitForSave } from './helpers.js';
+import { LOGIN_URL, waitForSave, loginAsAdmin } from './helpers.js';
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -75,6 +76,7 @@ function rowByName(name) {
 }
 
 async function seedAndOpen(t) {
+  await loginAsAdmin();
   await seedViaAPI(JSON.stringify(SEED));
   await t.deleteCookies('cockpit_view');
   await clearViewState();
@@ -83,7 +85,7 @@ async function seedAndOpen(t) {
 }
 
 fixture('US-15: BlockedBy – Dominoeffekt')
-  .page(BASE_URL)
+  .page(LOGIN_URL)
   .beforeEach((t) => seedAndOpen(t));
 
 // ─── AC 1: Badge sichtbar wenn blockiert ─────────────────────

@@ -1,14 +1,19 @@
 import { Selector } from 'testcafe';
-import { BASE_URL, selectors } from './helpers.js';
+import { LOGIN_URL, selectors, loginAsAdmin } from './helpers.js';
 
-fixture('US-9: Datenladen & Fallback').page(BASE_URL);
+fixture('US-9: Datenladen & Fallback')
+  .page(LOGIN_URL)
+  .beforeEach(async (t) => {
+    await loginAsAdmin();
+  });
 
 test('AC-9.1: Bei erreichbarem Backend werden API-Daten geladen', async (t) => {
   // Seed data via API before loading the page
   await t.eval(() => {
-    return fetch('/api/cockpit', {
-      method: 'PUT',
+    return fetch('/api/cockpit/import', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({
         kw: '77',
         teams: [{ id: 5001, name: 'API Team', sub: '', status: 'grey', fokus: '', schritt: '' }],
@@ -30,9 +35,10 @@ test('AC-9.1: Bei erreichbarem Backend werden API-Daten geladen', async (t) => {
 test('AC-9.2: Seite zeigt Daten auch nach API-Roundtrip korrekt an', async (t) => {
   // Create test data
   await t.eval(() => {
-    return fetch('/api/cockpit', {
-      method: 'PUT',
+    return fetch('/api/cockpit/import', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({
         kw: '33',
         teams: [

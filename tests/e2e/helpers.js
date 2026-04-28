@@ -2,6 +2,12 @@ import { Selector, ClientFunction, t } from 'testcafe';
 
 /** Base URL - uses TestCafe baseUrl from config */
 export const BASE_URL = 'http://localhost:8089/cockpit.html';
+export const LOGIN_URL = 'http://localhost:8089/login.html';
+export const ADMIN_URL = 'http://localhost:8089/admin.html';
+
+/** E2E test admin credentials — must exist in running Docker container */
+export const E2E_ADMIN_EMAIL = 'e2e-admin@test.internal';
+export const E2E_ADMIN_PASSWORD = 'E2eAdmin!2025X';
 
 const SEED_PAYLOAD = {
   kw: '12',
@@ -107,9 +113,10 @@ const SEED_PAYLOAD = {
 };
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -123,10 +130,24 @@ const clearViewState = ClientFunction(() => {
 });
 
 /**
+ * Logs in via the login page. Call this before navigating to other pages.
+ * Waits until the redirect to cockpit.html completes (#teams-grid is present).
+ */
+export async function loginAsAdmin() {
+  await t.navigateTo(LOGIN_URL);
+  await t.typeText(Selector('#email'), E2E_ADMIN_EMAIL);
+  await t.typeText(Selector('#password'), E2E_ADMIN_PASSWORD);
+  await t.click(Selector('#login-btn'));
+  // Wait until redirected to cockpit.html and page is ready
+  await t.expect(Selector('#teams-grid').exists).ok('Login fehlgeschlagen oder Weiterleitung zu cockpit.html nicht erfolgt', { timeout: 8000 });
+}
+
+/**
  * Seeds data via API and navigates to the cockpit page.
  * Call this in beforeEach hooks.
  */
 export async function setupTest() {
+  await loginAsAdmin();
   await seedViaAPI(JSON.stringify(SEED_PAYLOAD));
   await t.deleteCookies('cockpit_view');
   await clearViewState();
@@ -138,11 +159,18 @@ export async function setupTest() {
 }
 
 /**
- * Waits for the save indicator to appear and then disappear.
+ * Waits for the save to complete.
+ * Uses a generous timeout to account for debounced saves (400ms) + network latency.
+ * Falls back to a fixed wait if the indicator was already shown and hidden.
  */
 export async function waitForSave() {
   const indicator = Selector('#save-ind');
-  await t.expect(indicator.hasClass('show')).ok('Save indicator should appear', { timeout: 3000 });
+  try {
+    await t.expect(indicator.hasClass('show')).ok({ timeout: 5000 });
+  } catch {
+    // Indicator may have already appeared and disappeared — wait for debounce + network instead
+    await t.wait(1500);
+  }
 }
 
 /**

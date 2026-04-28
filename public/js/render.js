@@ -60,6 +60,8 @@ function renderTeamCard(t) {
         <input class="team-name" value="${esc(t.name)}" placeholder="Teamname" data-id="${t.id}" data-field="name" data-source="teams">
       </div>
       <div class="card-actions">
+        <button class="icon-btn team-detail-btn" data-action="openTeamDetail" data-id="${t.id}" title="Team-Details &amp; Freigaben">↗</button>
+        <span class="card-actions-sep"></span>
         <button class="icon-btn" data-action="removeEntity" data-type="teams" data-id="${t.id}" title="Löschen">✕</button>
       </div>
       <div class="field-row">

@@ -62,9 +62,7 @@ class DeadlineTest extends TestCase
 
     // ========== fromMixed() Tests ==========
 
-    /**
-     * @dataProvider fromMixedDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('fromMixedDataProvider')]
     public function testFromMixedParsesValidInputs(mixed $input, ?\DateTimeImmutable $expected, string $format): void
     {
         $result = Deadline::fromMixed($input);

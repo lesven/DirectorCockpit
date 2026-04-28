@@ -1,5 +1,5 @@
 import { Selector, ClientFunction } from 'testcafe';
-import { BASE_URL } from './helpers.js';
+import { LOGIN_URL, loginAsAdmin } from './helpers.js';
 
 // ── Seed mit überfälligen Meilensteinen ──────────────────────────────────────
 
@@ -88,9 +88,10 @@ const OVERDUE_SEED = {
 };
 
 const seedViaAPI = ClientFunction((json) => {
-  return fetch('/api/cockpit', {
-    method: 'PUT',
+  return fetch('/api/cockpit/import', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
     body: json,
   }).then((r) => r.ok);
 });
@@ -98,8 +99,9 @@ const seedViaAPI = ClientFunction((json) => {
 const reloadPage = ClientFunction(() => { location.reload(); });
 
 fixture('US-15: Überfällige Meilensteine auf Startseite')
-  .page(BASE_URL)
+  .page(LOGIN_URL)
   .beforeEach(async (t) => {
+    await loginAsAdmin();
     await seedViaAPI(JSON.stringify(OVERDUE_SEED));
     await t.deleteCookies('cockpit_view');
     await reloadPage();

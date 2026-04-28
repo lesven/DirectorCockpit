@@ -2,13 +2,46 @@
 
 namespace App\Tests\Integration\Controller;
 
+use App\Entity\User;
+use App\Tests\Integration\AuthTestTrait;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CockpitApiControllerTest extends WebTestCase
 {
-    public function testLoadReturnsJson(): void
+    use AuthTestTrait;
+
+    /**
+     * Creates an authenticated client, re-using the same DB user across tests
+     * to avoid memory exhaustion from creating 30+ users in a single run.
+     */
+    private function authClient(): KernelBrowser
     {
         $client = static::createClient();
+
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $email = 'cockpit-test@internal.test';
+        $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+        if ($user === null) {
+            $user = new User($email, 'pw', ['ROLE_USER', 'ROLE_ADMIN']);
+            $em->persist($user);
+            $em->flush();
+        } elseif (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+            $em->flush();
+        }
+
+        $client->loginUser($user);
+
+        return $client;
+    }
+
+    public function testLoadReturnsJson(): void
+    {
+        $client = $this->authClient();
         $client->request('GET', '/api/cockpit');
 
         $this->assertResponseIsSuccessful();
@@ -23,7 +56,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '12',
@@ -38,7 +71,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -59,7 +92,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncUpdatesExistingEntity(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -67,11 +100,11 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $payload['teams'][0]['name'] = 'Updated';
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -82,7 +115,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncDeletesMissingEntities(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -93,10 +126,10 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         $payload['teams'] = [['id' => 1, 'name' => 'A', 'status' => 'grey', 'fokus' => '', 'schritt' => '']];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         $client->request('GET', '/api/cockpit');
         $data = json_decode($client->getResponse()->getContent(), true);
@@ -106,16 +139,16 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testInvalidJsonReturnsBadRequest(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], 'not-json');
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], 'not-json');
 
         $this->assertResponseStatusCodeSame(400);
     }
 
     public function testInvalidPayloadStructureReturnsBadRequest(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
             'teams' => 'not-an-array',
         ]));
 
@@ -129,8 +162,8 @@ class CockpitApiControllerTest extends WebTestCase
     /** Payload enthält nur 'kw', keine Entity-Arrays – muss erfolgreich sein. */
     public function testSyncWithOnlyKwSucceeds(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['kw' => '10'])
         );
         $this->assertResponseIsSuccessful();
@@ -143,8 +176,8 @@ class CockpitApiControllerTest extends WebTestCase
     /** Leerer Body ist kein valides JSON-Objekt → 400. */
     public function testSyncWithEmptyBodyReturnsBadRequest(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], '');
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], '');
 
         $this->assertResponseStatusCodeSame(400);
     }
@@ -152,8 +185,8 @@ class CockpitApiControllerTest extends WebTestCase
     /** Entity-Array enthält ein nicht-Array-Element → 400 (ValidationException). */
     public function testSyncWithNonArrayEntityItemReturnsBadRequest(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['teams' => ['kein-objekt']])
         );
 
@@ -163,8 +196,8 @@ class CockpitApiControllerTest extends WebTestCase
     /** Entity-Item ohne 'id'-Feld → 400 (ValidationException). */
     public function testSyncWithMissingIdFieldReturnsError(): void
     {
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['teams' => [['name' => 'kein-id']]])
         );
 
@@ -174,7 +207,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** WSJF-Felder mit null-Werten werden korrekt persistiert. */
     public function testSyncInitiativeWithNullWsjfFields(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -184,7 +217,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -203,7 +236,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncMilestoneRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -217,7 +250,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -235,7 +268,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testMilestoneWithDefaultValues(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -249,7 +282,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -265,7 +298,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** frist = YYYY-MM-DD wird korrekt persistiert und zurückgegeben. */
     public function testMilestoneFristRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -278,7 +311,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 510, 'initiative' => 200, 'aufgabe' => 'Test', 'frist' => '2026-09-15', 'status' => 'offen'],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -289,7 +322,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** frist = '' wird als NULL gespeichert. */
     public function testMilestoneFristEmptyStringBecomesNull(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -302,7 +335,7 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 511, 'initiative' => 200, 'frist' => ''],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -313,7 +346,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** frist im Format DD.MM.YYYY (kein YYYY-MM-DD) → 400. */
     public function testMilestoneFristInvalidFormatReturnsBadRequest(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -324,14 +357,14 @@ class CockpitApiControllerTest extends WebTestCase
                 ['id' => 512, 'initiative' => 200, 'frist' => '15.04.2026'],
             ],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
     /** frist für Initiative: YYYY-MM-DD Roundtrip. */
     public function testInitiativeFristRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -341,7 +374,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -353,7 +386,7 @@ class CockpitApiControllerTest extends WebTestCase
     /** frist für Initiative: ungültiges Format → 400. */
     public function testInitiativeFristInvalidFormatReturnsBadRequest(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -363,7 +396,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
@@ -373,7 +406,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testLoadResponseIncludesKundenArray(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $client->request('GET', '/api/cockpit');
 
         $this->assertResponseIsSuccessful();
@@ -384,7 +417,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncKundenRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -397,7 +430,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -411,7 +444,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncInitiativeWithCustomerRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -424,7 +457,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -436,7 +469,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncInitiativeWithoutCustomerHasNullCustomer(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -449,7 +482,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -460,7 +493,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncKundeWithEmptyNameReturnsBadRequest(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -470,13 +503,13 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
     public function testPayloadWithoutKundenKeyIsBackwardsCompatible(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         // Payload ohne kunden-Schlüssel – kein Breaking Change
         $payload = [
@@ -486,7 +519,7 @@ class CockpitApiControllerTest extends WebTestCase
             'nicht_vergessen' => [],
         ];
 
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -501,7 +534,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     private function seedMixedInitiatives(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
-        $client = static::createClient();
+        $client = $this->authClient();
         $payload = [
             'kw' => '',
             'teams' => [],
@@ -513,7 +546,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         return $client;
     }
 
@@ -559,8 +592,8 @@ class CockpitApiControllerTest extends WebTestCase
     public function testLoadWithHideFertigOnEmptyDatabaseReturnsEmptyArray(): void
     {
         // DB leeren
-        $client = static::createClient();
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'],
+        $client = $this->authClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'],
             json_encode(['kw' => '', 'teams' => [], 'initiatives' => [], 'nicht_vergessen' => []])
         );
 
@@ -580,7 +613,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncBlockedByRoundtrip(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -591,7 +624,7 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -604,7 +637,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testSyncBlockedByCanBeCleared(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         // Erst mit Relation
         $payload = [
@@ -616,11 +649,11 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
 
         // Dann Relation löschen
         $payload['initiatives'][1]['blockedBy'] = [];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
@@ -631,7 +664,7 @@ class CockpitApiControllerTest extends WebTestCase
 
     public function testInvalidBlockedByTypeReturns400(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         $payload = [
             'kw' => '',
@@ -641,13 +674,13 @@ class CockpitApiControllerTest extends WebTestCase
             ],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseStatusCodeSame(400);
     }
 
     public function testBlockedByMissingKeyDefaultsToEmpty(): void
     {
-        $client = static::createClient();
+        $client = $this->authClient();
 
         // Kein blockedBy-Key → sollte [] zurückgeben (kein Breaking Change)
         $payload = [
@@ -656,12 +689,26 @@ class CockpitApiControllerTest extends WebTestCase
             'initiatives' => [$this->baseIni(10)],
             'nicht_vergessen' => [],
         ];
-        $client->request('PUT', '/api/cockpit', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
         $this->assertResponseIsSuccessful();
 
         $client->request('GET', '/api/cockpit');
         $data = json_decode($client->getResponse()->getContent(), true);
         $this->assertSame([], $data['initiatives'][0]['blockedBy']);
+    }
+
+    public function testUnauthenticatedGetReturns401(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/api/cockpit');
+        $this->assertResponseStatusCodeSame(401);
+    }
+
+    public function testUnauthenticatedPutReturns401(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['kw' => '1']));
+        $this->assertResponseStatusCodeSame(401);
     }
 }
 

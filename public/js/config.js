@@ -1,9 +1,25 @@
 export const CONFIG = {
   API_URL: '/api/cockpit',
+  LOGIN_URL: '/api/login',
+  LOGOUT_URL: '/api/logout',
+  ME_URL: '/api/me',
+  LOGIN_PAGE: '/login.html',
   SAVE_DEBOUNCE_MS: 400,
   SAVE_INDICATOR_MS: 1400,
   ERROR_INDICATOR_MS: 3000,
   FOCUS_DELAY_MS: 50,
+  ENTITY_URLS: {
+    teams: '/api/teams',
+    initiatives: '/api/initiatives',
+    milestones: '/api/milestones',
+    risks: '/api/risks',
+    nicht_vergessen: '/api/nicht-vergessen',
+    kunden: '/api/kunden',
+    metadata: '/api/metadata',
+  },
+  USERS_SEARCH_URL: '/api/users',
+  TEAM_SHARES_URL: (teamId) => `/api/teams/${teamId}/shares`,
+  INITIATIVE_SHARES_URL: (initiativeId) => `/api/initiatives/${initiativeId}/shares`,
 };
 
 export const STATUSES = ['fertig', 'yellow', 'grey', 'ungeplant'];
