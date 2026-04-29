@@ -9,6 +9,10 @@ export const ADMIN_URL = 'http://localhost:8089/admin.html';
 export const E2E_ADMIN_EMAIL = 'e2e-admin@test.internal';
 export const E2E_ADMIN_PASSWORD = 'E2eAdmin!2025X';
 
+/** E2E test non-admin user credentials — created via Admin API in setupNonAdminUser() */
+export const E2E_USER_EMAIL = 'e2e-user@test.internal';
+export const E2E_USER_PASSWORD = 'E2eUser!2025X9';
+
 const SEED_PAYLOAD = {
   kw: '12',
   kunden: [
@@ -140,6 +144,35 @@ export async function loginAsAdmin() {
   await t.click(Selector('#login-btn'));
   // Wait until redirected to cockpit.html and page is ready
   await t.expect(Selector('#teams-grid').exists).ok('Login fehlgeschlagen oder Weiterleitung zu cockpit.html nicht erfolgt', { timeout: 8000 });
+}
+
+/**
+ * Creates the non-admin test user via Admin API (idempotent — skips if user already exists).
+ * Must be called while logged in as admin.
+ */
+const ensureNonAdminUser = ClientFunction((email, password) => {
+  return fetch('/api/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+    body: JSON.stringify({ email, password, roles: ['ROLE_USER'] }),
+  }).then((r) => r.ok || r.status === 409 || r.status === 400);
+});
+
+/**
+ * Logs in as a non-admin user. Creates the user first if needed.
+ */
+export async function loginAsUser() {
+  // First, login as admin to create the user
+  await loginAsAdmin();
+  await ensureNonAdminUser(E2E_USER_EMAIL, E2E_USER_PASSWORD);
+  // Logout admin
+  await t.navigateTo(LOGIN_URL);
+  // Login as non-admin user
+  await t.typeText(Selector('#email'), E2E_USER_EMAIL);
+  await t.typeText(Selector('#password'), E2E_USER_PASSWORD);
+  await t.click(Selector('#login-btn'));
+  await t.expect(Selector('#teams-grid').exists).ok('Non-Admin Login fehlgeschlagen', { timeout: 8000 });
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Selector } from 'testcafe';
-import { BASE_URL, setupTest, selectors } from './helpers.js';
+import { BASE_URL, setupTest, loginAsUser, selectors } from './helpers.js';
 
 fixture('US-6: Daten-Import & -Export')
   .page(BASE_URL)
@@ -123,4 +123,19 @@ test('AC-6.4: Alte Schlüssel (inis, nvs) werden beim Import migriert', async (t
   await t.expect(migrated.iniCount).eql(1);
   await t.expect(migrated.nvCount).eql(1);
   await t.expect(migrated.noOldKeys).ok();
+});
+
+// ── Admin-only restriction ─────────────────────────────────
+
+test('AC-6.5: Import/Export-Buttons sind für Nicht-Admins nicht sichtbar', async (t) => {
+  await loginAsUser();
+  // Buttons should be hidden for non-admin
+  await t.expect(selectors.importBtn.visible).notOk('Import-Button sollte für Nicht-Admins unsichtbar sein');
+  await t.expect(selectors.exportBtn.visible).notOk('Export-Button sollte für Nicht-Admins unsichtbar sein');
+});
+
+test('AC-6.6: Import/Export-Buttons sind für Admins sichtbar', async (t) => {
+  // setupTest() logs in as admin
+  await t.expect(selectors.importBtn.visible).ok('Import-Button sollte für Admins sichtbar sein');
+  await t.expect(selectors.exportBtn.visible).ok('Export-Button sollte für Admins sichtbar sein');
 });

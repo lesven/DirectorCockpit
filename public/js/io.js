@@ -117,6 +117,7 @@ export function migrateData(parsed) {
 }
 
 export function exportJSON() {
+  if (!window._currentUserIsAdmin) return;
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -128,6 +129,7 @@ export function exportJSON() {
 }
 
 export function importJSON() {
+  if (!window._currentUserIsAdmin) return;
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'application/json,.json';
@@ -166,4 +168,10 @@ export function importJSON() {
     reader.readAsText(file);
   };
   input.click();
+}
+
+export function initIOButtons() {
+  if (!window._currentUserIsAdmin) return;
+  document.querySelectorAll('.admin-only[data-action="importJSON"], .admin-only[data-action="exportJSON"]')
+    .forEach((btn) => { btn.style.display = ''; });
 }
