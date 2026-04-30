@@ -48,11 +48,16 @@ class InitiativeController extends AbstractController
         }
 
         $teamId = $data['team'] ?? null;
+        if ($teamId === null && !$user->isAdmin()) {
+            return $this->json(['error' => 'Team ist erforderlich.'], Response::HTTP_BAD_REQUEST);
+        }
+
         if ($teamId !== null) {
             $team = $this->teamRepository->find($teamId);
-            if ($team instanceof Team) {
-                $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
+            if (!$team instanceof Team) {
+                return $this->json(['error' => 'Team nicht gefunden.'], Response::HTTP_BAD_REQUEST);
             }
+            $this->denyAccessUnlessGranted(TeamVoter::EDIT, $team);
         }
 
         try {

@@ -139,7 +139,16 @@ class SyncCockpitDataHandler
         }
     }
 
-    /** @param array<string, mixed> $payload */
+    /**
+     * Syncs only entities visible to the given non-admin user.
+     *
+     * Note: Since the import endpoint is restricted to ROLE_ADMIN via security.yaml
+     * (access_control: ^/api/cockpit/import$ → ROLE_ADMIN), this method is currently
+     * unreachable in production. It is retained as defense-in-depth in case the
+     * access control configuration is changed in the future.
+     *
+     * @param array<string, mixed> $payload
+     */
     private function syncScopedEntities(array $payload, User $user): void
     {
         // Kunden first (referenced by initiatives via FK)

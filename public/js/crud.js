@@ -3,11 +3,24 @@ import { data, createEntity, deleteEntity, saveEntity } from './store.js';
 import { renderEntity } from './render.js';
 import { findById, generateId } from './utils.js';
 import { openDetail } from './detail.js';
+import { filterState } from './sort.js';
+
+function resolveTeamId() {
+  if (filterState.team) return +filterState.team;
+  if (data.teams.length > 0) return data.teams[0].id;
+  return null;
+}
 
 export async function addEntity(type) {
   const def = ENTITY_DEFS[type];
   const id = generateId();
   const entityData = { id, ...def.defaults };
+
+  if (type === 'initiatives') {
+    const teamId = resolveTeamId();
+    if (teamId === null) return;
+    entityData.team = teamId;
+  }
 
   const created = await createEntity(type, entityData);
   if (!created) return;

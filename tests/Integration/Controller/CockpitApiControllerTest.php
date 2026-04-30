@@ -710,5 +710,54 @@ class CockpitApiControllerTest extends WebTestCase
         $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode(['kw' => '1']));
         $this->assertResponseStatusCodeSame(401);
     }
+
+    // -------------------------------------------------------------------------
+    // Import: Admin-only Access Control
+    // -------------------------------------------------------------------------
+
+    /** Non-admin user gets 403 on POST /api/cockpit/import. */
+    public function testNonAdminImportReturnsForbidden(): void
+    {
+        $client = static::createClient();
+        $this->createAndLoginUser($client, 'non-admin-import@test.de', 'pw', ['ROLE_USER']);
+
+        $payload = [
+            'kw' => '1',
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseStatusCodeSame(403);
+    }
+
+    /** Admin user can still import successfully. */
+    public function testAdminImportStillWorks(): void
+    {
+        $client = static::createClient();
+        $this->createAndLoginAdmin($client, 'admin-import@test.de');
+
+        $payload = [
+            'kw' => 'admin-test',
+            'teams' => [],
+            'initiatives' => [],
+            'nicht_vergessen' => [],
+        ];
+        $client->request('POST', '/api/cockpit/import', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($payload));
+        $this->assertResponseIsSuccessful();
+
+        $json = json_decode($client->getResponse()->getContent(), true);
+        $this->assertSame('ok', $json['status']);
+    }
+
+    /** Non-admin can still GET /api/cockpit (read access unaffected). */
+    public function testNonAdminCanStillLoadCockpit(): void
+    {
+        $client = static::createClient();
+        $this->createAndLoginUser($client, 'non-admin-load@test.de', 'pw', ['ROLE_USER']);
+
+        $client->request('GET', '/api/cockpit');
+        $this->assertResponseIsSuccessful();
+    }
 }
 

@@ -281,6 +281,12 @@ function renderInis() {
   updateSortHeaders();
   populateKundeFilter();
 
+  const addIniBtn = document.querySelector('[data-action="addEntity"][data-type="initiatives"]');
+  if (addIniBtn) {
+    addIniBtn.disabled = data.teams.length === 0;
+    addIniBtn.title = data.teams.length === 0 ? 'Erstelle zuerst ein Team' : '';
+  }
+
   const teamOptsBase  = getTeamOptsBase();
   const kundeOptsBase = getKundeOptsBase();
 
