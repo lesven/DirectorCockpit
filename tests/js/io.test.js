@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 vi.mock('../../public/js/store.js', () => ({ data: {}, save: vi.fn() }));
 vi.mock('../../public/js/render.js', () => ({ renderAll: vi.fn() }));
 
-import { migrateData } from '../../public/js/io.js';
+import { migrateData, exportJSON, importJSON, initIOButtons } from '../../public/js/io.js';
 
 describe('migrateData()', () => {
   // ── Schlüssel-Migration ──────────────────────────────────
@@ -315,5 +315,65 @@ describe('migrateData()', () => {
   it('behält customer-id in initiatives', () => {
     const result = migrateData({ initiatives: [{ id: 1, name: 'Ini', customer: 42 }] });
     expect(result.initiatives[0].customer).toBe(42);
+  });
+});
+
+// ── Admin-only Guard-Clauses ─────────────────────────────────
+
+describe('exportJSON() admin guard', () => {
+  it('does nothing when user is not admin', () => {
+    window._currentUserIsAdmin = false;
+    const createObjectURL = vi.fn();
+    globalThis.URL.createObjectURL = createObjectURL;
+    exportJSON();
+    expect(createObjectURL).not.toHaveBeenCalled();
+  });
+
+  it('creates blob when user is admin', () => {
+    window._currentUserIsAdmin = true;
+    const revokeObjectURL = vi.fn();
+    globalThis.URL.revokeObjectURL = revokeObjectURL;
+    // Mock anchor click
+    const clickSpy = vi.fn();
+    vi.spyOn(document, 'createElement').mockReturnValue({ click: clickSpy, set href(_) {}, set download(_) {} });
+    globalThis.URL.createObjectURL = vi.fn(() => 'blob:test');
+    exportJSON();
+    expect(clickSpy).toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+});
+
+describe('importJSON() admin guard', () => {
+  it('does nothing when user is not admin', () => {
+    window._currentUserIsAdmin = false;
+    const clickSpy = vi.fn();
+    vi.spyOn(document, 'createElement').mockReturnValue({ click: clickSpy });
+    importJSON();
+    expect(clickSpy).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
+  });
+});
+
+describe('initIOButtons()', () => {
+  it('shows admin-only buttons when user is admin', () => {
+    document.body.innerHTML = `
+      <button class="admin-only" data-action="importJSON" style="display:none">Import</button>
+      <button class="admin-only" data-action="exportJSON" style="display:none">Export</button>
+    `;
+    window._currentUserIsAdmin = true;
+    initIOButtons();
+    const btns = document.querySelectorAll('.admin-only');
+    btns.forEach((btn) => expect(btn.style.display).toBe(''));
+  });
+
+  it('keeps buttons hidden when user is not admin', () => {
+    document.body.innerHTML = `
+      <button class="admin-only" data-action="importJSON" style="display:none">Import</button>
+      <button class="admin-only" data-action="exportJSON" style="display:none">Export</button>
+    `;
+    window._currentUserIsAdmin = false;
+    initIOButtons();
+    const btns = document.querySelectorAll('.admin-only');
+    btns.forEach((btn) => expect(btn.style.display).toBe('none'));
   });
 });

@@ -32,6 +32,20 @@ vi.mock('../../public/js/detail.js', () => ({
   bindDetailEvents: vi.fn(),
 }));
 
+const mockFilterState = { name: '', team: '', status: '', projektstatus: '', kunde: '' };
+vi.mock('../../public/js/sort.js', () => ({
+  get filterState() { return mockFilterState; },
+  sortState: {},
+  getSortedInis: vi.fn().mockReturnValue([]),
+  getPaginatedInis: vi.fn().mockReturnValue({ items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }),
+  resetPage: vi.fn(),
+  pageState: { current: 1 },
+  setHideFertig: vi.fn(),
+  isHideFertig: vi.fn().mockReturnValue(false),
+  setShowOnlyBlocked: vi.fn(),
+  isShowOnlyBlocked: vi.fn().mockReturnValue(false),
+}));
+
 // window.confirm mocken
 vi.stubGlobal('confirm', vi.fn());
 
@@ -54,6 +68,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   confirm.mockReturnValue(true); // Standardmäßig bestätigen
   resetData();
+  mockFilterState.name = '';
+  mockFilterState.team = '';
+  mockFilterState.status = '';
+  mockFilterState.projektstatus = '';
+  mockFilterState.kunde = '';
 });
 
 // ── removeEntity: Grundverhalten ──────────────────────────────────────────────
@@ -251,11 +270,36 @@ describe('addEntity()', () => {
   });
 
   it('öffnet Detail-Page für neue Initiative', async () => {
-    const created = { id: 99, name: '', status: 'grey' };
+    const created = { id: 99, name: '', status: 'grey', team: 7 };
     createEntity.mockResolvedValueOnce(created);
-    resetData({ initiatives: [] });
+    resetData({ initiatives: [], teams: [{ id: 7, name: 'Test Team' }] });
     await addEntity('initiatives');
     expect(openDetail).toHaveBeenCalledWith(99);
+  });
+
+  it('setzt team-ID aus erstem Team bei Initiative-Erstellung', async () => {
+    const created = { id: 50, name: '', status: 'grey', team: 7 };
+    createEntity.mockResolvedValueOnce(created);
+    resetData({ initiatives: [], teams: [{ id: 7, name: 'Team A' }, { id: 8, name: 'Team B' }] });
+    mockFilterState.team = '';
+    await addEntity('initiatives');
+    expect(createEntity).toHaveBeenCalledWith('initiatives', expect.objectContaining({ team: 7 }));
+  });
+
+  it('nutzt gefilterten Team-ID wenn Filter aktiv', async () => {
+    const created = { id: 51, name: '', status: 'grey', team: 8 };
+    createEntity.mockResolvedValueOnce(created);
+    resetData({ initiatives: [], teams: [{ id: 7, name: 'Team A' }, { id: 8, name: 'Team B' }] });
+    mockFilterState.team = '8';
+    await addEntity('initiatives');
+    expect(createEntity).toHaveBeenCalledWith('initiatives', expect.objectContaining({ team: 8 }));
+  });
+
+  it('erstellt keine Initiative wenn keine Teams vorhanden', async () => {
+    resetData({ initiatives: [], teams: [] });
+    mockFilterState.team = '';
+    await addEntity('initiatives');
+    expect(createEntity).not.toHaveBeenCalled();
   });
 
   it('fokussiert das letzte Input bei nicht_vergessen', async () => {
